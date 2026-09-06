@@ -6,7 +6,7 @@ import { useProgress } from "@/lib/store";
 import { R1, SPLIT_ITEMS, type Side, type SplitItem } from "@/lib/route1";
 import { useRoute1 } from "./useRoute1";
 import { useStageDStore, type Placements } from "./useStageDStore";
-import { ClueToggle } from "./ClueToggle";
+import { ClueToggle } from "@/components/ui/ClueToggle";
 
 const DRAG_THRESHOLD = 6;
 

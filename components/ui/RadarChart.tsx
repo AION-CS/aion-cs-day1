@@ -1,5 +1,12 @@
 export type RadarAxis = { id: string; label: string };
-export type RadarSeries = { id: string; label: string; color: string; scores: Record<string, number> };
+export type RadarSeries = {
+  id: string;
+  label: string;
+  color: string;
+  scores: Record<string, number>;
+  /** SVG stroke-dasharray, e.g. "6 4" — lets series be told apart by line style, not colour alone. */
+  dash?: string;
+};
 
 /**
  * Generic data-driven radar. When `weights` is supplied, each axis length is
@@ -56,9 +63,10 @@ export function RadarChart({
           key={s.id}
           points={axes.map((a, i) => seriesPoint(i, s.scores[a.id] ?? 0).join(",")).join(" ")}
           fill={s.color}
-          fillOpacity={0.16}
+          fillOpacity={0.14}
           stroke={s.color}
-          strokeWidth={2}
+          strokeWidth={2.25}
+          strokeDasharray={s.dash}
         />
       ))}
       {axes.map((a, i) => {

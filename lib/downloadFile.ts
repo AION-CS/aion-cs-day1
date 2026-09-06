@@ -19,8 +19,13 @@ export function downloadTextFile(filename: string, content: string, mime: string
 const slugify = (v: string) =>
   v.trim().toLowerCase().replace(/\s+/g, "-").replace(/[\\/:*?"<>|]+/g, "-");
 
-/** `{level}-{name}-day7-l{level}task{taskNumber}` e.g. `1-muchson-day7-l1task1`. */
+/**
+ * `1-{name}-day7-l{level}task{taskNumber}` e.g. `1-muchson-day7-l2task1`. The
+ * leading `1` is constant across every route (each route produces exactly
+ * one export) — `l{level}` is what actually identifies which route/level it
+ * came from.
+ */
 export function day7ExportFilename(name: string, level: number, taskNumber: number): string {
   const who = slugify(name) || "learner";
-  return `${level}-${who}-day7-l${level}task${taskNumber}`;
+  return `1-${who}-day7-l${level}task${taskNumber}`;
 }

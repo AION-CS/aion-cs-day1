@@ -1,45 +1,56 @@
 "use client";
 
-import { TASK2 } from "@/lib/route2";
+import { TASK2, CRITERIA } from "@/lib/route2";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { MiniStepper } from "@/components/ui/MiniStepper";
+import { Info } from "@/components/icons/LineIcons";
 import { CaseBrief } from "./CaseBrief";
-import { ScenarioDials } from "./ScenarioDials";
-import { StructuredAnalysis } from "./StructuredAnalysis";
-import { TradeoffExport } from "./TradeoffExport";
-import { useRoute2 } from "./useRoute2";
+import { CriterionCard } from "./CriterionCard";
+import { PrioritizationRadar } from "./PrioritizationRadar";
+import { DecisionSection } from "./DecisionSection";
+import { DecisionMemoPanel } from "./DecisionMemoPanel";
+import { ExportBar } from "./ExportBar";
 
 export function TaskFlow() {
-  const r2 = useRoute2();
-
-  const steps = [
-    { label: "Select Levers", done: r2.selectionComplete && r2.allJustified },
-    { label: "Build Plan", done: r2.allHorizonsSet && r2.firstStepValid && r2.firstStepJustify.trim().length > 0 },
-    { label: "Info Gaps", done: r2.infoGaps.trim().length > 0 },
-  ];
-
   return (
     <section id="task" className="space-y-8">
       <SectionHeading kicker={TASK2.kicker} title={TASK2.heading} intro={TASK2.subtext} />
-      <MiniStepper steps={steps} />
-      <CaseBrief />
 
-      <div id="r2-step1">
-        <h3 className="text-h3 text-ink">{TASK2.step1.heading}</h3>
-        <p className="mt-1 text-caption text-ash">{TASK2.step1.instructions}</p>
-        <div className="mt-4 card p-5">
-          <ScenarioDials />
+      <div className="flex items-start gap-3 rounded-xl border border-line bg-canvas p-4">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-ash" />
+        <p className="text-caption text-ash">{TASK2.orderBanner}</p>
+      </div>
+
+      <div className="lg:grid lg:grid-cols-[1fr_360px] lg:items-start lg:gap-8">
+        <div className="space-y-10">
+          <CaseBrief />
+
+          <div>
+            <h3 className="text-h3 text-ink">{TASK2.criteriaHeading}</h3>
+            <p className="mt-1 text-caption text-ash">{TASK2.criteriaInstructions}</p>
+            <div className="mt-4 space-y-4">
+              {CRITERIA.map((c) => (
+                <CriterionCard key={c.id} criterion={c} />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-h3 text-ink">{TASK2.radarHeading}</h3>
+            <p className="mt-1 text-caption text-ash">{TASK2.radarIntro}</p>
+            <div className="mt-4">
+              <PrioritizationRadar />
+            </div>
+          </div>
+
+          <DecisionSection />
+        </div>
+
+        <div className="mt-8 lg:mt-0">
+          <DecisionMemoPanel />
         </div>
       </div>
 
-      <div id="r2-step2">
-        <h3 className="text-h3 text-ink">{TASK2.step2.heading}</h3>
-        <div className="mt-4">
-          <StructuredAnalysis />
-        </div>
-      </div>
-
-      <TradeoffExport />
+      <ExportBar />
     </section>
   );
 }

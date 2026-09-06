@@ -1,47 +1,52 @@
 "use client";
 
 import { useProgress } from "@/lib/store";
-import { R2, LEVERS, REQUIRED_LEVER_COUNT, LEARNER_NAME_KEY } from "@/lib/route2";
+import { R2, LEARNER_NAME_KEY, type CriterionId, type OptionId } from "@/lib/route2";
 import { MentorFillButton } from "@/components/ui/MentorFillButton";
 
-const DEMO_JUSTIFICATIONS: Record<string, string> = {
-  consolidate: "Underused servers are the single most visible line item on the energy bill, and consolidation needs no new hardware.",
-  monitoring: "Without a baseline, none of the other three levers can be proven to have worked afterward.",
-  cooling: "Piecemeal cooling adjustments over the years suggest real headroom, but it needs real data first.",
-  "review-cycle": "A one-off fix regresses without a standing review — this is what makes the other three stick.",
+/** Which of the 3 statements (by score) is the model pick for each criterion × option pairing. */
+const DEMO_SCORES: Record<CriterionId, Record<OptionId, 1 | 2 | 3>> = {
+  "strategic-leverage": { A: 1, B: 1, C: 3 },
+  "sustainability-impact": { A: 2, B: 2, C: 1 },
+  "informative-value": { A: 1, B: 2, C: 3 },
+  "economic-viability": { A: 2, B: 1, C: 2 },
+  feasibility: { A: 2, B: 1, C: 3 },
+  risk: { A: 1, B: 1, C: 3 },
+  credibility: { A: 1, B: 2, C: 3 },
 };
 
-/** Mentor-only: fills every field on Route 2 with plausible demo answers. */
+const DEMO_FOLLOWUPS = [
+  "Which specific metrics beyond PUE the new model will track first, and who owns collecting each one.",
+  "How results from the first reporting cycle will be communicated to the board without overstating progress that hasn't happened yet.",
+];
+
+const DEMO_RISKS = [
+  "A PPA announcement reads well externally, but if matched consumption data is never built, the claim is exposed the moment anyone asks how much of that renewable electricity Meridian actually uses hour by hour.",
+  "Locking into a single 10-20 year contract now, before the data situation is fixed, forecloses a more informed sourcing decision later — the opposite of the strategic flexibility a data centre this size still needs.",
+];
+
+const DEMO_JUSTIFY =
+  "Meridian's board wants visible progress, but the constraints point the other way: the data situation on load and consumption has real gaps, and IT explicitly doesn't want to back a symbolic measure. Option C is the only one of the three that directly closes that data gap and gives every future energy decision — including a later PPA or retrofit — something real to stand on.";
+
+/** Mentor-only: fills every field on Route 2's Task 2 with plausible, model-quality demo answers. */
 export function MentorTools() {
-  const toggleCheck = useProgress((s) => s.toggleCheck);
-  const setNote = useProgress((s) => s.setNote);
   const choose = useProgress((s) => s.choose);
+  const setNote = useProgress((s) => s.setNote);
 
   const fillDemoAnswers = () => {
-    setNote(R2.dialUtilization, "0");
-    setNote(R2.dialCooling, "0");
-    setNote(R2.dialTransparency, "0");
+    setNote(LEARNER_NAME_KEY, "Muchson");
 
-    const picks = Object.keys(DEMO_JUSTIFICATIONS).slice(0, REQUIRED_LEVER_COUNT);
-    LEVERS.forEach((l) => toggleCheck(R2.leverSelected(l.id), picks.includes(l.id)));
-    picks.forEach((id) => setNote(R2.leverJustify(id), DEMO_JUSTIFICATIONS[id]));
-    setNote(R2.rankOrder, JSON.stringify(picks));
+    (Object.keys(DEMO_SCORES) as CriterionId[]).forEach((criterionId) => {
+      (Object.keys(DEMO_SCORES[criterionId]) as OptionId[]).forEach((option) => {
+        const score = DEMO_SCORES[criterionId][option];
+        choose(R2.criterion(criterionId, option), `${criterionId}-${option}-${score}`);
+      });
+    });
 
-    choose(R2.leverHorizon("monitoring"), "short");
-    choose(R2.leverHorizon("consolidate"), "short");
-    choose(R2.leverHorizon("cooling"), "medium");
-    choose(R2.leverHorizon("review-cycle"), "structural");
-
-    choose(R2.firstStep, "monitoring");
-    setNote(
-      R2.firstStepJustify,
-      "We fund monitoring first because every other recommendation in this plan needs a real baseline to be defensible to the board later — it's the cheapest, lowest-risk move that unblocks everything else.",
-    );
-    setNote(
-      R2.infoGaps,
-      "We don't yet have consumption data for the colocated racks — once monitoring is live for 30 days, the consolidation business case can be sized precisely instead of estimated. The decision to start monitoring now doesn't need to wait for that data.",
-    );
-    setNote(LEARNER_NAME_KEY, "Mentor Demo");
+    choose(R2.decisionPick, "C");
+    setNote(R2.decisionJustify, DEMO_JUSTIFY);
+    DEMO_FOLLOWUPS.forEach((text, i) => setNote(R2.followUp(i), text));
+    DEMO_RISKS.forEach((text, i) => setNote(R2.risk(i), text));
   };
 
   return <MentorFillButton onFill={fillDemoAnswers} />;

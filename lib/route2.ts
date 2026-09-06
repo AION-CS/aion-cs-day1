@@ -1,56 +1,76 @@
 /**
- * Route 2 — The Trade-off. All learner-facing copy and the pure dial/scoring
- * math live here so components stay presentational. Case used throughout:
- * DeltaGrid Hosting GmbH (fictional).
+ * Route 2 — Application. All learner-facing copy and pure data for Day 7
+ * live here so components stay presentational. Case used throughout:
+ * Meridian Data Systems GmbH (fictional).
  */
 
 import type { IconKey } from "@/lib/routes";
 
 export const LEARNER_NAME_KEY = "learner:name";
 
+export type OptionId = "A" | "B" | "C";
+export const OPTION_IDS: OptionId[] = ["A", "B", "C"];
+
 // ---------------------------------------------------------------------------
-// Store key map
+// Store key map — every key this route writes to the shared progress store.
 // ---------------------------------------------------------------------------
 export const R2 = {
-  material: "r2:material",
-  dialUtilization: "r2:dial:utilization",
-  dialCooling: "r2:dial:cooling",
-  dialTransparency: "r2:dial:transparency",
-  leverSelected: (id: string) => `r2:lever:${id}:selected`,
-  leverJustify: (id: string) => `r2:lever:${id}:justify`,
-  leverHorizon: (id: string) => `r2:lever:${id}:horizon`,
-  rankOrder: "r2:rankorder",
-  firstStep: "r2:firststep",
-  firstStepJustify: "r2:firststep:justify",
-  infoGaps: "r2:infogaps",
   name: LEARNER_NAME_KEY,
+  criterion: (criterionId: string, option: OptionId) => `r2:crit:${criterionId}:${option}`,
+  decisionPick: "r2:decision:pick",
+  decisionJustify: "r2:decision:justify",
+  followUp: (i: number) => `r2:decision:followup:${i}`,
+  risk: (i: number) => `r2:decision:risk:${i}`,
 } as const;
 
 // ---------------------------------------------------------------------------
-// Case brief — DeltaGrid Hosting GmbH
+// Case brief — Meridian Data Systems GmbH
 // ---------------------------------------------------------------------------
 export const CASE_BRIEF = {
-  company: "DeltaGrid Hosting GmbH",
+  company: "Meridian Data Systems GmbH",
   setup:
-    "You've been promoted: you're now the senior consultant leading the engagement for DeltaGrid Hosting GmbH, a company running its own data center for internal and external services. Over several years, the infrastructure grew rapidly — new systems were integrated project-by-project, without a systematic architectural or efficiency review. Energy costs are rising. At the same time, leadership demands high availability, data security, and performance. Your job is no longer just to spot problems — it's to build a prioritized, defensible recommendation for management.",
-  facts: [
-    "Several physical servers are consistently underused.",
-    "Some duplicate or historically-grown systems exist without clear current need.",
-    "Cooling and airflow setup has only been adjusted piecemeal over the years.",
-    "Consumption data is only available for part of the facility.",
-    "IT operations staff worry that major intervention could cause disruption.",
-    "Management wants a solution that is both economically and sustainably justifiable.",
+    "Management can fund only one central line of measures right now. As the infrastructure sustainability lead, you've been asked to run the trade-off analysis yourself and bring back a prioritized, defensible recommendation — not a gut-feeling ranking.",
+  constraints: [
+    "Budget is limited.",
+    "The board expects visible progress, for both internal and external communication.",
+    "The data situation on actual load and consumption structure has gaps.",
+    "Security of supply and operational stability have high priority.",
+    "IT does not want to support purely symbolic measures.",
   ],
 } as const;
 
+export const OPTIONS: { id: OptionId; label: string; short: string; detail: string }[] = [
+  {
+    id: "A",
+    label: "Extended Green Electricity Supply Contract",
+    short: "PPA / GoO expansion",
+    detail:
+      "Expand long-term Power Purchase Agreements and Guarantee-of-Origin certificate volume, so a larger share of purchased electricity carries a verified renewable designation.",
+  },
+  {
+    id: "B",
+    label: "Technical PUE Improvement Investment",
+    short: "Cooling & power-delivery retrofit",
+    detail:
+      "Capital investment in cooling and power-delivery upgrades — aisle containment, control tuning, a higher-efficiency UPS — to physically lower the facility's PUE.",
+  },
+  {
+    id: "C",
+    label: "Extended Management Model",
+    short: "Multi-metric transparency & governance",
+    detail:
+      "Build an internal system of multiple metrics, granular load transparency, and differentiated sustainability assessment across zones and services.",
+  },
+];
+
 // ---------------------------------------------------------------------------
-// Materi — 6 sections
+// Materi — 4 blocks
 // ---------------------------------------------------------------------------
-export type MaterialSectionId = "bridge" | "tco" | "downtime" | "regression" | "iso50001" | "synthesis";
+export type MaterialSectionId = "forces" | "criteria" | "financing" | "governance";
 
 export type MaterialSection = {
   id: MaterialSectionId;
-  n: 1 | 2 | 3 | 4 | 5 | 6;
+  n: 1 | 2 | 3 | 4;
   icon: IconKey;
   kicker: string;
   title: string;
@@ -62,209 +82,365 @@ export type MaterialSection = {
 
 export const MATERIAL: MaterialSection[] = [
   {
-    id: "bridge",
+    id: "forces",
     n: 1,
-    icon: "link",
-    kicker: "1 · From audit to advice",
-    title: "Bridging Reflection",
-    definition:
-      "Route 1 asked one question: where are the technical problems? Route 2 asks a harder one: given limited budget and real organizational risk, what do we actually do about them — and how do we defend that choice to people who control budget and risk appetite?",
-    insight:
-      "A list of correctly-diagnosed inefficiencies is not a recommendation. The move from analyst to consultant is the move from finding gaps to owning a prioritized, defensible position on what happens next.",
-    takeaway:
-      "Before you touch DeltaGrid's case, sit with these for a moment — they're framing, not a task:",
-    callout: { label: "Reflect", text: "Where in my own organization is data center operation managed more by habit than by deliberate strategy?" },
-  },
-  {
-    id: "tco",
-    n: 2,
-    icon: "coins",
-    kicker: "2 · The framework",
-    title: "TCO: The Framework Behind the Decision",
-    definition:
-      "Total Cost of Ownership for a data center spans three categories: CapEx (hardware, facility build-out), OpEx (energy, maintenance, staffing, licensing), and Cost of Risk (downtime, security incidents, compliance failure).",
-    insight:
-      "Most organizations track CapEx and OpEx carefully — they're line items on a budget. Cost of Risk is usually an afterthought, because it's probabilistic rather than billed monthly. That asymmetry systematically distorts investment decisions toward \"cheap now, expensive later.\"",
-    takeaway:
-      "Any recommendation that only compares CapEx and OpEx between options is incomplete. Cost of Risk has to be named explicitly, even when it can't be priced as precisely as the other two.",
-    callout: {
-      label: "Industry callout",
-      text: "A cheaper option is only actually cheaper once its Cost of Risk is priced in — not before.",
-    },
-  },
-  {
-    id: "downtime",
-    n: 3,
-    icon: "shield",
-    kicker: "3 · Pricing the risk side",
-    title: "The Economics of Downtime",
-    definition:
-      "Per the most recent available industry survey (Uptime Institute), 54% of organizations report their most recent significant/serious outage cost more than $100,000, and roughly 1 in 5 (≈20%) report costs exceeding $1 million. Separately, ITIC's 2024 enterprise survey found 91% of mid-size and large enterprises lose more than $300,000 per hour of downtime.",
-    insight:
-      "If a single serious outage has a 1-in-5 chance of costing over $1 million, how much annual efficiency savings would it take to \"pay for\" the redundancy that prevents it? This is the actual question infrastructure leaders are answering, whether they realize it or not.",
-    takeaway:
-      "Redundancy and availability investment are not \"inefficiency\" to be trimmed by default — they're a hedge against a quantifiable, often six-to-seven-figure risk. The skill is balancing this against energy waste, not treating either side as automatically correct.",
-    callout: {
-      label: "Industry callout",
-      text: "\"Cut redundancy to save energy\" and \"never touch redundancy\" are both the wrong default — the right answer depends on what's actually at stake.",
-    },
-  },
-  {
-    id: "regression",
-    n: 4,
     icon: "target",
-    kicker: "4 · Why fixes decay",
-    title: "Why Technical Fixes Alone Regress",
+    kicker: "1 · The core tension",
+    title: "The Trade-off Radar: Four Forces in Tension",
     definition:
-      "In the same survey data, roughly 4 in 5 operators say their most recent serious outage could have been prevented through better management, process, and configuration — not better hardware.",
+      "Any data centre sustainability decision sits inside a four-way tension. Sustainability is the actual reduction in emissions or footprint — not just the claim of it. Cost splits into capex (on-site generation, efficiency retrofits) and opex (PPA premiums, certificate purchases). Security of supply is diversification across energy sources and exposure to a single supplier or contract. Availability is the data centre's core operational promise — uptime — which any physical retrofit or operating-model change puts briefly at risk while it's being implemented.",
     insight:
-      "A one-off consolidation project or a single cooling retune is a point-in-time fix. Without an ongoing review mechanism, the same drift that created the original inefficiency — new systems added ad hoc, nobody reviewing utilization — simply starts again.",
+      "These forces trade against each other constantly. A long-term PPA can improve cost predictability and sustainability credentials, but reduces flexibility and can worsen security-of-supply diversification if it locks the company to a single generator or region. An efficiency retrofit lowers PUE and cost over time, but the implementation window itself is an availability risk if not carefully sequenced. A broad governance and transparency programme improves long-term credibility and decision quality, but delivers the least visible short-term progress for board communication — this is the exact tension the case in Task 2 is built on.",
     takeaway:
-      "A strong recommendation includes not just what to fix, but how the fix stays fixed. That's a governance question, not a technical one.",
+      "Professionals learn to see all four forces simultaneously, not to optimise one in isolation. Every option in Task 2 does well on some of these and badly on others — there is no option that wins on all four at once.",
     callout: {
-      label: "Industry callout",
-      text: "This is the direct bridge to governance: technical fixes without process discipline don't hold.",
+      label: "This is the exact tension Task 2 is built on",
+      text: "Meridian's board wants visible progress. Its data has gaps. Its supply and stability priorities are high. No single measure satisfies all of that — which is precisely what makes this a prioritisation decision rather than an obvious choice.",
     },
   },
   {
-    id: "iso50001",
-    n: 5,
-    icon: "recycleLoop",
-    kicker: "5 · Embedded governance, concretely",
-    title: "ISO 50001 and the PDCA Loop",
+    id: "criteria",
+    n: 2,
+    icon: "layers",
+    kicker: "2 · The evaluation framework",
+    title: "A Seven-Criteria Prioritisation Framework for Infrastructure Decisions",
     definition:
-      "ISO 50001 (Energy Management Systems) is the internationally recognized standard for systematic energy management, built on the Plan-Do-Check-Act (PDCA) cycle: Plan (identify significant energy uses, set targets), Do (implement measures), Check (monitor via KPIs/PUE tracking), Act (review and adjust) — then the loop repeats.",
+      "This framework is a synthesis of two established management tools, adapted for sustainability infrastructure decisions. The Impact–Effort Matrix — a standard portfolio-prioritisation tool used broadly in operations and product management — contributes the logic of comparing expected benefit against implementation cost and complexity. McKinsey's Three Horizons model (from The Alchemy of Growth, McKinsey & Company, 1999) contributes the discipline of separating short-term visible wins (Horizon 1) from structural, longer-horizon capability building (Horizon 3).",
     insight:
-      "This is not an abstract framework — it's a certifiable, audited management system that serious European enterprises actually run, widely adopted across German industry. The older \"Spitzenausgleich\" peak-compensation tax rebate tied to ISO 50001 expired at the end of 2023, but certification remains directly relevant today through the EEG levy limitation (BesAR, via BAFA) and obligations under the 2023 Energy Efficiency Act (EnEfG).",
+      "That Horizon 1 / Horizon 3 split is directly relevant here: a board wanting \"visible progress\" is asking for Horizon 1, while the structurally correct measure may take longer to show results and reads as Horizon 3. A credible recommendation names which horizon each option actually belongs to, instead of quietly presenting a Horizon 3 measure as if it were a quick win, or dismissing a Horizon 3 measure for not looking impressive fast enough.",
     takeaway:
-      "PDCA is what \"embedding technical efficiency in a governance logic\" actually looks like in practice: a repeating cycle, not a one-time project.",
+      "Seven criteria, applied consistently across every option, turn a gut-feeling ranking into a defensible one. Click through the wheel below — you'll use these exact seven definitions in Task 2.",
     callout: {
-      label: "Industry callout",
-      text: "Figures shift with policy — treat the EEG/EnEfG detail above as current as of the most recent guidance, not a permanent constant.",
+      label: "Why exactly these seven",
+      text: "Each criterion answers a question the other six can't: strategic leverage asks what this unlocks later; credibility asks whether it survives being questioned. A measure can score well on one and poorly on another — that's the point.",
     },
   },
   {
-    id: "synthesis",
-    n: 6,
+    id: "financing",
+    n: 3,
+    icon: "certificate",
+    kicker: "3 · Real-world grounding",
+    title: "Real-World Financing & Reporting Context",
+    definition:
+      "This isn't abstract theory. Large hyperscale operators such as Google and Microsoft have scaled corporate renewable Power Purchase Agreements into multi-gigawatt global portfolios since roughly the early 2010s, making PPAs the dominant mechanism for large-scale renewable procurement in the sector. Data centre and colocation operators such as Equinix have also used green bonds — debt instruments earmarked for environmentally beneficial projects — to fund efficiency retrofits and renewable infrastructure. In the real world, \"Option A\" and \"Option B\" style choices are often blended rather than picked in isolation.",
+    insight:
+      "There's also a formal reporting obligation now. Under Article 12 and Annex VII of the recast EU Energy Efficiency Directive (EU) 2023/1791, and its implementing Delegated Regulation (EU) 2024/1364 (adopted 14 March 2024), any EU data centre with an installed IT power demand of at least 500 kW must report a defined set of sustainability and energy KPIs annually to the European Database on Data Centres. The first report covered calendar year 2023 and was due 15 September 2024; from 2025 onward, the deadline is 15 May each year, covering the previous calendar year. Data is published in aggregated form at EU and country level — individual company data isn't made public where it constitutes a trade secret.",
+    takeaway:
+      "A widely-held misconception is worth correcting here: the EU Energy Efficiency Directive itself does not mandate a specific PUE threshold across the EU — it mandates reporting and transparency. It's national law, such as Germany's EnEfG (covered in Route 1), that sets binding PUE thresholds. Conflating \"the EU forces a PUE of X\" with \"the EU forces you to disclose your PUE\" is exactly the kind of imprecision a credible sustainability professional must avoid.",
+    callout: {
+      label: "Directly relevant to Credibility",
+      text: "Disclosure ≠ performance mandate. Getting this distinction wrong in front of a board, an auditor, or a journalist is a credibility failure — which is exactly what the seventh criterion in this route is built to catch.",
+    },
+  },
+  {
+    id: "governance",
+    n: 4,
     icon: "gavel",
-    kicker: "6 · Synthesis",
-    title: "From Technical Priority to Management Priority",
+    kicker: "4 · Who actually decides",
+    title: "Governance Flow: Who Actually Approves What",
     definition:
-      "A good Route 2 recommendation distinguishes short-term, medium-term, and structural/governance actions — and stays defensible even when the underlying data is incomplete.",
+      "In a mid-to-large organisation, this class of decision runs through a realistic chain: the Board or Executive Committee gives strategic sign-off and sets the budget ceiling. The CIO/CTO or Head of Infrastructure owns the trade-off analysis and makes the technical-strategic recommendation. IT Operations gives feasibility and operational-risk input, with an effective veto on availability grounds. Finance signs off on economic viability, especially for multi-year commitments like a PPA. The decision then goes back to the Board for final approval, with a reporting loop back down once implemented — linking directly to the disclosure obligations above.",
     insight:
-      "This is the same decision-under-uncertainty skill Route 1 asked for in its Finance Director pushback, now applied at higher stakes: a full consulting recommendation, not a single justified choice.",
+      "The quality of a recommendation is judged not only on its content but on whether it anticipates each stakeholder's objection before they raise it: has Finance's viability question already been answered? Has IT Operations' availability concern already been addressed? A recommendation that survives this chain on the first pass is a stronger recommendation than one that merely sounds good in isolation.",
     takeaway:
-      "When you build DeltaGrid's recommendation, every lever you prioritize should carry both a time horizon and a reason it survives incomplete information.",
+      "Keep this chain in mind while you build your Task 2 recommendation — your justification should read as something that has already thought about what Finance and IT Operations would push back on.",
     callout: {
-      label: "Industry callout",
-      text: "\"We need more data first\" is sometimes right — but it's also the easiest way to avoid ever deciding anything.",
+      label: "Anticipate the objection before it's raised",
+      text: "\"We haven't checked with IT Operations yet\" is not a defensible position to bring to a board. The strongest recommendations are pre-negotiated in the analysis itself.",
     },
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Scenario Dials — exploratory, never gates anything
+// The 7 criteria
 // ---------------------------------------------------------------------------
-export type DialLevel = 0 | 1 | 2;
+export type CriterionId =
+  | "strategic-leverage"
+  | "sustainability-impact"
+  | "informative-value"
+  | "economic-viability"
+  | "feasibility"
+  | "risk"
+  | "credibility";
 
-export const UTILIZATION_LABELS = ["Low", "Medium", "High"] as const;
-export const COOLING_LABELS = ["Legacy", "Mixed", "Modern"] as const;
-export const TRANSPARENCY_LABELS = ["None", "Partial", "Full"] as const;
+export type Criterion = { id: CriterionId; n: number; label: string; definition: string };
 
-export type Direction = "down2" | "down1" | "flat" | "up1" | "up2";
-
-const DIRECTION_META: Record<Direction, { arrows: string; label: string }> = {
-  down2: { arrows: "↓↓", label: "Trending down (strong)" },
-  down1: { arrows: "↓", label: "Trending down" },
-  flat: { arrows: "→", label: "Roughly flat" },
-  up1: { arrows: "↑", label: "Trending up" },
-  up2: { arrows: "↑↑", label: "Trending up (strong)" },
-};
-
-function bucket(score: number, min: number, max: number): Direction {
-  const span = max - min || 1;
-  const t = (score - min) / span; // 0..1
-  if (t < 0.2) return "down2";
-  if (t < 0.4) return "down1";
-  if (t < 0.6) return "flat";
-  if (t < 0.8) return "up1";
-  return "up2";
-}
-
-export type DialProjection = {
-  energyCostTrend: { arrows: string; label: string };
-  riskExposure: { arrows: string; label: string };
-  investmentNeeded: { arrows: string; label: string };
-};
-
-/** Directional-only projection (per spec: no false-precision numbers). */
-export function projectDials(utilization: DialLevel, cooling: DialLevel, transparency: DialLevel): DialProjection {
-  const energyScore = (2 - utilization) + (2 - cooling); // 0..4, higher = costs trending up more
-  const riskScore = (2 - cooling) + (2 - transparency); // 0..4, higher = more risk exposure
-  const investmentScore = (2 - cooling) + (2 - utilization); // 0..4, higher = more investment needed
-
-  const energyDir = bucket(energyScore, 0, 4);
-  const riskDir = bucket(riskScore, 0, 4);
-  const investDir = bucket(investmentScore, 0, 4);
-
-  return {
-    energyCostTrend: DIRECTION_META[energyDir],
-    riskExposure: DIRECTION_META[riskDir],
-    investmentNeeded: DIRECTION_META[investDir],
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Task 2, Step 2 — Levers, ranking, horizon, first step, info gaps
-// ---------------------------------------------------------------------------
-export type Horizon2 = "short" | "medium" | "structural";
-
-export type Lever = { id: string; label: string };
-
-export const LEVERS: Lever[] = [
-  { id: "consolidate", label: "Consolidate underused physical servers" },
-  { id: "monitoring", label: "Establish baseline consumption monitoring" },
-  { id: "redundancy", label: "Review redundancy against actual need" },
-  { id: "cooling", label: "Modernize airflow/cooling control" },
-  { id: "review-cycle", label: "Formalize a regular efficiency review cycle" },
-  { id: "decommission", label: "Decommission duplicate/legacy systems with no current need" },
-  { id: "scheduling", label: "Introduce workload-aware scheduling to reduce peak draw" },
+export const CRITERIA: Criterion[] = [
+  {
+    id: "strategic-leverage",
+    n: 1,
+    label: "Strategic Leverage",
+    definition: "How much this measure unlocks or enables future decisions and options, rather than closing them down.",
+  },
+  {
+    id: "sustainability-impact",
+    n: 2,
+    label: "Sustainability Impact",
+    definition: "The realistic, evidence-based magnitude of environmental benefit — not the magnitude that's easiest to communicate.",
+  },
+  {
+    id: "informative-value",
+    n: 3,
+    label: "Informative Value",
+    definition: "How much the measure improves the organisation's ability to actually know its own performance — its contribution to data and transparency.",
+  },
+  {
+    id: "economic-viability",
+    n: 4,
+    label: "Economic Viability",
+    definition: "Cost relative to benefit, evaluated under the stated budget constraint.",
+  },
+  {
+    id: "feasibility",
+    n: 5,
+    label: "Feasibility",
+    definition: "Realistic implementability given current organisational, technical, and data maturity.",
+  },
+  {
+    id: "risk",
+    n: 6,
+    label: "Risk",
+    definition: "The probability and severity of the measure failing, backfiring, or being reversed.",
+  },
+  {
+    id: "credibility",
+    n: 7,
+    label: "Credibility",
+    definition: "How well the measure would hold up under external scrutiny — auditors, journalists, regulators — versus how it merely sounds in a press release.",
+  },
 ];
 
-export const REQUIRED_LEVER_COUNT = 4;
+// ---------------------------------------------------------------------------
+// Criterion statements — 7 criteria × 3 options × 3 statements, hand-written
+// ---------------------------------------------------------------------------
+export type Statement = { id: string; score: 1 | 2 | 3; text: string };
+export type CriterionOptionData = { statements: Statement[]; clue: string };
+
+const s = (criterionId: string, option: OptionId, score: 1 | 2 | 3, text: string): Statement => ({
+  id: `${criterionId}-${option}-${score}`,
+  score,
+  text,
+});
+
+export const CRITERION_DATA: Record<CriterionId, Record<OptionId, CriterionOptionData>> = {
+  "strategic-leverage": {
+    A: {
+      statements: [
+        s("strategic-leverage", "A", 1, "Signs the company into a single generator or region for the contract term, which narrows which sourcing options are realistically still open afterwards."),
+        s("strategic-leverage", "A", 2, "Strengthens the renewable-supply position on paper, but by itself changes little about what the company can decide about its own infrastructure next."),
+        s("strategic-leverage", "A", 3, "Frees internal budget and attention that a technical programme would have consumed, making it easier to fund a further measure later from the same sustainability mandate."),
+      ],
+      clue: "Re-read the constraint about security of supply — what happens to Meridian's future options once it's committed to one supplier for 10-20 years?",
+    },
+    B: {
+      statements: [
+        s("strategic-leverage", "B", 1, "A one-off retrofit fixes today's inefficiency but creates no new organisational capability — the next inefficiency will be found the same ad hoc way this one was."),
+        s("strategic-leverage", "B", 2, "Improves the technical baseline the company operates from, which future decisions can build on, without changing how those decisions actually get made."),
+        s("strategic-leverage", "B", 3, "A verified PUE improvement becomes a credible reference point that anchors every future efficiency or reporting conversation, including with regulators."),
+      ],
+      clue: "If this retrofit is a one-off, what happens to the next inefficiency nobody's watching for?",
+    },
+    C: {
+      statements: [
+        s("strategic-leverage", "C", 1, "Produces internal reports and dashboards, but without a mandate to act on them, the underlying decisions don't actually change."),
+        s("strategic-leverage", "C", 2, "Gives the organisation a repeatable way to compare options like A and B against each other next time, instead of relying on one-off analysis."),
+        s("strategic-leverage", "C", 3, "Becomes the backbone every future energy, efficiency, or reporting decision routes through — the highest-leverage of the three, because it changes how decisions get made, not just what was decided this once."),
+      ],
+      clue: "Which of the three options changes how future decisions like this one get made, not just what gets decided this time?",
+    },
+  },
+  "sustainability-impact": {
+    A: {
+      statements: [
+        s("sustainability-impact", "A", 1, "Certificates and contracts create a reporting entitlement to call the electricity \"renewable,\" without necessarily changing the carbon intensity of what's actually drawn from the grid at any given hour."),
+        s("sustainability-impact", "A", 2, "A physical PPA delivering into the buyer's own grid region adds real new renewable generation to the system the company draws from, beyond a paper claim."),
+        s("sustainability-impact", "A", 3, "At the scale Meridian could realistically contract, the measure meaningfully shifts the marginal generation mix in its supply region — an outcome few single data centre operators can credibly claim."),
+      ],
+      clue: "Does a certificate change the carbon intensity of the electrons Meridian actually draws, or just the paperwork describing them?",
+    },
+    B: {
+      statements: [
+        s("sustainability-impact", "B", 1, "A retrofit targeting only the most visible cooling units improves PUE on paper but leaves the facility's actual total energy draw close to where it started, since most load doesn't change."),
+        s("sustainability-impact", "B", 2, "A well-sequenced retrofit — containment, controls, a higher-efficiency UPS — produces a real, measurable drop in facility overhead energy, not just a ratio improvement."),
+        s("sustainability-impact", "B", 3, "Combined with utilisation and load-consolidation work, the retrofit could cut absolute facility energy substantially, not just the PUE ratio."),
+      ],
+      clue: "A retrofit changes PUE — does it necessarily change total facility energy if the IT load itself hasn't changed?",
+    },
+    C: {
+      statements: [
+        s("sustainability-impact", "C", 1, "A transparency system, on its own, consumes effort to build and doesn't reduce a single kilowatt-hour directly."),
+        s("sustainability-impact", "C", 2, "By revealing which zones are actually inefficient, it points budget at the interventions with the largest realistic environmental benefit, rather than the most visible one."),
+        s("sustainability-impact", "C", 3, "It removes guesswork from every sustainability decision going forward, compounding into the largest cumulative impact of the three options over multiple cycles."),
+      ],
+      clue: "Can a transparency system reduce a single kilowatt-hour on its own, on day one?",
+    },
+  },
+  "informative-value": {
+    A: {
+      statements: [
+        s("informative-value", "A", 1, "A signed supply contract adds a line to the energy procurement file; it says nothing new about how or where Meridian actually consumes energy."),
+        s("informative-value", "A", 2, "GoO tracking introduces some visibility into the renewable share of the electricity mix, though not into how that electricity is used internally."),
+        s("informative-value", "A", 3, "Expanded contract reporting requirements bring detailed hourly consumption-matching data that Meridian didn't have to track before."),
+      ],
+      clue: "Does signing a supply contract tell Meridian anything new about where its own energy actually goes?",
+    },
+    B: {
+      statements: [
+        s("informative-value", "B", 1, "Retrofit vendors typically report before/after PUE at the facility level only, adding little detail about which zones or workloads actually changed."),
+        s("informative-value", "B", 2, "Modern retrofit equipment usually ships with its own sub-metering, adding real granularity for the systems it touches."),
+        s("informative-value", "B", 3, "The retrofit is instrumented as a full monitoring upgrade across the facility, closing the exact data gaps the constraints describe."),
+      ],
+      clue: "Retrofit vendors report facility-level PUE — does that close the load and consumption gaps the case describes?",
+    },
+    C: {
+      statements: [
+        s("informative-value", "C", 1, "Adds dashboards without new source data, so the numbers only restate what disparate teams already knew separately."),
+        s("informative-value", "C", 2, "Establishes new load- and zone-level monitoring that closes a meaningful share of the current data gaps."),
+        s("informative-value", "C", 3, "Directly closes the load and consumption data gap the case explicitly names, and produces exactly the multi-metric, differentiated view every other decision in this exercise depends on."),
+      ],
+      clue: "Which option is explicitly designed to close the data gap the constraints call out?",
+    },
+  },
+  "economic-viability": {
+    A: {
+      statements: [
+        s("economic-viability", "A", 1, "Long-term PPA pricing is typically structured as a hedge, but signing now under a limited budget still means committing multi-year fixed costs before this year's uncertainty resolves."),
+        s("economic-viability", "A", 2, "Premium over grid price is moderate and spread across the contract term, which is manageable within a constrained annual budget."),
+        s("economic-viability", "A", 3, "A well-structured virtual PPA can even net a financial benefit if wholesale prices move favourably, on top of the sustainability credential."),
+      ],
+      clue: "How does a multi-year fixed commitment interact with a budget the case describes as limited, this year specifically?",
+    },
+    B: {
+      statements: [
+        s("economic-viability", "B", 1, "Cooling and power-delivery retrofits carry meaningful upfront capital cost that competes directly with a budget this exercise describes as limited."),
+        s("economic-viability", "B", 2, "Retrofit payback typically arrives within a few years from energy savings, but requires the capital outlay to clear the limited budget constraint first."),
+        s("economic-viability", "B", 3, "Targeted retrofits — containment, controls tuning — can be phased to fit within a limited budget while still returning most of the technical benefit."),
+      ],
+      clue: "Cooling and power-delivery retrofits mean capital equipment — how does that interact with a limited budget compared to a data or process investment?",
+    },
+    C: {
+      statements: [
+        s("economic-viability", "C", 1, "A management and transparency system needs new tooling, data-governance work, and staff time — a real cost even without new hardware."),
+        s("economic-viability", "C", 2, "Mostly a data and process investment rather than capital equipment, so it fits a limited budget more easily than a physical retrofit."),
+        s("economic-viability", "C", 3, "Can be built incrementally on existing monitoring infrastructure at low marginal cost, freeing budget for whichever technical measure the data later justifies."),
+      ],
+      clue: "Which of the three options needs the least new hardware to get started?",
+    },
+  },
+  feasibility: {
+    A: {
+      statements: [
+        s("feasibility", "A", 1, "Requires legal negotiation with an external generator or supplier, a due-diligence cycle, and sign-off across procurement and finance before anything changes."),
+        s("feasibility", "A", 2, "Meridian already has some renewable contracts in place, so extending them is a scaling exercise rather than a new capability to build."),
+        s("feasibility", "A", 3, "Can be executed largely through the existing procurement relationship with minimal new internal process."),
+      ],
+      clue: "Meridian already holds some renewable contracts — is extending an existing relationship the same kind of effort as building a new one?",
+    },
+    B: {
+      statements: [
+        s("feasibility", "B", 1, "Requires physical works inside a live facility — exactly the kind of change IT Operations is wary of, given the priority on operational stability."),
+        s("feasibility", "B", 2, "Can be phased zone-by-zone to limit exposure, but still requires scheduling live-facility work around uptime commitments."),
+        s("feasibility", "B", 3, "Can be piloted on a single non-critical zone first, keeping the rest of the facility untouched while results are validated."),
+      ],
+      clue: "Re-read the constraint on operational stability — what does live-facility retrofit work risk during implementation?",
+    },
+    C: {
+      statements: [
+        s("feasibility", "C", 1, "Requires new tooling, cross-team data agreements, and six-plus months before it produces any usable output."),
+        s("feasibility", "C", 2, "Needs coordination across IT and facilities to agree on what to measure, but can reuse data Meridian already collects in parts of the facility."),
+        s("feasibility", "C", 3, "Can be piloted with existing data and a small cross-functional taskforce within one quarter, since it changes process and reporting, not physical infrastructure."),
+      ],
+      clue: "Does this option require new physical infrastructure, or mostly agreement on what to measure?",
+    },
+  },
+  risk: {
+    A: {
+      statements: [
+        s("risk", "A", 1, "A 10-20 year commitment to a single supplier concentrates exposure — if that supplier underperforms or the market shifts, Meridian is locked in regardless."),
+        s("risk", "A", 2, "Renewable pricing volatility is partly hedged by the contract structure, but Meridian still carries exposure if broader energy prices move sharply."),
+        s("risk", "A", 3, "Financially hedged virtual PPA structures largely insulate Meridian from downstream price risk, leaving mainly reputational exposure if the underlying project underdelivers."),
+      ],
+      clue: "If the supplier underperforms or the market shifts, what's Meridian's exposure on a 10-20 year single-supplier contract?",
+    },
+    B: {
+      statements: [
+        s("risk", "B", 1, "Retrofit work inside a live facility risks an availability incident during implementation — precisely the outcome the operational-stability priority is meant to prevent."),
+        s("risk", "B", 2, "A carefully phased rollout limits blast radius, but some implementation-window risk to availability remains unavoidable."),
+        s("risk", "B", 3, "Piloting on a single non-critical zone before wider rollout keeps any implementation risk contained and reversible."),
+      ],
+      clue: "Re-read the constraint on operational stability — what's the failure mode of retrofit work inside a live facility?",
+    },
+    C: {
+      statements: [
+        s("risk", "C", 1, "A new metrics system can surface uncomfortable numbers publicly before anyone has agreed how to explain them, creating a communications risk of its own."),
+        s("risk", "C", 2, "Rollout risk is mostly organisational — adoption, data-quality disputes — rather than operational, and is reversible if the model needs revising."),
+        s("risk", "C", 3, "Touches no physical infrastructure and carries no availability exposure, making it the lowest operational-risk option of the three by construction."),
+      ],
+      clue: "Which option touches zero physical infrastructure, and what does that mean for availability risk?",
+    },
+  },
+  credibility: {
+    A: {
+      statements: [
+        s("credibility", "A", 1, "GoO-only claims without matched hourly consumption data are a well-documented target for auditor and journalist scrutiny over \"paper renewables.\""),
+        s("credibility", "A", 2, "A named, verifiable long-term PPA is harder to dismiss than certificates alone, though scrutiny of the underlying delivery structure is increasingly common."),
+        s("credibility", "A", 3, "A physical PPA delivering into Meridian's own grid region is about as defensible a renewable claim as a single company can make, matching the mechanism hyperscalers use at scale."),
+      ],
+      clue: "Re-read the constraint about IT's stance on symbolic measures — how does that affect a claim built mainly on certificates rather than matched delivery data?",
+    },
+    B: {
+      statements: [
+        s("credibility", "B", 1, "A single self-reported PUE figure, without independent verification, is exactly the kind of unaudited number regulators and journalists increasingly question."),
+        s("credibility", "B", 2, "A physically verifiable before/after PUE change is more defensible than a contractual claim, though it's still only one metric among several a sophisticated reviewer would ask about."),
+        s("credibility", "B", 3, "Independently measured, physically verified efficiency gains are among the hardest sustainability claims to challenge, since the underlying hardware change is directly inspectable."),
+      ],
+      clue: "Which is harder for an outside reviewer to dismiss: a self-reported ratio, or a physically inspectable hardware change?",
+    },
+    C: {
+      statements: [
+        s("credibility", "C", 1, "A new internal reporting model with no external validation yet is, at this stage, still an unverified claim about how rigorous Meridian's numbers are."),
+        s("credibility", "C", 2, "A differentiated, multi-metric model is structurally more credible than PUE-only reporting, even before any external audit."),
+        s("credibility", "C", 3, "Directly answers the \"credibility versus how it merely sounds\" test this criterion is built on — it's the only option that changes what Meridian can actually stand behind under scrutiny, not just what it can say."),
+      ],
+      clue: "Which option is the only one that changes what Meridian can actually demonstrate under scrutiny, not just what it can say in a press release?",
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Task 2 — copy
+// ---------------------------------------------------------------------------
+export const FOLLOWUP_COUNT = 2;
+export const RISK_COUNT = 2;
 
 export const TASK2 = {
   kicker: "Task 2",
-  heading: "The DeltaGrid Case",
+  heading: "Prioritisation Decision Simulator",
   subtext:
-    "You're the senior consultant on this engagement. Explore the scenario, then build a prioritized, defensible recommendation.",
-  step1: {
-    heading: "Step 1 — Scenario Dials",
-    instructions:
-      "Explore freely — move all three dials to see how DeltaGrid's projected trends shift. This step isn't graded; it's here so your Step 2 recommendation is informed by more than one scenario.",
-    utilizationLabel: "Utilization Rate",
-    coolingLabel: "Cooling System Age/Efficiency",
-    transparencyLabel: "Transparency Level",
-  },
-  step2: {
-    heading: "Step 2 — Structured Analysis",
-    leverHeading: "Identify the biggest levers",
-    leverInstructions: `Select the ${REQUIRED_LEVER_COUNT} biggest levers for DeltaGrid, and justify each in 1-2 sentences.`,
-    rankHeading: "Prioritized recommendation",
-    rankInstructions: "Drag to reorder your selected levers — top means highest priority.",
-    firstStepHeading: "First step decision",
-    firstStepPrompt: "Which lever should DeltaGrid start first?",
-    firstStepJustifyLabel: "Justify this from a management perspective",
-    firstStepJustifyCaption: "Explain this as you would to DeltaGrid's leadership team, not to a fellow engineer.",
-    horizonHeading: "Time-horizon classification",
-    horizonInstructions: "For each selected lever, classify when it could realistically happen.",
-    infoGapsHeading: "Information gaps",
-    infoGapsLabel: "What information would sharpen this recommendation later, and what can responsibly be decided right now despite incomplete data?",
-    infoGapsCaption: "Name a specific missing data point, not just \"we need more data.\"",
+    "Score all three options against the seven criteria from the materi. Do not just declare a gut-feeling ranking — reason through each criterion first. The radar chart reveals itself as you go.",
+  orderBanner: "Suggested order: score all 7 criteria, then decide. You can work in any order — nothing here is locked.",
+  criteriaHeading: "Score the three options",
+  criteriaInstructions:
+    "For each criterion, click the one statement under each option that best matches Meridian's situation. Use Show Clue if you're unsure — it points at the reasoning, not the answer.",
+  radarHeading: "Live comparison",
+  radarIntro: "Builds as you answer each criterion below. Distinguish the three options by line style, not colour alone.",
+  decision: {
+    heading: "Decision",
+    pickLabel: "Final recommendation",
+    pickCaption: "Select the option you'd actually recommend to Meridian's board.",
+    justifyLabel: "Justification",
+    justifyCaption:
+      "You will not have perfect data. State your reasoning anyway — this is what a real prioritisation decision requires. Aim for at least ~40 words.",
+    followUpLabel: "Follow-up decisions",
+    followUpCaption: "What must be decided next, once this measure is approved?",
+    riskLabel: "Risks of the easy-but-shallow alternative",
+    riskCaption:
+      "Name two risks of picking a measure that is easy to communicate short-term but structurally weak — even if it isn't the option you recommended.",
   },
   export: {
-    taskLabel: "Trade-off Analysis",
-    docHeading: "Trade-off Analysis — Consulting Recommendation",
-    filenameSuffix: "tradeoff-analysis",
+    filenameLevel: 2,
+    filenameTask: 1,
+    taskLabel: "Prioritisation Decision Memo",
+    docHeading: "Prioritisation Decision Memo",
   },
 } as const;

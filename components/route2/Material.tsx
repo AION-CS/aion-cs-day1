@@ -1,119 +1,139 @@
-import { MATERIAL, CASE_BRIEF } from "@/lib/route2";
+import { MATERIAL } from "@/lib/route2";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
-import { FacilitySvg } from "@/components/ui/FacilitySvg";
-import { GovernanceSweetSpotCurve } from "./GovernanceSweetSpotCurve";
+import { RadarChart } from "@/components/ui/RadarChart";
+import { CriteriaWheel } from "./CriteriaWheel";
 
-const [bridge, tco, downtime, regression, iso50001, synthesis] = MATERIAL;
+const [forces, criteria, financing, governance] = MATERIAL;
+
+const INK = "#16191D";
+const ASH = "#5E6670";
+const ACCENT = "#0E7A5A";
+const LINE = "#E2E5E9";
+const PAPER = "#FFFFFF";
 
 export function Material() {
   return (
     <div className="space-y-14">
       <SectionHeading
         kicker="Material"
-        title="Six ideas before the DeltaGrid case"
-        intro="From finding problems to owning a defensible recommendation. About 40 minutes."
+        title="Four ideas before the prioritisation simulator"
+        intro="From seeing the trade-off to scoring it consistently. About 60 minutes."
       />
 
-      <MaterialBlock block={bridge}>
-        <ReflectionQuotes />
-      </MaterialBlock>
-
-      <MaterialBlock block={tco}>
+      <MaterialBlock block={forces}>
         <div>
-          <FacilitySvg title={`${CASE_BRIEF.company} Facility Map`} utilizationPct={34} rackGenerations={[1, 1, 2, 2, 3, 3]} showCostOfRisk />
+          <RadarChart
+            axes={[
+              { id: "sustainability", label: "Sustainability" },
+              { id: "cost", label: "Cost" },
+              { id: "supply", label: "Security of Supply" },
+              { id: "availability", label: "Availability" },
+            ]}
+            series={[]}
+          />
           <p className="mt-2 text-micro text-ash">
-            Same facility grammar as Route 1, further along in its lifecycle — racks tagged by build generation
-            (Gen 1-3), and a small cost-of-risk marker near redundancy foreshadowing this section.
+            An empty shell on purpose — no option wins on all four axes at once. You'll fill in a version of this
+            same chart (extended to all seven criteria) in Task 2.
           </p>
         </div>
       </MaterialBlock>
 
-      <MaterialBlock block={downtime}>
-        <DowntimeStats />
+      <MaterialBlock block={criteria}>
+        <CriteriaWheel />
       </MaterialBlock>
 
-      <MaterialBlock block={regression}>
-        <RegressionStat />
+      <MaterialBlock block={financing}>
+        <EuDisclosureDiagram />
       </MaterialBlock>
 
-      <MaterialBlock block={iso50001}>
-        <PdcaLoop />
-      </MaterialBlock>
-
-      <MaterialBlock block={synthesis}>
-        <GovernanceSweetSpotCurve />
+      <MaterialBlock block={governance}>
+        <GovernanceFlowDiagram />
       </MaterialBlock>
     </div>
   );
 }
 
-function ReflectionQuotes() {
-  const prompts = [
-    "Where in my own organization is data center operation managed more by habit than by deliberate strategy?",
-    "What inefficiency today is most likely going unnoticed simply because no one owns the transparency for it?",
-    "What would a head of infrastructure prioritize differently than a pure technical specialist would?",
-  ];
+function EuDisclosureDiagram() {
   return (
-    <div className="space-y-3">
-      {prompts.map((p) => (
-        <blockquote key={p} className="border-l-2 border-accent/40 pl-4 text-body italic text-ink">
-          {p}
-        </blockquote>
-      ))}
-    </div>
-  );
-}
+    <div>
+      <svg viewBox="0 0 640 200" className="w-full" role="img" aria-label="EU EED Article 12 mandates disclosure; national law such as Germany's EnEfG mandates performance thresholds">
+        <rect x={20} y={40} width={270} height={110} rx={10} fill={PAPER} stroke={ACCENT} strokeWidth={1.8} />
+        <text x={155} y={70} textAnchor="middle" fontSize="11" fontWeight={700} fill={ACCENT}>
+          EU EED Article 12
+        </text>
+        <text x={155} y={88} textAnchor="middle" fontSize="9.5" fill={INK}>
+          + Annex VII / Reg. (EU) 2024/1364
+        </text>
+        <text x={155} y={112} textAnchor="middle" fontSize="10" fontWeight={600} fill={ASH}>
+          → mandates disclosure
+        </text>
+        <text x={155} y={130} textAnchor="middle" fontSize="9" fill={ASH}>
+          (report KPIs annually, ≥500 kW IT load)
+        </text>
 
-function DowntimeStats() {
-  const stats = [
-    { value: "54%", label: "of orgs' most recent serious outage cost > $100,000" },
-    { value: "≈20%", label: "report costs exceeding $1 million" },
-    { value: "91%", label: "of mid/large enterprises lose > $300,000 per hour of downtime" },
-  ];
-  return (
-    <div className="grid gap-4 sm:grid-cols-3">
-      {stats.map((s) => (
-        <div key={s.label} className="rounded-xl border border-line p-4 text-center">
-          <p className="text-h1 text-ink">{s.value}</p>
-          <p className="mt-1 text-micro text-ash">{s.label}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
+        <rect x={350} y={40} width={270} height={110} rx={10} fill={PAPER} stroke={INK} strokeWidth={1.8} />
+        <text x={485} y={70} textAnchor="middle" fontSize="11" fontWeight={700} fill={INK}>
+          National law
+        </text>
+        <text x={485} y={88} textAnchor="middle" fontSize="9.5" fill={INK}>
+          e.g. Germany's EnEfG
+        </text>
+        <text x={485} y={112} textAnchor="middle" fontSize="10" fontWeight={600} fill={ASH}>
+          → mandates performance thresholds
+        </text>
+        <text x={485} y={130} textAnchor="middle" fontSize="9" fill={ASH}>
+          (binding PUE limits)
+        </text>
 
-function RegressionStat() {
-  return (
-    <div className="rounded-xl border border-accent/30 bg-accentSoft p-5 text-center">
-      <p className="text-display text-ink">4 in 5</p>
-      <p className="mt-1 text-caption text-ash">
-        operators say their most recent serious outage could have been prevented through better management,
-        process, and configuration — not better hardware.
+        <line x1={290} y1={95} x2={348} y2={95} stroke={ASH} strokeWidth={1.6} markerEnd="url(#euArrow)" />
+        <text x={319} y={82} textAnchor="middle" fontSize="8.5" fill={ASH}>
+          can inform
+        </text>
+
+        <defs>
+          <marker id="euArrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill={ASH} />
+          </marker>
+        </defs>
+      </svg>
+      <p className="mt-2 text-micro text-ash">
+        Disclosure data published under the EU regime can later inform or pressure future national thresholds — but
+        the EU directive itself sets no PUE number.
       </p>
     </div>
   );
 }
 
-function PdcaLoop() {
-  const steps = [
-    { id: "plan", label: "Plan", detail: "Identify significant energy uses, set targets" },
-    { id: "do", label: "Do", detail: "Implement measures" },
-    { id: "check", label: "Check", detail: "Monitor via KPIs / PUE tracking" },
-    { id: "act", label: "Act", detail: "Review and adjust" },
+function GovernanceFlowDiagram() {
+  const roles = [
+    { id: "board", label: "Board / Exec Committee", concern: "Strategic risk & budget ceiling" },
+    { id: "cio", label: "CIO / CTO / Head of Infra", concern: "Owns the trade-off analysis" },
+    { id: "itops", label: "IT Operations", concern: "Feasibility & availability veto" },
+    { id: "finance", label: "Finance", concern: "Economic viability sign-off" },
   ];
   return (
     <div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {steps.map((s, i) => (
-          <div key={s.id} className="rounded-xl border border-line p-3 text-center">
-            <p className="text-micro font-semibold uppercase tracking-wide text-accent">{i + 1}</p>
-            <p className="mt-1 text-caption font-semibold text-ink">{s.label}</p>
-            <p className="mt-1 text-micro text-ash">{s.detail}</p>
+      <div className="space-y-2.5">
+        {roles.map((r, i) => (
+          <div key={r.id}>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-3">
+              <span className="text-caption font-semibold text-ink">{r.label}</span>
+              <span className="text-micro text-ash">{r.concern}</span>
+            </div>
+            {i < roles.length - 1 && (
+              <div className="flex justify-center gap-6 py-1 text-micro text-ash">
+                <span>↓ recommendation</span>
+                <span>↑ feedback / objection</span>
+              </div>
+            )}
           </div>
         ))}
       </div>
-      <p className="mt-3 text-micro text-ash">The loop repeats — PDCA is a cycle, not a one-time project.</p>
+      <p className="mt-3 text-micro text-ash">
+        Then back to the Board for final approval, with a reporting loop down once implemented — feeding the
+        disclosure obligations above.
+      </p>
     </div>
   );
 }
