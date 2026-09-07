@@ -21,11 +21,12 @@ export default function Route2Page() {
           <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
             <LeafMark className="h-4 w-4" /> {ROUTE.tag} — 2 of 3
           </p>
-          <h1 className="text-display text-ink">{ROUTE.title}</h1>
+          <h1 className="text-display text-ink">Route 2 · Application — Choosing What to Fix First</h1>
           <p className="mt-4 text-body text-ash">
-            Seeing a trade-off isn't the same as scoring it consistently. This route gives you a seven-criteria
-            framework, then has you run a live prioritisation simulator across three funding options for Meridian
-            Data Systems GmbH.
+            Knowing the risks of cloud use isn't the same as knowing what to fix first. In this route, you'll step
+            into a real prioritization decision: with limited budget, incomplete data, and pressure for quick wins,
+            which single line of action should a company commit to — and why? You'll use the same assessment logic
+            consulting teams and cloud architects use to defend decisions under uncertainty.
           </p>
         </div>
 
@@ -36,7 +37,7 @@ export default function Route2Page() {
         <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
           <p className="text-body font-semibold text-ink">You've got the framework. Time to apply it.</p>
           <a href="#task" className="btn-accent mt-3 inline-flex">
-            Start the Prioritisation Decision Simulator
+            Start the Prioritization Decision
           </a>
         </div>
 

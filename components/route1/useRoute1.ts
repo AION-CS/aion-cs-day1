@@ -5,13 +5,11 @@ import { useProgress, useHydrated } from "@/lib/store";
 import {
   R1,
   EVIDENCE_ITEMS,
-  PUE_CLAIMS,
-  GAP_ASPECTS,
-  SPLIT_ITEMS,
-  GAP_REQUIRED_COUNT,
-  type CategoryId,
-  type Verdict,
-  type Side,
+  STATEMENT_PROMPTS,
+  STAGE5_CLASSIFICATION,
+  type DimensionId,
+  type Verdict2,
+  type Side5,
 } from "@/lib/route1";
 
 export type MissingItem = { id: string; label: string };
@@ -22,134 +20,129 @@ export function useRoute1() {
   const notes = useProgress((s) => s.notes);
 
   const name = hydrated ? notes[R1.name] ?? "" : "";
+  const nameComplete = name.trim().length > 0;
 
-  // --- Stage A — Evidence Sorter -------------------------------------------
-  const stageACategory = useMemo(() => {
-    const map: Record<string, CategoryId | undefined> = {};
+  // --- Stage 2 — Sort: Benefit vs Risk ---------------------------------------
+  const stage2Verdict = useMemo(() => {
+    const map: Record<string, Verdict2 | undefined> = {};
     if (!hydrated) return map;
     for (const it of EVIDENCE_ITEMS) {
-      const v = choices[R1.stageA.category(it.id)];
-      if (v) map[it.id] = v as CategoryId;
+      const v = choices[R1.stage2.verdict(it.id)];
+      if (v === "benefit" || v === "risk") map[it.id] = v;
     }
     return map;
   }, [hydrated, choices]);
-  const stageADoneCount = Object.keys(stageACategory).length;
-  const stageAComplete = stageADoneCount >= EVIDENCE_ITEMS.length;
+  const stage2DoneCount = Object.keys(stage2Verdict).length;
+  const stage2Complete = stage2DoneCount >= EVIDENCE_ITEMS.length;
 
-  // --- Stage B — PUE Claim Validity Check -----------------------------------
-  const stageBVerdict = useMemo(() => {
-    const map: Record<string, Verdict | undefined> = {};
+  // --- Stage 3 — Classify into the 6-Dimension Wheel -------------------------
+  const stage3Dimension = useMemo(() => {
+    const map: Record<string, DimensionId | undefined> = {};
     if (!hydrated) return map;
-    for (const c of PUE_CLAIMS) {
-      const v = choices[R1.stageB.verdict(c.id)];
-      if (v) map[c.id] = v as Verdict;
+    for (const it of EVIDENCE_ITEMS) {
+      const v = choices[R1.stage3.dimension(it.id)];
+      if (v) map[it.id] = v as DimensionId;
     }
     return map;
   }, [hydrated, choices]);
-  const stageBDoneCount = Object.keys(stageBVerdict).length;
-  const stageBComplete = stageBDoneCount >= PUE_CLAIMS.length;
+  const stage3DoneCount = Object.keys(stage3Dimension).length;
+  const stage3Complete = stage3DoneCount >= EVIDENCE_ITEMS.length;
 
-  // --- Stage C — Gap Finder --------------------------------------------------
-  const stageCSelected = useMemo(() => {
-    if (!hydrated) return [] as string[];
-    return GAP_ASPECTS.filter((a) => choices[R1.stageC.selected(a.id)] === "yes").map((a) => a.id);
-  }, [hydrated, choices]);
-  const stageCJustification = useMemo(() => {
+  // --- Stage 4 — 3 sustainability statements ---------------------------------
+  const stage4Statement = useMemo(() => {
     const map: Record<string, string> = {};
     if (!hydrated) return map;
-    for (const a of GAP_ASPECTS) {
-      map[a.id] = notes[R1.stageC.justification(a.id)] ?? "";
+    for (const p of STATEMENT_PROMPTS) {
+      map[p.id] = notes[R1.stage4.statement(p.id)] ?? "";
     }
     return map;
   }, [hydrated, notes]);
-  const stageCCountOk = stageCSelected.length === GAP_REQUIRED_COUNT;
-  const stageCMissingJustifications = stageCSelected.filter((id) => !stageCJustification[id]?.trim());
-  const stageCComplete = stageCCountOk && stageCMissingJustifications.length === 0;
+  const stage4MissingIds = STATEMENT_PROMPTS.filter((p) => !stage4Statement[p.id]?.trim()).map((p) => p.id);
+  const stage4Complete = stage4MissingIds.length === 0;
 
-  // --- Stage D — Technical vs. Governance Split ------------------------------
-  const stageDPlacement = useMemo(() => {
-    const map: Record<string, Side | undefined> = {};
+  // --- Stage 5 — Technical vs Management, working set = Stage 2's "risk" ----
+  const stage5Items = useMemo(
+    () => EVIDENCE_ITEMS.filter((it) => stage2Verdict[it.id] === "risk"),
+    [stage2Verdict],
+  );
+  const stage5Side = useMemo(() => {
+    const map: Record<string, Side5 | undefined> = {};
     if (!hydrated) return map;
-    for (const it of SPLIT_ITEMS) {
-      const v = choices[R1.stageD.placement(it.id)];
+    for (const it of stage5Items) {
+      const v = choices[R1.stage5.side(it.id)];
       if (v === "technical" || v === "governance") map[it.id] = v;
     }
     return map;
-  }, [hydrated, choices]);
-  const stageDDoneCount = Object.keys(stageDPlacement).length;
-  const stageDComplete = stageDDoneCount >= SPLIT_ITEMS.length;
+  }, [hydrated, choices, stage5Items]);
+  const stage5DoneCount = Object.keys(stage5Side).length;
+  const stage5Complete = stage5Items.length > 0 && stage5DoneCount >= stage5Items.length;
 
-  const nameComplete = name.trim().length > 0;
-
-  const allComplete = nameComplete && stageAComplete && stageBComplete && stageCComplete && stageDComplete;
+  const allComplete = nameComplete && stage2Complete && stage3Complete && stage4Complete && stage5Complete;
 
   const missing = useMemo<MissingItem[]>(() => {
     const items: MissingItem[] = [];
     if (!nameComplete) items.push({ id: "r1-name", label: "Add your name so the export can be labelled correctly" });
-    if (!stageAComplete) {
+    if (!stage2Complete) {
       items.push({
-        id: "r1-stageA",
-        label: `Stage A: ${EVIDENCE_ITEMS.length - stageADoneCount} of ${EVIDENCE_ITEMS.length} pieces of evidence not yet classified`,
+        id: "r1-stage2",
+        label: `Stage 2: ${EVIDENCE_ITEMS.length - stage2DoneCount} of ${EVIDENCE_ITEMS.length} evidence cards not yet sorted into Benefit/Risk`,
       });
     }
-    if (!stageBComplete) {
+    if (!stage3Complete) {
       items.push({
-        id: "r1-stageB",
-        label: `Stage B: ${PUE_CLAIMS.length - stageBDoneCount} of ${PUE_CLAIMS.length} claims not yet classified`,
+        id: "r1-stage3",
+        label: `Stage 3: ${EVIDENCE_ITEMS.length - stage3DoneCount} of ${EVIDENCE_ITEMS.length} cards not yet placed on the wheel`,
       });
     }
-    if (!stageCCountOk) {
+    for (const id of stage4MissingIds) {
+      const prompt = STATEMENT_PROMPTS.find((p) => p.id === id);
       items.push({
-        id: "r1-stageC",
-        label: `Stage C: you've selected ${stageCSelected.length} of the required ${GAP_REQUIRED_COUNT} gap aspects`,
+        id: `r1-stage4-${id}`,
+        label: `Stage 4: complete the sentence starting "${prompt?.starter ?? id}"`,
       });
-    } else if (stageCMissingJustifications.length > 0) {
-      for (const aspectId of stageCMissingJustifications) {
-        const aspect = GAP_ASPECTS.find((a) => a.id === aspectId);
-        items.push({
-          id: `r1-stageC-${aspectId}`,
-          label: `Stage C: add a justification for "${aspect?.label ?? aspectId}"`,
-        });
-      }
     }
-    if (!stageDComplete) {
+    if (!stage5Complete) {
       items.push({
-        id: "r1-stageD",
-        label: `Stage D: ${SPLIT_ITEMS.length - stageDDoneCount} of ${SPLIT_ITEMS.length} items not yet placed`,
+        id: "r1-stage5",
+        label:
+          stage5Items.length === 0
+            ? "Stage 5: tag at least one card as Risk in Stage 2, then classify it here"
+            : `Stage 5: ${stage5Items.length - stage5DoneCount} of ${stage5Items.length} risk cards not yet classified`,
       });
     }
     return items;
   }, [
     nameComplete,
-    stageAComplete,
-    stageADoneCount,
-    stageBComplete,
-    stageBDoneCount,
-    stageCCountOk,
-    stageCSelected.length,
-    stageCMissingJustifications,
-    stageDComplete,
-    stageDDoneCount,
+    stage2Complete,
+    stage2DoneCount,
+    stage3Complete,
+    stage3DoneCount,
+    stage4MissingIds,
+    stage5Complete,
+    stage5Items.length,
+    stage5DoneCount,
   ]);
 
   return {
     hydrated,
     name,
     nameComplete,
-    stageACategory,
-    stageADoneCount,
-    stageAComplete,
-    stageBVerdict,
-    stageBDoneCount,
-    stageBComplete,
-    stageCSelected,
-    stageCJustification,
-    stageCCountOk,
-    stageCComplete,
-    stageDPlacement,
-    stageDDoneCount,
-    stageDComplete,
+    stage2Verdict,
+    stage2DoneCount,
+    stage2Complete,
+    stage3Dimension,
+    stage3DoneCount,
+    stage3Complete,
+    stage4Statement,
+    stage4MissingIds,
+    stage4Complete,
+    stage5Items,
+    stage5Side,
+    stage5DoneCount,
+    stage5Complete,
     allComplete,
     missing,
   };
 }
+
+export { STAGE5_CLASSIFICATION };

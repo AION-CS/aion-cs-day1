@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useRoute2 } from "./useRoute2";
-import { CASE_BRIEF, CRITERIA, OPTIONS } from "@/lib/route2";
+import { CASE_BRIEF, CRITERIA, OPTIONS, REFLECTION_PROMPTS } from "@/lib/route2";
 
 export type DecisionMemoData = {
   name: string;
@@ -13,6 +13,7 @@ export type DecisionMemoData = {
   justification: string;
   followUps: string[];
   risks: string[];
+  reflections: { question: string; answer: string }[];
 };
 
 /** Joins Route 2's state to the case content to assemble the live Decision Memo. */
@@ -25,7 +26,7 @@ export function useDecisionMemoData(): DecisionMemoData {
       scores: Object.fromEntries(OPTIONS.map((o) => [o.id, r2.scoreOf(c.id, o.id)])),
     }));
 
-    const recommended = OPTIONS.find((o) => o.id === r2.decisionPick);
+    const recommended = OPTIONS.find((o) => o.id === r2.pick);
 
     return {
       name: r2.name || "Learner",
@@ -33,9 +34,10 @@ export function useDecisionMemoData(): DecisionMemoData {
       caseReference: CASE_BRIEF.company,
       scoreTable,
       recommendation: recommended ? `Option ${recommended.id} — ${recommended.label}` : "",
-      justification: r2.decisionJustify,
+      justification: r2.justify,
       followUps: r2.followUps.filter((f) => f.trim().length > 0),
       risks: r2.risks.filter((rk) => rk.trim().length > 0),
+      reflections: REFLECTION_PROMPTS.map((p, i) => ({ question: p.question, answer: r2.reflections[i] ?? "" })).filter((r) => r.answer.trim()),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [r2]);

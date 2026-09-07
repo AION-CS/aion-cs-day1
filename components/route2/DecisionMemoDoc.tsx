@@ -5,12 +5,13 @@ import type { DecisionMemoData } from "./useDecisionMemoData";
 export function DecisionMemoDoc({ data, live = false }: { data: DecisionMemoData; live?: boolean }) {
   const reveal = live ? "reveal-in" : undefined;
   const anyScored = data.scoreTable.some((row) => OPTIONS.some((o) => row.scores[o.id] > 0));
-  const isEmpty = !anyScored && !data.recommendation && !data.justification && data.followUps.length === 0 && data.risks.length === 0;
+  const isEmpty =
+    !anyScored && !data.recommendation && !data.justification && data.followUps.length === 0 && data.risks.length === 0 && data.reflections.length === 0;
 
   return (
     <div className="space-y-5 text-ink">
       <div className="border-b border-line pb-3">
-        <p className="text-micro uppercase tracking-wide text-ash">AION Green IT · Day 7 · Route 2</p>
+        <p className="text-micro uppercase tracking-wide text-ash">AION Green IT · Day 8 · Route 2</p>
         <h2 className="text-h3">{TASK2.export.docHeading}</h2>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption text-ash">
           <span>Author: <span className="font-semibold text-ink">{data.name}</span></span>
@@ -19,16 +20,16 @@ export function DecisionMemoDoc({ data, live = false }: { data: DecisionMemoData
         </div>
       </div>
 
-      {isEmpty && <p className="text-caption text-ash">This memo fills in as you score the criteria and build a decision below.</p>}
+      {isEmpty && <p className="text-caption text-ash">This memo fills in as you work through Stages 2–6 above.</p>}
 
       {anyScored && (
         <section className={reveal}>
-          <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Radar Summary</h3>
+          <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">7-Dimension Score Summary</h3>
           <div className="mt-1.5 overflow-x-auto">
             <table className="w-full text-micro text-ash">
               <thead>
                 <tr className="text-left">
-                  <th className="pb-1 pr-2 font-semibold text-ink">Criterion</th>
+                  <th className="pb-1 pr-2 font-semibold text-ink">Dimension</th>
                   {OPTIONS.map((o) => (
                     <th key={o.id} className="pb-1 pr-2 text-center font-semibold text-ink">{o.id}</th>
                   ))}
@@ -74,6 +75,20 @@ export function DecisionMemoDoc({ data, live = false }: { data: DecisionMemoData
           <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-micro text-ash">
             {data.risks.map((r, i) => (
               <li key={i}>{r}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {data.reflections.length > 0 && (
+        <section className={reveal}>
+          <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Reflection</h3>
+          <ul className="mt-1.5 space-y-1.5 text-micro">
+            {data.reflections.map((r, i) => (
+              <li key={i}>
+                <span className="italic text-ash">"{r.question}" — </span>
+                <span className="text-ink">{r.answer}</span>
+              </li>
             ))}
           </ul>
         </section>

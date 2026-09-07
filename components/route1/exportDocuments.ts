@@ -1,14 +1,14 @@
-import { EVIDENCE_ITEMS, PUE_CLAIMS, SPLIT_ITEMS, GAP_REQUIRED_COUNT, TASK1 } from "@/lib/route1";
+import { EVIDENCE_ITEMS, DIMENSIONS, STATEMENT_PROMPTS, STAGE5_CLASSIFICATION, TASK1 } from "@/lib/route1";
 import type { useRoute1 } from "./useRoute1";
-import type { AuditReportData } from "./useAuditReportData";
+import type { DecisionReportData } from "./useDecisionReportData";
 
 type Route1State = ReturnType<typeof useRoute1>;
 
 /** Raw structured answers + correctness flags, for grading/QA — not shown to the learner during the exercise. */
-export function buildReportJson(r1: Route1State, report: AuditReportData, filename: string): string {
+export function buildReportJson(r1: Route1State, report: DecisionReportData, filename: string): string {
   const payload = {
     meta: {
-      day: 7,
+      day: 8,
       route: 1,
       level: TASK1.export.filenameLevel,
       task: TASK1.export.filenameTask,
@@ -16,21 +16,19 @@ export function buildReportJson(r1: Route1State, report: AuditReportData, filena
       name: r1.name,
       exportedAt: new Date().toISOString(),
     },
-    stageA: EVIDENCE_ITEMS.map((it) => {
-      const category = r1.stageACategory[it.id] ?? null;
-      return { id: it.id, text: it.text, category, correctCategory: it.correctCategory, matched: category === it.correctCategory };
+    stage2: EVIDENCE_ITEMS.map((it) => {
+      const verdict = r1.stage2Verdict[it.id] ?? null;
+      return { id: it.id, text: it.text, verdict, correctVerdict: it.correctVerdict, matched: verdict === it.correctVerdict };
     }),
-    stageB: PUE_CLAIMS.map((c) => {
-      const verdict = r1.stageBVerdict[c.id] ?? null;
-      return { id: c.id, claim: c.claim, verdict, correctVerdict: c.correctVerdict, matched: verdict === c.correctVerdict };
+    stage3: EVIDENCE_ITEMS.map((it) => {
+      const dimension = r1.stage3Dimension[it.id] ?? null;
+      return { id: it.id, text: it.text, dimension, correctDimension: it.correctDimension, matched: dimension === it.correctDimension };
     }),
-    stageC: {
-      requiredCount: GAP_REQUIRED_COUNT,
-      selected: report.gaps,
-    },
-    stageD: SPLIT_ITEMS.map((it) => {
-      const side = r1.stageDPlacement[it.id] ?? null;
-      return { id: it.id, text: it.text, side, correctSide: it.correctSide, matched: side === it.correctSide };
+    stage4: STATEMENT_PROMPTS.map((p) => ({ id: p.id, starter: p.starter, answer: r1.stage4Statement[p.id] ?? "" })),
+    stage5: r1.stage5Items.map((it) => {
+      const side = r1.stage5Side[it.id] ?? null;
+      const correctSide = STAGE5_CLASSIFICATION[it.id]?.correctSide ?? null;
+      return { id: it.id, text: it.text, side, correctSide, matched: side === correctSide };
     }),
     report,
   };
@@ -40,19 +38,16 @@ export function buildReportJson(r1: Route1State, report: AuditReportData, filena
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /** Standalone, print-ready HTML document — no external stylesheet, so it opens correctly on its own. */
-export function buildReportHtml(report: AuditReportData): string {
+export function buildReportHtml(report: DecisionReportData): string {
   const list = (items: string[]) => `<ul>${items.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
 
-  const evidence = report.evidenceByCategory
-    .map((g) => `<h3>${esc(g.category)} (${g.items.length})</h3>${list(g.items)}`)
+  const dimensionBlocks = report.byDimension
+    .map((g) => `<h3>${esc(g.dimension)} (${g.items.length})</h3>${list(g.items)}`)
     .join("");
 
-  const pue = report.pueFindings
-    .map((f) => `<li>${esc(f.claim)} — <strong>${esc(f.verdict)}</strong></li>`)
-    .join("");
-
-  const gaps = report.gaps
-    .map((g) => `<li><strong>${esc(g.label)}.</strong> ${esc(g.justification || "(justification pending)")}</li>`)
+  const statements = report.statements
+    .filter((s) => s.answer.trim())
+    .map((s) => `<li>&ldquo;${esc(s.starter)} ${esc(s.answer)}&rdquo;</li>`)
     .join("");
 
   return `<!doctype html>
@@ -73,24 +68,27 @@ export function buildReportHtml(report: AuditReportData): string {
 </style>
 </head>
 <body>
-  <p class="kicker">AION Green IT · Day 7 · Route 1</p>
+  <p class="kicker">AION Green IT · Day 8 · Route 1</p>
   <h1>${esc(TASK1.export.docHeading)}</h1>
   <p class="meta">Analyst: <strong>${esc(report.name)}</strong> &nbsp;·&nbsp; Date: <strong>${esc(report.date)}</strong> &nbsp;·&nbsp; Subject: <strong>${esc(report.caseReference)}</strong></p>
 
-  <h2>Evidence Classification Summary</h2>
-  ${evidence || "<p>—</p>"}
+  <h2>Benefit / Risk Classification</h2>
+  <h3>Benefit (${report.benefits.length})</h3>
+  ${list(report.benefits) || "<p>—</p>"}
+  <h3>Risk / Challenge (${report.risks.length})</h3>
+  ${list(report.risks) || "<p>—</p>"}
 
-  <h2>PUE Validity Findings</h2>
-  <ul>${pue || "<li>—</li>"}</ul>
+  <h2>6-Dimension Mapping</h2>
+  ${dimensionBlocks || "<p>—</p>"}
 
-  <h2>Identified Gaps</h2>
-  <ul>${gaps || "<li>—</li>"}</ul>
+  <h2>Sustainability Statements</h2>
+  <ul>${statements || "<li>—</li>"}</ul>
 
-  <h2>Technical vs. Governance Split Summary</h2>
-  <h3>Technical (${report.splitSummary.technical.length})</h3>
-  ${list(report.splitSummary.technical) || "<p>—</p>"}
-  <h3>Governance (${report.splitSummary.governance.length})</h3>
-  ${list(report.splitSummary.governance) || "<p>—</p>"}
+  <h2>Technical vs. Governance Findings</h2>
+  <h3>Technical (${report.techGovSplit.technical.length})</h3>
+  ${list(report.techGovSplit.technical) || "<p>—</p>"}
+  <h3>Governance (${report.techGovSplit.governance.length})</h3>
+  ${list(report.techGovSplit.governance) || "<p>—</p>"}
 </body>
 </html>`;
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useProgress } from "@/lib/store";
 import { markRouteExported } from "@/lib/routeGating";
 import { useRoute1 } from "./useRoute1";
-import { useAuditReportData } from "./useAuditReportData";
+import { useDecisionReportData } from "./useDecisionReportData";
 import { buildReportJson, buildReportHtml } from "./exportDocuments";
 import { day7ExportFilename, downloadTextFile } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
@@ -16,12 +16,12 @@ import clsx from "clsx";
 /** Sticky bottom export bar. Never disabled — incomplete clicks jump to what's missing instead of doing nothing. */
 export function ExportBar() {
   const r1 = useRoute1();
-  const report = useAuditReportData();
+  const report = useDecisionReportData();
   const toggleCheck = useProgress((s) => s.toggleCheck);
   const [showMissing, setShowMissing] = useState(false);
 
-  const total = 4; // stages A-D, name handled separately in the missing list
-  const doneStages = [r1.stageAComplete, r1.stageBComplete, r1.stageCComplete, r1.stageDComplete].filter(Boolean).length;
+  const total = 4; // stages 2, 3, 4, 5 — the name field is handled separately in the missing list
+  const doneStages = [r1.stage2Complete, r1.stage3Complete, r1.stage4Complete, r1.stage5Complete].filter(Boolean).length;
 
   const handleExport = () => {
     if (!r1.allComplete) {
@@ -52,7 +52,7 @@ export function ExportBar() {
           {r1.missing.length > 0 && <ChevronDown className={clsx("h-3.5 w-3.5 transition-transform duration-150", showMissing && "rotate-180")} />}
         </button>
         <button type="button" onClick={handleExport} className="btn-accent">
-          Export Audit Report
+          Export Decision Brief
         </button>
       </div>
     </div>

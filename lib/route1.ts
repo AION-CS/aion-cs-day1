@@ -1,7 +1,7 @@
 /**
- * Route 1 — Foundations. All learner-facing copy and pure data/math for
- * Day 7 live here so components stay presentational. Case used throughout:
- * GreenStack Hosting (fictional).
+ * Route 1 — Knowledge. All learner-facing copy and pure data live here so
+ * components stay presentational. Case used throughout Task 1: Flexora
+ * Digital Services (fictional).
  */
 
 import type { IconKey } from "@/lib/routes";
@@ -13,29 +13,24 @@ export const LEARNER_NAME_KEY = "learner:name";
 // ---------------------------------------------------------------------------
 export const R1 = {
   name: LEARNER_NAME_KEY,
-  pue: {
-    facility: "r1:pue:facility",
-    it: "r1:pue:it",
+  stage2: {
+    verdict: (itemId: string) => `r1:s2:verdict:${itemId}`,
   },
-  stageA: {
-    category: (itemId: string) => `r1:a:cat:${itemId}`,
+  stage3: {
+    dimension: (itemId: string) => `r1:s3:dim:${itemId}`,
   },
-  stageB: {
-    verdict: (claimId: string) => `r1:b:verdict:${claimId}`,
+  stage4: {
+    statement: (id: string) => `r1:s4:stmt:${id}`,
   },
-  stageC: {
-    selected: (aspectId: string) => `r1:c:sel:${aspectId}`,
-    justification: (aspectId: string) => `r1:c:just:${aspectId}`,
-  },
-  stageD: {
-    placement: (itemId: string) => `r1:d:place:${itemId}`,
+  stage5: {
+    side: (itemId: string) => `r1:s5:side:${itemId}`,
   },
 } as const;
 
 // ---------------------------------------------------------------------------
-// Material — 5 blocks, each pairing prose with an interactive/visual element.
+// Material — 5 blocks, each pairing prose with a custom SVG/visual.
 // ---------------------------------------------------------------------------
-export type MaterialSectionId = "anatomy" | "pathways" | "accounting" | "benchmarks" | "blindspots";
+export type MaterialSectionId = "fundamentals" | "scale" | "tension" | "challenges" | "inefficiency";
 
 export type MaterialSection = {
   id: MaterialSectionId;
@@ -51,492 +46,285 @@ export type MaterialSection = {
 
 export const MATERIAL: MaterialSection[] = [
   {
-    id: "anatomy",
+    id: "fundamentals",
     n: 1,
-    icon: "factory",
-    kicker: "1 · The energy chain",
-    title: "Anatomy of a Data Centre's Energy Flow & the PUE Formula",
+    icon: "layers",
+    kicker: "1 · What cloud actually offers",
+    title: "Cloud Fundamentals & Core Benefits",
     definition:
-      "Grid power entering a data centre travels a fixed chain before any of it does useful computing work: incoming grid supply → primary switchgear → the UPS (uninterruptible power supply) → PDUs (power distribution units) → and only then does it split into IT load (servers, storage, network gear) and facility overhead (cooling plant, lighting, building and security systems).",
+      "Cloud computing means renting standardised compute, storage, and networking capacity from a provider's shared infrastructure over the internet, instead of buying and running your own physical servers. In a corporate context, this typically shows up as six concrete benefits: scalability and elastic use of resources (capacity grows or shrinks with real demand), flexibility (a broad catalogue of services can be combined without new procurement), faster provisioning (a new server or database is available in minutes, not weeks), lower own-infrastructure effort (no data centre space, cooling, or hardware refresh cycles to manage yourself), standardisation (consistent, repeatable configurations across environments), and high availability (workloads run across multiple physical locations, with provider-managed failover).",
     insight:
-      "The UPS is typically the single largest efficiency loss point in that chain — modern double-conversion systems commonly lose 3–6% to the AC–DC–AC conversion and battery buffering alone, before power has reached a single server. PDUs add a further 1–2% loss on top of that. Neither loss shows up anywhere except in the gap between what the grid delivers and what IT equipment actually receives.",
+      "These benefits are not marketing claims — they follow directly from the underlying model. A shared resource pool, exposed through self-service APIs, is what makes elasticity and fast provisioning possible: you are drawing from capacity the provider has already built for thousands of customers, not waiting for your own hardware order to arrive. Standardisation and high availability follow from the same shared-infrastructure logic: the provider maintains one hardened, replicated environment instead of every customer maintaining their own.",
     takeaway:
-      "PUE (Power Usage Effectiveness) is the industry's formal name for that gap: PUE = Total Facility Energy ÷ IT Equipment Energy, where Total Facility Energy = IT Equipment Energy + Cooling + Power Delivery Losses + Lighting + Other Facility Loads. It was introduced by The Green Grid consortium in 2007 as an industry attempt to standardise overhead-efficiency communication, and was later formalised into ISO/IEC 30134-2:2016 — giving it audit-grade legitimacy beyond marketing use.",
+      "Each of these six benefits is real, but each has a boundary condition worth remembering before Task 1: elasticity only helps if actual demand is variable; lower own-infrastructure effort does not mean lower total cost; and standardisation benefits the provider's operating model as much as it benefits you. Keep that pairing — real benefit, real boundary — in mind as you read the next four blocks.",
     callout: {
-      label: "The trap this whole route is built around",
-      text: "PUE is a ratio, not an absolute consumption figure. A facility reporting PUE 1.3 can still consume far more total energy than one reporting PUE 1.6, if the first simply hosts much more IT load. A \"good\" PUE says nothing about total energy footprint, utilisation efficiency, or the carbon intensity of the electricity being used.",
+      label: "Why this matters for the case ahead",
+      text: "Flexora's management is expecting exactly these six benefits from its cloud expansion — more speed, less operating burden. Whether the evidence actually supports that expectation is what Task 1 asks you to test.",
     },
   },
   {
-    id: "pathways",
+    id: "scale",
     n: 2,
-    icon: "supplier",
-    kicker: "2 · Sourcing renewable energy",
-    title: "Five Pathways to Renewable Energy Integration",
+    icon: "factory",
+    kicker: "2 · Economies of scale",
+    title: "Why Cloud Can Be Efficient",
     definition:
-      "\"We run on renewable energy\" can mean five structurally different things in practice, each with a different level of physical control and a different achievable scale: on-site generation, Power Purchase Agreements (PPAs), Guarantees of Origin (GoOs), utility green tariffs, and site selection.",
+      "Hyperscale providers can run data centres at a level of efficiency that is very difficult for an individual company to reach on its own. Three mechanisms explain most of the gap: utilisation (thousands of customers' workloads are pooled onto shared hardware, so servers run closer to full capacity instead of sitting mostly idle), automation (software-defined provisioning, patching, and cooling control replace manual operations at a scale no single enterprise IT team can justify building), and professional data-centre operations (purpose-built facilities with custom cooling, power delivery, and 24/7 specialist operations teams).",
     insight:
-      "On-site generation (solar PV, on-site wind, fuel cells) is physically simplest to defend as \"green\" since the electrons are locally sourced — but it rarely covers 100% of hyperscale load, constrained by space and intermittency. PPAs are long-term contracts (often 10–20 years) with a renewable generator, and come in two forms: physical PPAs, where electrons are delivered into the buyer's own grid region, and virtual/financial PPAs (a contract-for-difference), where the generator's output is sold into the wholesale grid and the buyer instead receives certificates plus a financial hedge against power-price volatility. This is the primary mechanism hyperscalers such as Google and Microsoft use to scale renewable procurement to gigawatt levels.",
+      "The clearest evidence of this gap is PUE (Power Usage Effectiveness — the ratio of total facility energy to IT equipment energy; a lower number means less energy lost to cooling, power delivery, and other overhead). The Uptime Institute's 2026 Global Data Center Survey put the industry-wide annual average PUE at 1.52 (1.36 once larger facilities are weighted proportionally), while leading hyperscale operators report PUEs as low as 1.08, typically in the 1.1–1.2 range for their newest facilities. The average enterprise-operated facility, by contrast, still runs at roughly 2.1 — effectively losing over half of the power it draws to non-IT overhead.",
     takeaway:
-      "Guarantees of Origin (GoOs — the EU equivalent of RECs in the US) are tradable certificates, each representing 1 MWh of renewable generation, purchased entirely separately from the physical electricity supply contract. That separation is what lets a company claim \"100% renewable\" on paper independent of the actual grid mix at its site — and it is why the GHG Protocol Scope 2 Guidance (2015) requires two parallel reporting methods: location-based (the average emissions factor of the local grid) and market-based (reflecting contractual instruments like GoOs, RECs, and PPAs). The same facility can report very different \"green\" figures depending on which method is emphasised.",
+      "This is the strongest technical and economic argument for moving workloads to the cloud: a well-run hyperscale facility can deliver the same computing work using meaningfully less energy per unit of IT load than most companies' own data centres. That argument is about efficiency per unit of work, though — not about what happens to total energy demand once migration makes computing cheaper and easier to consume. That distinction is exactly where the next block picks up.",
     callout: {
-      label: "Worked comparison",
-      text: "Utility green tariffs (buying a \"green tariff\" from a supplier, typically bundled with GoOs) and site selection (choosing locations with a naturally high renewable grid share, e.g. Nordic hydro/wind) round out the five — see the comparison below for how much direct control each pathway gives you versus how much of a large facility's load it can realistically cover.",
+      label: "Source and currency of these figures",
+      text: "Figures above are from the Uptime Institute's 2026 Global Data Center Survey. PUE benchmarks shift year to year as facilities are built and retired — always check the current-year survey before quoting a number in a real report.",
     },
   },
   {
-    id: "accounting",
+    id: "tension",
     n: 3,
-    icon: "certificate",
-    kicker: "3 · Paper vs. physics",
-    title: "Accounting Reality vs. Physical Reality",
-    definition:
-      "Annual/aggregate certificate matching allows a data centre running 24/7 in a coal-heavy grid region to purchase solar certificates generated at midday in a sunny region, and legitimately call itself \"100% renewable\" under market-based accounting — even though at 2 a.m. it is physically drawing power that is close to 100% fossil-based.",
-    insight:
-      "This is legal under current Scope 2 methodology, but it has drawn sustained criticism from energy researchers for lacking \"additionality\" (does the purchase cause new renewable capacity to be built?) and \"temporal matching\" (does the renewable generation actually coincide with the hour of consumption?). A certificate bought for its calendar-year total says nothing about what was on the wire at the moment the servers were drawing power.",
-    takeaway:
-      "Google's 24/7 Carbon-Free Energy (CFE) initiative, publicly reported since roughly 2020, is the industry's most rigorous alternative: matching renewable generation to actual hourly consumption in each specific grid region, rather than annual aggregate matching — explicitly designed to close this accounting-vs-physical gap. Treat any \"100% renewable\" claim as a claim about accounting until you know which matching standard produced it.",
-    callout: {
-      label: "Industry callout",
-      text: "\"Additionality\" and \"temporal matching\" are the two words to listen for in any renewable-energy claim — their absence is exactly what makes annual certificate matching cheaper, and exactly what makes it weaker evidence, than hourly matching.",
-    },
-  },
-  {
-    id: "benchmarks",
-    n: 4,
-    icon: "gavel",
-    kicker: "4 · Benchmarks and the law",
-    title: "Interpreting PUE: Benchmarks and Regulatory Reality",
-    definition:
-      "The Uptime Institute Global Data Center Survey has tracked the industry-average reported PUE declining from roughly 2.5 in 2007 to plateauing around 1.55–1.58 in recent survey years (2020–2023) — diminishing returns on the easy efficiency gains at industry scale. Purpose-built hyperscale facilities (Google, Microsoft, Meta) report fleet-wide average PUEs often in the 1.1–1.2 range, achieved through custom cooling (free cooling, direct liquid cooling) and scale effects unavailable to smaller or legacy operators.",
-    insight:
-      "Germany's Energieeffizienzgesetz (EnEfG), in force since 18 November 2023 (BGBl. 2023 I Nr. 309), is currently the strictest data centre efficiency law in Europe. Under the originally enacted thresholds (§11 EnEfG): existing data centres (commissioned before 1 July 2026) must reach an annual-average PUE of ≤1.5 from 1 July 2027, tightening to ≤1.3 from 1 July 2030; new data centres (commissioned on or after 1 July 2026) must reach ≤1.2 within two years of commissioning. The law also mandates minimum waste-heat reuse quotas (10% from July 2026, 15% from July 2027, 20% from July 2028) and mandatory ISO 50001/EMAS energy management systems by 1 July 2025.",
-    takeaway:
-      "Even hard law evolves under industry pressure: a draft amendment published 9 April 2026 by the German Federal Ministry for Economic Affairs and Energy proposes easing these thresholds — existing data centres to ≤1.6 (2027) and ≤1.4 (2030), new data centres to ≤1.3 — reflecting pushback on implementation costs. As of this material's writing, the original 2023 thresholds remain the enacted law; the amendment is only a draft. Treat this as a live example of the tension between ambition and feasibility in sustainability regulation, not as a settled outcome.",
-    callout: {
-      label: "Regulatory watch",
-      text: "The gauge below defaults to the 2023 enacted thresholds. Toggle it to see the 9 April 2026 draft amendment's proposed easing side by side — and note which one is actually law right now.",
-    },
-  },
-  {
-    id: "blindspots",
-    n: 5,
     icon: "target",
-    kicker: "5 · What the number hides",
-    title: "What PUE Does Not Tell You",
+    kicker: "3 · The tension this route is built around",
+    title: "The Core Tension — Economies of Scale vs Energy Demand",
     definition:
-      "PUE captures exactly one thing precisely: the ratio of total facility energy to IT equipment energy. Everything else in a sustainability claim has to come from somewhere else.",
+      "Migrating to the cloud does not automatically make an organisation more sustainable, even though the underlying infrastructure is more efficient. The reason is a rebound effect: as computing becomes cheaper, faster to provision, and easier to consume (exactly the benefits described in Block 1), organisations tend to consume more of it — more environments, more data retained, more experiments spun up and left running. A rising efficiency curve and a rising total-demand curve can move in the same direction at the same time.",
     insight:
-      "A data centre can report an excellent PUE of 1.1 while running on 100% coal power — PUE says nothing about the electricity source, and the same PUE value can represent very different carbon footprints depending on location. A facility full of idle, under-utilised servers can still report a \"good\" PUE, because PUE only measures the ratio of facility overhead to whatever IT load exists, not whether that IT load is being used efficiently. Cooling strategies that lower PUE — evaporative cooling, for instance — can significantly increase water consumption, a cost captured only by a separate metric, WUE (Water Usage Effectiveness). And PUE says nothing about total footprint or embodied carbon: emissions embedded in building materials, hardware manufacturing, or total absolute energy draw.",
+      "This mirrors a pattern economists have observed since the 19th century (Jevons' paradox): making a resource more efficient to use often increases total consumption of it, rather than reducing it, because the lower cost per unit removes a natural brake on demand. In a corporate cloud context, this shows up very concretely — a lower friction to spin up a new cloud resource (Block 1's \"faster provisioning\") is also a lower friction to leave that resource running unused (a direct link to Block 5's \"sources of inefficiency\").",
     takeaway:
-      "The professional companion metric is REF (Renewable Energy Factor), standardised in ISO/IEC 30134-3, which — unlike PUE — directly measures the proportion of renewable energy used. A mature sustainability assessment reports PUE and REF together, never PUE alone.",
+      "The practical consequence: whether a specific cloud migration is genuinely more sustainable depends less on which provider you choose, and more on whether the organisation actively manages the demand side — governance over what gets provisioned, and discipline about decommissioning what is no longer needed. A provider's efficiency is a ceiling on how sustainable your cloud use can be; it is not a guarantee.",
     callout: {
-      label: "Bridge into Task 1",
-      text: "GreenStack Hosting, the case you're about to audit, leans almost entirely on PUE for its sustainability story. Everything in this block is a candidate gap in that story — keep the five in mind as you read the case brief.",
+      label: "You'll see this again",
+      text: "The diagram below reappears, smaller, at the start of Task 1 — Flexora's own numbers are a live example of efficiency and total demand moving in opposite directions from what management expects.",
+    },
+  },
+  {
+    id: "challenges",
+    n: 4,
+    icon: "shield",
+    kicker: "4 · What commonly goes wrong",
+    title: "Typical Challenges of Cloud Use",
+    definition:
+      "Beyond the sustainability question, six challenges recur across organisations adopting cloud at scale: vendor dependency and lock-in (proprietary services make switching providers costly), lack of transparency (usage and cost data is often scattered across teams and dashboards), cost control — FinOps (spend is usage-based and can grow silently without active management), data sovereignty (data may be legally required to stay within a jurisdiction, e.g. under GDPR), governance gaps (no consistent policy for who can provision what), and security & compliance risk (shared responsibility models mean the customer, not just the provider, must correctly configure security controls).",
+    insight:
+      "These six are not independent — they compound. A governance gap (no policy on who can order cloud services) is very often the root cause behind both a transparency problem (nobody has full visibility) and a cost-control problem (spend accumulates unnoticed across many small, individually-approved purchases). Vendor lock-in and data sovereignty are more structural: they are consequences of specific technical and legal choices made early in an adoption, and are expensive to reverse later.",
+    takeaway:
+      "Every one of these six challenges maps onto one of the six dimensions in the wheel at the end of this material — that mapping is the framework you will actually use in Task 1, not just a list to memorise.",
+    callout: {
+      label: "Not a reason to avoid cloud",
+      text: "None of these six challenges argue against cloud adoption itself — they argue for adopting it deliberately, with governance and monitoring built in from the start rather than added after problems appear.",
+    },
+  },
+  {
+    id: "inefficiency",
+    n: 5,
+    icon: "recycleLoop",
+    kicker: "5 · Where the waste actually comes from",
+    title: "Sources of Inefficiency",
+    definition:
+      "Even on efficient hyperscale infrastructure, an organisation's own cloud usage can be highly wasteful. Five patterns account for most of it: over-provisioning (requesting more capacity than a workload needs, \"just in case\"), unmanaged self-service usage (any team can spin up resources with no review), unnecessary data retention (storing data indefinitely with no lifecycle or deletion policy), zombie or idle workloads (resources left running after the project that needed them has ended), and poor architecture decisions (an application designed without cost or efficiency in mind, e.g. always-on compute for a workload that runs once a day).",
+    insight:
+      "Each of these is a demand-side problem, not a supply-side one — none of it is fixed by choosing a more efficient hyperscale provider, because the underlying resource is being consumed unnecessarily in the first place. This is the direct, practical face of Block 3's rebound effect: the same low friction that makes cloud fast and convenient (Block 1) is what allows over-provisioning and zombie workloads to accumulate unnoticed.",
+    takeaway:
+      "This is also the most actionable list in this material: unlike the provider's own PUE or hardware roadmap, every one of these five sources of waste is within the customer organisation's own control, starting with visibility into what is actually running.",
+    callout: {
+      label: "Before you move on",
+      text: "The wheel below is a summary of everything in this material as one working framework. Study it — you will use it directly, as an interactive tool, in Stage 3 of Task 1.",
     },
   },
 ];
 
 // ---------------------------------------------------------------------------
-// PUE worked-example calculator + benchmark constants (Block 1 / Block 4)
+// The 6-Dimension Wheel — used as a materials summary and, functionally, as
+// the Stage 3 drag target in Task 1.
 // ---------------------------------------------------------------------------
-export function calcPue(facilityKw: number, itKw: number): number {
-  if (itKw <= 0) return 0;
-  return facilityKw / itKw;
-}
+export type DimensionId = "scalability" | "cost" | "controllability" | "sustainability" | "governance" | "dependencies";
 
-export const PUE_BENCHMARKS = {
-  theoreticalMin: 1.0,
-  hyperscaleLow: 1.1,
-  hyperscaleHigh: 1.2,
-  industryAverageLow: 1.55,
-  industryAverageHigh: 1.58,
-  legacyPoor: 2.0,
-} as const;
-
-export type EnEfGThresholds = {
-  existing2027: number;
-  existing2030: number;
-  newFacility: number;
-};
-
-export const ENEFG_2023_ENACTED: EnEfGThresholds = {
-  existing2027: 1.5,
-  existing2030: 1.3,
-  newFacility: 1.2,
-};
-
-export const ENEFG_2026_DRAFT: EnEfGThresholds = {
-  existing2027: 1.6,
-  existing2030: 1.4,
-  newFacility: 1.3,
-};
-
-// ---------------------------------------------------------------------------
-// Pathway comparison (Block 2) — qualitative, illustrative indicators only;
-// deliberately not dressed up as precise statistics.
-// ---------------------------------------------------------------------------
-export type PathwayLevel = "low" | "medium" | "high";
-
-export type Pathway = {
-  id: string;
+export type Dimension = {
+  id: DimensionId;
   label: string;
-  detail: string;
-  control: PathwayLevel;
-  scale: PathwayLevel;
-  scaleLabel: string;
+  question: string;
 };
 
-export const PATHWAYS: Pathway[] = [
-  {
-    id: "onsite",
-    label: "On-site generation",
-    detail: "Solar PV, on-site wind, fuel cells — locally sourced electrons.",
-    control: "high",
-    scale: "low",
-    scaleLabel: "Rarely covers 100% of hyperscale load",
-  },
-  {
-    id: "ppa",
-    label: "Power Purchase Agreements",
-    detail: "Physical or virtual/financial, 10–20 year contracts with a generator.",
-    control: "medium",
-    scale: "high",
-    scaleLabel: "Scales to gigawatt-level procurement",
-  },
-  {
-    id: "goo",
-    label: "Guarantees of Origin",
-    detail: "Certificates bought separately from the physical power contract.",
-    control: "low",
-    scale: "high",
-    scaleLabel: "Can cover 100% of load on paper",
-  },
-  {
-    id: "tariff",
-    label: "Utility green tariffs",
-    detail: "A green tariff from your supplier, usually bundled with GoOs.",
-    control: "low",
-    scale: "medium",
-    scaleLabel: "Bounded by the supplier's offering",
-  },
-  {
-    id: "site",
-    label: "Site selection",
-    detail: "Locating in a grid region with naturally high renewable share.",
-    control: "medium",
-    scale: "medium",
-    scaleLabel: "Depends entirely on where you can build",
-  },
+export const DIMENSIONS: Dimension[] = [
+  { id: "scalability", label: "Scalability", question: "Can capacity grow or shrink with real demand, without a slow procurement cycle?" },
+  { id: "cost", label: "Cost", question: "Is total spend predictable, and does it track the value actually delivered?" },
+  { id: "controllability", label: "Controllability", question: "Does the organisation have visibility and control over what is running, and who ordered it?" },
+  { id: "sustainability", label: "Sustainability", question: "Is the environmental claim backed by real data — not just a certificate or a good PUE?" },
+  { id: "governance", label: "Governance", question: "Are there clear policies, ownership, and approval paths for how cloud is used?" },
+  { id: "dependencies", label: "Dependencies", question: "How hard would it be to leave this provider, or negotiate on equal terms?" },
 ];
 
 // ---------------------------------------------------------------------------
-// Case brief — GreenStack Hosting (Task 1)
+// Case brief — Flexora Digital Services (Task 1)
 // ---------------------------------------------------------------------------
 export const CASE_BRIEF = {
-  company: "GreenStack Hosting",
+  company: "Flexora Digital Services",
   setup:
-    "GreenStack Hosting operates its own data centre and communicates externally that it is \"highly sustainable.\" Its evidence: certified green electricity purchases and an improved PUE value over the past two years. At the same time: strong seasonal load fluctuations, little transparency about individual consumption areas, heavy management reliance on the PUE figure for external communication, and Finance questioning the economic viability of the chosen approach.",
+    "Flexora Digital Services is growing strongly, has so far operated a mix of local infrastructure and individual cloud services, and plans to move further applications to the cloud. Management expects this to bring more speed and a lower operating burden. At the same time, there is uncertainty about cost development, controllability, and sustainability impact.",
   role:
-    "Your role: sustainability analyst. Audit this claim the way a professional would — systematically, not on gut feeling.",
+    "Your role: cloud strategy analyst. Work through the evidence systematically — the same way a professional would before recommending a course of action to management.",
 } as const;
 
 // ---------------------------------------------------------------------------
-// Stage A — Evidence Sorter: 6 categories, 12 statements
+// Evidence cards — shared across Stages 2 and 3.
 // ---------------------------------------------------------------------------
-export type CategoryId = "energy-source" | "operating-model" | "metrics" | "communication" | "cost" | "credibility";
-
-export const CATEGORIES: { id: CategoryId; label: string }[] = [
-  { id: "energy-source", label: "Energy Source" },
-  { id: "operating-model", label: "Operating Model" },
-  { id: "metrics", label: "Metrics" },
-  { id: "communication", label: "Communication" },
-  { id: "cost", label: "Cost" },
-  { id: "credibility", label: "Credibility" },
-];
+export type Verdict2 = "benefit" | "risk";
 
 export type EvidenceItem = {
   id: string;
   text: string;
-  correctCategory: CategoryId;
-  clue: string;
+  correctVerdict: Verdict2;
+  verdictClue: string;
+  correctDimension: DimensionId;
+  dimensionClue: string;
 };
 
 export const EVIDENCE_ITEMS: EvidenceItem[] = [
   {
-    id: "ev-goo",
-    text: "GreenStack purchases Guarantees of Origin to cover 100% of its annual electricity consumption on paper.",
-    correctCategory: "energy-source",
-    clue: "Does this describe where the electrons physically come from, or how they're accounted for on paper?",
+    id: "ev-departments",
+    text: "Several departments order cloud services independently.",
+    correctVerdict: "risk",
+    verdictClue: "If nobody has a full picture of what's being ordered, is that closer to a benefit of moving fast, or a risk of losing oversight?",
+    correctDimension: "controllability",
+    dimensionClue: "Which dimension is directly about whether the organisation can see and control what is running and who ordered it?",
   },
   {
-    id: "ev-gridmix",
-    text: "The facility's physical grid connection draws from a national grid mix that is only partially renewable, especially overnight.",
-    correctCategory: "energy-source",
-    clue: "Is this about the contract GreenStack signed, or about the physical reality of the grid at any given hour?",
+    id: "ev-governance",
+    text: "There is no uniform cloud governance.",
+    correctVerdict: "risk",
+    verdictClue: "\"No uniform policy\" — is that ever a strength, or is it always at least a gap waiting to cause a problem?",
+    correctDimension: "governance",
+    dimensionClue: "This one names the dimension almost directly in the word itself.",
   },
   {
-    id: "ev-pue-trend",
-    text: "GreenStack's reported PUE has improved from 1.7 to 1.4 over the past two years.",
-    correctCategory: "metrics",
-    clue: "Is a PUE trend a source of energy, or a way of measuring something?",
+    id: "ev-internal-ops",
+    text: "Internal server operations are partly inefficient, but easy to control.",
+    correctVerdict: "benefit",
+    verdictClue: "Read this as a reason FOR the cloud move, not a warning about it — what does \"partly inefficient\" internal infrastructure suggest cloud could improve?",
+    correctDimension: "cost",
+    dimensionClue: "Inefficient operations usually show up on which line of a budget?",
   },
   {
-    id: "ev-no-submeter",
-    text: "No sub-metering exists to show which specific systems or racks are driving the improvement in PUE.",
-    correctCategory: "metrics",
-    clue: "Can you verify a trend without knowing which parts of the system are actually changing?",
+    id: "ev-costs-rising",
+    text: "Cloud costs are rising faster than expected.",
+    correctVerdict: "risk",
+    verdictClue: "\"Faster than expected\" is a phrase about a plan going wrong, not right — which side does that put it on?",
+    correctDimension: "cost",
+    dimensionClue: "This one is direct: which dimension is literally about spend?",
   },
   {
-    id: "ev-marketing",
-    text: "Marketing materials describe GreenStack as \"highly sustainable\" primarily by citing the improved PUE figure and the green-energy certificates.",
-    correctCategory: "communication",
-    clue: "Is this a fact about the facility itself, or about how that fact is being talked about externally?",
+    id: "ev-data-growth",
+    text: "Data volumes and storage requirements are continuously increasing.",
+    correctVerdict: "benefit",
+    verdictClue: "Re-read Block 1 — which cloud benefit exists specifically to absorb continuously growing demand without a slow procurement cycle?",
+    correctDimension: "scalability",
+    dimensionClue: "Continuously growing demand is the exact scenario one dimension is designed to answer for.",
   },
   {
-    id: "ev-no-breakdown",
-    text: "Management has not published any figures on renewable share, carbon intensity, or utilisation alongside the PUE number.",
-    correctCategory: "communication",
-    clue: "What's missing here — a source of energy, or a category of information in a public statement?",
-  },
-  {
-    id: "ev-seasonal",
-    text: "The facility experiences strong seasonal load fluctuations, with summer peak demand roughly double the winter baseline.",
-    correctCategory: "operating-model",
-    clue: "Does \"summer vs. winter demand\" describe how the business runs day to day, or how it talks to the public?",
-  },
-  {
-    id: "ev-siloed",
-    text: "IT and Facilities track energy-related data separately, and neither team has full visibility into the other's consumption patterns.",
-    correctCategory: "operating-model",
-    clue: "Is a data-visibility gap between two internal teams about the outside world, or about how the operation itself is run?",
-  },
-  {
-    id: "ev-finance",
-    text: "Finance has publicly questioned whether the current efficiency investments are paying back fast enough to justify their cost.",
-    correctCategory: "cost",
-    clue: "Is Finance raising a concern about the electricity source, or about whether money spent is paying off?",
-  },
-  {
-    id: "ev-premium",
-    text: "The renewable electricity purchase agreements were signed on a multi-year basis, locking in a fixed premium over standard grid tariffs.",
-    correctCategory: "cost",
-    clue: "A fixed premium locked in for years — is that a technical fact or a financial commitment?",
-  },
-  {
-    id: "ev-no-verify",
-    text: "No third party has independently verified GreenStack's sustainability claims or underlying data.",
-    correctCategory: "credibility",
-    clue: "Is \"nobody checked this from outside\" a fact about energy, or about how much you should trust the claim?",
-  },
-  {
-    id: "ev-ambiguous-reading",
-    text: "GreenStack has never disclosed whether its PUE figure is a single point-in-time reading or a continuous annual average.",
-    correctCategory: "credibility",
-    clue: "Not knowing if a number is a snapshot or an average — does that change what's being measured, or whether you can trust it?",
+    id: "ev-sustainability-pr",
+    text: "Management would also like to communicate the cloud as a sustainability success.",
+    correctVerdict: "risk",
+    verdictClue: "Wanting to communicate something as a success is not the same as having the evidence for it — re-read Block 3 on the difference between efficiency and total demand.",
+    correctDimension: "sustainability",
+    dimensionClue: "Which dimension asks whether a claim like this is actually backed by data?",
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Stage B — PUE Claim Validity Check: 5 claims, 3-way verdict
+// Stage 4 — three sentence-starter statements.
 // ---------------------------------------------------------------------------
-export type Verdict = "supported" | "not-supported" | "partial";
-
-export const VERDICT_OPTIONS: { id: Verdict; label: string }[] = [
-  { id: "supported", label: "Supported" },
-  { id: "not-supported", label: "Not Supported" },
-  { id: "partial", label: "Partially Supported" },
-];
-
-export type PueClaim = {
+export type StatementPrompt = {
   id: string;
-  claim: string;
-  correctVerdict: Verdict;
-  clue: string;
+  starter: string;
+  helper: string;
 };
 
-export const PUE_CLAIMS: PueClaim[] = [
+export const STATEMENT_PROMPTS: StatementPrompt[] = [
   {
-    id: "claim-overall-sustainable",
-    claim: "GreenStack's improving PUE proves the data centre is becoming more environmentally sustainable overall.",
-    correctVerdict: "partial",
-    clue: "Does better PUE contribute real evidence toward \"sustainable,\" or does it prove the whole claim on its own? Re-read Block 5's list of what PUE leaves out.",
+    id: "genuinely-sustainable",
+    starter: "Cloud use is genuinely sustainable when",
+    helper: "Think back to Block 3 — what has to be true about both efficiency AND total demand.",
   },
   {
-    id: "claim-conversion-efficiency",
-    claim: "GreenStack's improving PUE shows the facility is converting a growing share of incoming power into usable IT capacity, rather than losing it to overhead.",
-    correctVerdict: "supported",
-    clue: "Re-read: what does PUE's denominator — IT Equipment Energy — actually represent?",
+    id: "fails-sustainable",
+    starter: "A cloud migration fails to be sustainable if",
+    helper: "Consider which of Block 5's sources of inefficiency would undo an efficient provider's advantage.",
   },
   {
-    id: "claim-physically-renewable",
-    claim: "Because GreenStack buys certified green electricity, its data centre is physically powered by renewable energy at every hour of the day.",
-    correctVerdict: "not-supported",
-    clue: "Re-read Block 3 — does an annual certificate guarantee what's actually on the grid at 2 a.m.?",
-  },
-  {
-    id: "claim-utilisation",
-    claim: "A lower PUE means GreenStack's servers are being used more efficiently, with less idle capacity.",
-    correctVerdict: "not-supported",
-    clue: "Re-read Block 5 — PUE is a ratio against \"whatever IT load exists.\" Does that load have to be efficiently used?",
-  },
-  {
-    id: "claim-ref-together",
-    claim: "GreenStack's PUE trend, on its own, is useful evidence but should be read alongside its REF (Renewable Energy Factor) before drawing any sustainability conclusion.",
-    correctVerdict: "supported",
-    clue: "Re-read Block 5's closing sentence about what a mature assessment reports together.",
+    id: "theoretical-vs-real",
+    starter: "The difference between theoretical cloud efficiency and real sustainable use is",
+    helper: "This is the whole route's core idea in one sentence — what a provider's infrastructure makes possible versus what an organisation actually does with it.",
   },
 ];
 
+export const STATEMENT_MIN_WORDS = 10;
+
 // ---------------------------------------------------------------------------
-// Stage C — Gap Finder: 8 candidate aspects, pick exactly 3
+// Stage 5 — Technical vs. Management/Governance split of Stage 2's "risk"
+// items. The working set is derived live from the learner's own Stage 2
+// verdicts (see useRoute1) — the classification below is reference data for
+// every evidence item that CAN appear here, used to drive clues and the
+// report, not to gate which items show up.
 // ---------------------------------------------------------------------------
-export type GapAspect = {
-  id: string;
-  label: string;
-  description: string;
+export type Side5 = "technical" | "governance";
+
+export const STAGE5_CLASSIFICATION: Record<string, { correctSide: Side5; clue: string }> = {
+  "ev-departments": {
+    correctSide: "technical",
+    clue: "Is there a centralised, self-service provisioning tool with guardrails in place — or is that capability simply missing?",
+  },
+  "ev-governance": {
+    correctSide: "governance",
+    clue: "A missing policy is a decision no one has made yet — whose job is it to make it?",
+  },
+  "ev-costs-rising": {
+    correctSide: "technical",
+    clue: "Re-read Block 5 — rising costs very often trace back to a specific, fixable technical pattern on that list.",
+  },
+  "ev-sustainability-pr": {
+    correctSide: "governance",
+    clue: "Deciding what to tell the outside world about sustainability — is that produced by engineers, or approved by leadership?",
+  },
 };
-
-export const GAP_ASPECTS: GapAspect[] = [
-  {
-    id: "renewable-transparency",
-    label: "Renewable share transparency",
-    description: "How much of actual consumption — not just certificates — is renewable, and when.",
-  },
-  {
-    id: "carbon-intensity",
-    label: "Carbon intensity of the grid",
-    description: "The gCO₂/kWh of the physical grid region the facility actually draws from.",
-  },
-  {
-    id: "utilisation-rate",
-    label: "Utilisation rate",
-    description: "How much of the running IT capacity is actually doing useful work.",
-  },
-  {
-    id: "water-usage",
-    label: "Water usage",
-    description: "Water consumed by the cooling strategy, tracked separately from PUE via WUE.",
-  },
-  {
-    id: "load-profile-granularity",
-    label: "Load profile granularity",
-    description: "Consumption broken down by time period and by system, not just an annual total.",
-  },
-  {
-    id: "cost-per-workload",
-    label: "Cost-per-workload data",
-    description: "What it actually costs to run a given unit of computing work, not just total spend.",
-  },
-  {
-    id: "third-party-verification",
-    label: "Third-party verification",
-    description: "Independent audit of the claims and the data behind them.",
-  },
-  {
-    id: "waste-heat-reuse",
-    label: "Waste-heat reuse",
-    description: "Whether heat rejected by the facility is captured and reused elsewhere.",
-  },
-];
-
-export const GAP_JUSTIFICATION_MIN_WORDS = 15;
-export const GAP_REQUIRED_COUNT = 3;
-
-// ---------------------------------------------------------------------------
-// Stage D — Technical vs. Governance Split: curated 8-item subset
-// ---------------------------------------------------------------------------
-export type Side = "technical" | "governance";
-
-export type SplitItem = {
-  id: string;
-  text: string;
-  correctSide: Side;
-  clue: string;
-};
-
-export const SPLIT_ITEMS: SplitItem[] = [
-  {
-    id: "ev-gridmix",
-    text: "The facility's physical grid connection draws from a national grid mix that is only partially renewable, especially overnight.",
-    correctSide: "technical",
-    clue: "Is this something measured at the meter, or something decided in a policy?",
-  },
-  {
-    id: "ev-pue-trend",
-    text: "GreenStack's reported PUE has improved from 1.7 to 1.4 over the past two years.",
-    correctSide: "technical",
-    clue: "A number produced by measurement — whose job is it to act on that, an engineer's or a policy-maker's?",
-  },
-  {
-    id: "ev-no-submeter",
-    text: "No sub-metering exists to show which specific systems or racks are driving the improvement in PUE.",
-    correctSide: "technical",
-    clue: "Is \"we don't have this instrument installed\" a strategy decision, or a gap in physical measurement capability?",
-  },
-  {
-    id: "ev-seasonal",
-    text: "The facility experiences strong seasonal load fluctuations, with summer peak demand roughly double the winter baseline.",
-    correctSide: "technical",
-    clue: "Does \"summer demand is double winter demand\" describe a rule someone wrote, or a physical pattern in the workload?",
-  },
-  {
-    id: "ev-marketing",
-    text: "Marketing materials describe GreenStack as \"highly sustainable\" primarily by citing the improved PUE figure and the green-energy certificates.",
-    correctSide: "governance",
-    clue: "Is a marketing claim produced by engineers, or by whoever approves external communication?",
-  },
-  {
-    id: "ev-no-breakdown",
-    text: "Management has not published any figures on renewable share, carbon intensity, or utilisation alongside the PUE number.",
-    correctSide: "governance",
-    clue: "Choosing what to publish and what not to — is that a technical constraint, or a decision someone made?",
-  },
-  {
-    id: "ev-finance",
-    text: "Finance has publicly questioned whether the current efficiency investments are paying back fast enough to justify their cost.",
-    correctSide: "governance",
-    clue: "Is Finance's concern about a physical system, or about how money and priorities are managed?",
-  },
-  {
-    id: "ev-no-verify",
-    text: "No third party has independently verified GreenStack's sustainability claims or underlying data.",
-    correctSide: "governance",
-    clue: "Is \"nobody from outside checked this\" a technical limitation, or a choice about oversight and assurance?",
-  },
-];
 
 // ---------------------------------------------------------------------------
 // Task 1 — copy
 // ---------------------------------------------------------------------------
 export const TASK1 = {
   kicker: "Task 1",
-  heading: "Sustainability Claim Auditor",
-  subtext:
-    "Work through the four stages below in any order — nothing is locked. Each one feeds a section of the Audit Findings Report on the right, which is what you'll actually export.",
-  orderBanner: "Suggested order: A → B → C → D. You can work in any order.",
-  stageA: {
-    heading: "Stage A — Evidence Sorter",
-    instructions:
-      "Sort each piece of evidence from the case into the category it actually belongs to. Click a statement, pick a category, and use Show Clue if you're unsure — it points at the reasoning, not the answer.",
+  heading: "Flexora Cloud Decision Audit",
+  intro:
+    "Flexora Digital Services is a fictional company, built to let you apply everything from the material above. Work through the six stages below — nothing is locked, and each one feeds the live Decision Brief on the right, which is what you'll actually export.",
+  orderBanner: "Suggested order: Stage 1 → 6. You can work in any order — the report on the right fills in as you go, whichever stage you start with.",
+  stage1: {
+    heading: "Stage 1 — Case Briefing",
+    instructions: "Read the dossier and click each evidence card to expand it. These six cards are what you'll classify in Stages 2 and 3.",
   },
-  stageB: {
-    heading: "Stage B — PUE Claim Validity Check",
+  stage2: {
+    heading: "Stage 2 — Sort: Benefit vs Risk",
     instructions:
-      "For each claim, decide whether GreenStack's PUE data actually supports it, doesn't support it, or partially supports it.",
+      "Drag each of the six evidence cards into Benefit or Risk / Challenge — or tap a card, then tap a bucket. Use the clue if you're unsure; undo/redo freely.",
   },
-  stageC: {
-    heading: "Stage C — Gap Finder",
+  stage3: {
+    heading: "Stage 3 — Classify into the 6-Dimension Wheel",
     instructions:
-      "Select exactly the 3 aspects you judge most critical for a realistic assessment of GreenStack's claim, and justify each in a sentence or two.",
+      "Now drag the same six cards onto the wheel — one segment each, whichever dimension the evidence is most dominantly about. A card can only touch one segment: pick the strongest fit.",
   },
-  stageD: {
-    heading: "Stage D — Technical vs. Governance Split",
+  stage4: {
+    heading: "Stage 4 — Write 3 Sustainability Statements",
+    instructions: "Complete each sentence in your own words, grounded in the material and in Flexora's situation.",
+  },
+  stage5: {
+    heading: "Stage 5 — Technical vs Management Sort",
     instructions:
-      "Drag (or tap, then tap a zone) each observation into Technical Topic or Management & Governance Topic. Undo/redo freely — nothing here is final until you export.",
+      "Every card you tagged Risk in Stage 2 appears below. Classify each as an Individual Technical Problem or a Management / Governance Problem.",
+    empty: "Nothing to classify yet — tag at least one card as Risk in Stage 2 first. This section stays open; it will fill in as soon as you do.",
+  },
+  stage6: {
+    heading: "Stage 6 — Live Report",
+    instructions: "A read-only recap of everything above, and the structured brief it produces — ready to export once every stage is complete.",
   },
   export: {
-    docHeading: "Audit Findings Report",
+    docHeading: "Cloud Decision Audit Brief",
     filenameLevel: 1,
     filenameTask: 1,
   },

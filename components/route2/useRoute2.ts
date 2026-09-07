@@ -9,6 +9,7 @@ import {
   OPTION_IDS,
   FOLLOWUP_COUNT,
   RISK_COUNT,
+  REFLECTION_PROMPTS,
   type OptionId,
   type CriterionId,
 } from "@/lib/route2";
@@ -21,8 +22,9 @@ export function useRoute2() {
   const notes = useProgress((s) => s.notes);
 
   const name = hydrated ? notes[R2.name] ?? "" : "";
+  const nameComplete = name.trim().length > 0;
 
-  // --- Criterion picks: criterionId -> option -> statementId ---------------
+  // --- Stage 2 — criterion picks: criterionId -> option -> statementId ------
   const picks = useMemo(() => {
     const map: Record<string, Partial<Record<OptionId, string>>> = {};
     if (!hydrated) return map;
@@ -44,65 +46,70 @@ export function useRoute2() {
     return stmt?.score ?? 0;
   };
 
-  const criterionDoneCount = (criterionId: CriterionId) =>
-    OPTION_IDS.filter((opt) => !!picks[criterionId]?.[opt]).length;
+  const criterionDoneCount = (criterionId: CriterionId) => OPTION_IDS.filter((opt) => !!picks[criterionId]?.[opt]).length;
 
-  const criteriaComplete = CRITERIA.every((c) => criterionDoneCount(c.id) === OPTION_IDS.length);
-  const criteriaDoneCount = CRITERIA.reduce((sum, c) => sum + criterionDoneCount(c.id), 0);
-  const criteriaTotal = CRITERIA.length * OPTION_IDS.length;
+  const stage2Complete = CRITERIA.every((c) => criterionDoneCount(c.id) === OPTION_IDS.length);
+  const stage2DoneCount = CRITERIA.reduce((sum, c) => sum + criterionDoneCount(c.id), 0);
+  const stage2Total = CRITERIA.length * OPTION_IDS.length;
 
-  // --- Decision --------------------------------------------------------------
-  const decisionPick = hydrated ? (choices[R2.decisionPick] as OptionId | undefined) ?? "" : "";
-  const decisionJustify = hydrated ? notes[R2.decisionJustify] ?? "" : "";
+  // --- Stage 3 — Make the Call ------------------------------------------------
+  const pick = hydrated ? (choices[R2.pick] as OptionId | undefined) ?? "" : "";
+  const justify = hydrated ? notes[R2.justify] ?? "" : "";
+  const pickComplete = !!pick;
+  const justifyComplete = justify.trim().length > 0;
+  const stage3Complete = pickComplete && justifyComplete;
 
+  // --- Stage 4 — Follow-up decisions ------------------------------------------
   const followUps = useMemo(() => {
     const arr: string[] = [];
     for (let i = 0; i < FOLLOWUP_COUNT; i++) arr.push(hydrated ? notes[R2.followUp(i)] ?? "" : "");
     return arr;
   }, [hydrated, notes]);
+  const stage4Complete = followUps.every((f) => f.trim().length > 0);
 
+  // --- Stage 5 — Two risks -----------------------------------------------------
   const risks = useMemo(() => {
     const arr: string[] = [];
     for (let i = 0; i < RISK_COUNT; i++) arr.push(hydrated ? notes[R2.risk(i)] ?? "" : "");
     return arr;
   }, [hydrated, notes]);
+  const stage5Complete = risks.every((r) => r.trim().length > 0);
 
-  const decisionPickComplete = !!decisionPick;
-  const decisionJustifyComplete = decisionJustify.trim().length > 0;
-  const followUpsComplete = followUps.every((f) => f.trim().length > 0);
-  const risksComplete = risks.every((r) => r.trim().length > 0);
-  const decisionComplete = decisionPickComplete && decisionJustifyComplete && followUpsComplete && risksComplete;
+  // --- Stage 6 — Reflection ----------------------------------------------------
+  const reflections = useMemo(() => {
+    const arr: string[] = [];
+    for (let i = 0; i < REFLECTION_PROMPTS.length; i++) arr.push(hydrated ? notes[R2.reflection(i)] ?? "" : "");
+    return arr;
+  }, [hydrated, notes]);
+  const stage6Complete = reflections.every((r) => r.trim().length > 0);
 
-  const nameComplete = name.trim().length > 0;
-  const allComplete = nameComplete && criteriaComplete && decisionComplete;
+  const allComplete = nameComplete && stage2Complete && stage3Complete && stage4Complete && stage5Complete && stage6Complete;
 
   const missing = useMemo<MissingItem[]>(() => {
     const items: MissingItem[] = [];
     if (!nameComplete) items.push({ id: "r2-name", label: "Add your name so the export can be labelled correctly" });
 
-    for (const c of CRITERIA) {
-      for (const opt of OPTION_IDS) {
-        if (!picks[c.id]?.[opt]) {
-          items.push({
-            id: `r2-crit-${c.id}`,
-            label: `Criterion ${c.n} (${c.label}): Option ${opt} not yet answered`,
-          });
-        }
-      }
+    if (!stage2Complete) {
+      items.push({
+        id: "r2-stage2",
+        label: `Stage 2: ${stage2Total - stage2DoneCount} of ${stage2Total} dimension × option answers not yet given`,
+      });
     }
+    if (!pickComplete) items.push({ id: "r2-stage3-pick", label: "Stage 3: choose a recommended option (A, B, or C)" });
+    if (!justifyComplete) items.push({ id: "r2-stage3-justify", label: "Stage 3: add your justification for the recommendation" });
 
-    if (!decisionPickComplete) items.push({ id: "r2-decision-pick", label: "Decision: choose a recommended option (A, B, or C)" });
-    if (!decisionJustifyComplete) items.push({ id: "r2-decision-justify", label: "Decision: add your justification for the recommendation" });
     followUps.forEach((f, i) => {
-      if (!f.trim()) items.push({ id: `r2-decision-followup-${i}`, label: `Decision: add follow-up decision #${i + 1}` });
+      if (!f.trim()) items.push({ id: `r2-stage4-${i}`, label: `Stage 4: add follow-up decision #${i + 1}` });
     });
     risks.forEach((r, i) => {
-      if (!r.trim()) items.push({ id: `r2-decision-risk-${i}`, label: `Decision: name risk #${i + 1} of the easy-but-shallow alternative` });
+      if (!r.trim()) items.push({ id: `r2-stage5-${i}`, label: `Stage 5: name risk #${i + 1} of the easy-but-shallow alternative` });
+    });
+    REFLECTION_PROMPTS.forEach((p, i) => {
+      if (!reflections[i]?.trim()) items.push({ id: `r2-stage6-${i}`, label: `Stage 6: answer "${p.question}"` });
     });
 
     return items;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nameComplete, picks, decisionPickComplete, decisionJustifyComplete, followUps, risks]);
+  }, [nameComplete, stage2Complete, stage2Total, stage2DoneCount, pickComplete, justifyComplete, followUps, risks, reflections]);
 
   return {
     hydrated,
@@ -111,18 +118,20 @@ export function useRoute2() {
     picks,
     scoreOf,
     criterionDoneCount,
-    criteriaComplete,
-    criteriaDoneCount,
-    criteriaTotal,
-    decisionPick,
-    decisionJustify,
+    stage2Complete,
+    stage2DoneCount,
+    stage2Total,
+    pick,
+    justify,
+    pickComplete,
+    justifyComplete,
+    stage3Complete,
     followUps,
+    stage4Complete,
     risks,
-    decisionPickComplete,
-    decisionJustifyComplete,
-    followUpsComplete,
-    risksComplete,
-    decisionComplete,
+    stage5Complete,
+    reflections,
+    stage6Complete,
     allComplete,
     missing,
   };

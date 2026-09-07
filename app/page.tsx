@@ -23,10 +23,11 @@ export default function DayLanding() {
         </p>
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
-          Three routes, each its own case and its own deliverable. Route 1 grounds you in PUE and renewable-energy
-          accounting, then has you audit a real sustainability claim against what the evidence actually supports.
-          Routes 2 and 3 build on that foundation toward a board-ready position on data centre energy strategy. Each
-          route lives on its own page and ends in a document a professional would actually produce.
+          Three routes, each its own case and its own deliverable. Route 1 grounds you in cloud fundamentals and the
+          economies-of-scale efficiency argument, then has you audit a growing company's cloud plans against what the
+          evidence actually supports. Routes 2 and 3 build on that foundation toward a board-ready position on cloud
+          and data centre strategy. Each route lives on its own page and ends in a document a professional would
+          actually produce.
         </p>
       </div>
 

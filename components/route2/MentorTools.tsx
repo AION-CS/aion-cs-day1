@@ -1,32 +1,39 @@
 "use client";
 
 import { useProgress } from "@/lib/store";
-import { R2, LEARNER_NAME_KEY, type CriterionId, type OptionId } from "@/lib/route2";
+import { R2, LEARNER_NAME_KEY, REFLECTION_PROMPTS, type CriterionId, type OptionId } from "@/lib/route2";
 import { MentorFillButton } from "@/components/ui/MentorFillButton";
 
-/** Which of the 3 statements (by score) is the model pick for each criterion × option pairing. */
+/** Which of the 3 statements (by score) is the model pick for each criterion x option pairing. */
 const DEMO_SCORES: Record<CriterionId, Record<OptionId, 1 | 2 | 3>> = {
-  "strategic-leverage": { A: 1, B: 1, C: 3 },
-  "sustainability-impact": { A: 2, B: 2, C: 1 },
-  "informative-value": { A: 1, B: 2, C: 3 },
-  "economic-viability": { A: 2, B: 1, C: 2 },
-  feasibility: { A: 2, B: 1, C: 3 },
-  risk: { A: 1, B: 1, C: 3 },
-  credibility: { A: 1, B: 2, C: 3 },
+  "strategic-leverage": { A: 1, B: 3, C: 2 },
+  "sustainability-impact": { A: 1, B: 3, C: 2 },
+  "economic-viability": { A: 1, B: 2, C: 3 },
+  feasibility: { A: 3, B: 2, C: 2 },
+  "transparency-gain": { A: 1, B: 3, C: 2 },
+  risk: { A: 1, B: 3, C: 2 },
+  "long-term-effect": { A: 1, B: 3, C: 2 },
 };
 
 const DEMO_FOLLOWUPS = [
-  "Which specific metrics beyond PUE the new model will track first, and who owns collecting each one.",
-  "How results from the first reporting cycle will be communicated to the board without overstating progress that hasn't happened yet.",
+  "Which policy area (cost, workloads, or responsibilities) the governance rollout starts with first, and who owns it.",
+  "How the departments currently ordering cloud independently will be brought into the new policy without stalling their existing work.",
 ];
 
 const DEMO_RISKS = [
-  "A PPA announcement reads well externally, but if matched consumption data is never built, the claim is exposed the moment anyone asks how much of that renewable electricity Meridian actually uses hour by hour.",
-  "Locking into a single 10-20 year contract now, before the data situation is fixed, forecloses a more informed sourcing decision later — the opposite of the strategic flexibility a data centre this size still needs.",
+  "Accelerating migration now, before governance exists, risks locking in exactly the uncontrolled spend and dependency pattern the case already describes — just at a larger scale.",
+  "A visible but ungoverned optimisation push can look like progress to the board while the same waste quietly reappears next quarter, since nothing structurally prevents it from recurring.",
 ];
 
 const DEMO_JUSTIFY =
-  "Meridian's board wants visible progress, but the constraints point the other way: the data situation on load and consumption has real gaps, and IT explicitly doesn't want to back a symbolic measure. Option C is the only one of the three that directly closes that data gap and gives every future energy decision — including a later PPA or retrofit — something real to stand on.";
+  "Flexora's management wants visible progress, but the constraints point the other way: departments already order cloud independently with no oversight, and IT explicitly wants to avoid future dependencies and cost explosions. Option B is the only one of the three that directly closes that governance gap, and — per the multiplier argument in the material — it's what makes the eventual migration and optimisation work actually pay off rather than compound the existing problem.";
+
+const DEMO_REFLECTIONS: Record<string, string> = {
+  "quick-solution": "Whenever a department requests more cloud capacity to \"solve\" a deadline pressure without anyone checking whether the workload is actually needed long-term.",
+  "unnecessary-consumption": "Storage that's kept indefinitely from finished projects, and dev/test environments left running outside working hours.",
+  "attractive-but-weak": "Accelerating migration purely to show board progress, without governance to prevent the same uncontrolled growth continuing in the new environment.",
+  "prioritise-differently": "An operationally minded implementer optimises for this quarter's uptime and velocity; a manager or architect has to weigh what the decision costs the organisation two or three years out, even if that's invisible right now.",
+};
 
 /** Mentor-only: fills every field on Route 2's Task 2 with plausible, model-quality demo answers. */
 export function MentorTools() {
@@ -43,10 +50,11 @@ export function MentorTools() {
       });
     });
 
-    choose(R2.decisionPick, "C");
-    setNote(R2.decisionJustify, DEMO_JUSTIFY);
+    choose(R2.pick, "B");
+    setNote(R2.justify, DEMO_JUSTIFY);
     DEMO_FOLLOWUPS.forEach((text, i) => setNote(R2.followUp(i), text));
     DEMO_RISKS.forEach((text, i) => setNote(R2.risk(i), text));
+    REFLECTION_PROMPTS.forEach((p, i) => setNote(R2.reflection(i), DEMO_REFLECTIONS[p.id] ?? ""));
   };
 
   return <MentorFillButton onFill={fillDemoAnswers} />;

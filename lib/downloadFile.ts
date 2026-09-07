@@ -20,12 +20,13 @@ const slugify = (v: string) =>
   v.trim().toLowerCase().replace(/\s+/g, "-").replace(/[\\/:*?"<>|]+/g, "-");
 
 /**
- * `1-{name}-day7-l{level}task{taskNumber}` e.g. `1-muchson-day7-l2task1`. The
+ * `1-{name}-day8-l{level}task{taskNumber}` e.g. `1-muchson-day8-l2task1`. The
  * leading `1` is constant across every route (each route produces exactly
  * one export) — `l{level}` is what actually identifies which route/level it
- * came from.
+ * came from. Function name kept as `day7ExportFilename` so Route 2's
+ * existing import (out of scope for this rebuild) doesn't need to change.
  */
 export function day7ExportFilename(name: string, level: number, taskNumber: number): string {
   const who = slugify(name) || "learner";
-  return `1-${who}-day7-l${level}task${taskNumber}`;
+  return `1-${who}-day8-l${level}task${taskNumber}`;
 }

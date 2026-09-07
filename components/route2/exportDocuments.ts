@@ -8,7 +8,7 @@ type Route2State = ReturnType<typeof useRoute2>;
 export function buildReportJson(r2: Route2State, memo: DecisionMemoData, filename: string): string {
   const payload = {
     meta: {
-      day: 7,
+      day: 8,
       route: 2,
       level: TASK2.export.filenameLevel,
       task: TASK2.export.filenameTask,
@@ -35,6 +35,7 @@ export function buildReportJson(r2: Route2State, memo: DecisionMemoData, filenam
       followUps: r2.followUps,
       risks: r2.risks,
     },
+    reflection: memo.reflections,
   };
   return JSON.stringify(payload, null, 2);
 }
@@ -51,6 +52,7 @@ export function buildReportHtml(memo: DecisionMemoData): string {
     .join("");
 
   const list = (items: string[]) => `<ul>${items.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
+  const reflectionItems = memo.reflections.map((r) => `<li><em>${esc(r.question)}</em> — ${esc(r.answer)}</li>`).join("");
 
   return `<!doctype html>
 <html lang="en">
@@ -71,12 +73,12 @@ export function buildReportHtml(memo: DecisionMemoData): string {
 </style>
 </head>
 <body>
-  <p class="kicker">AION Green IT · Day 7 · Route 2</p>
+  <p class="kicker">AION Green IT · Day 8 · Route 2</p>
   <h1>${esc(TASK2.export.docHeading)}</h1>
   <p class="meta">Author: <strong>${esc(memo.name)}</strong> &nbsp;·&nbsp; Date: <strong>${esc(memo.date)}</strong> &nbsp;·&nbsp; Subject: <strong>${esc(memo.caseReference)}</strong></p>
 
-  <h2>Radar Summary</h2>
-  <table><thead><tr><th>Criterion</th>${OPTIONS.map((o) => `<th style="text-align:center">${o.id}</th>`).join("")}</tr></thead><tbody>${scoreRows}</tbody></table>
+  <h2>7-Dimension Score Summary</h2>
+  <table><thead><tr><th>Dimension</th>${OPTIONS.map((o) => `<th style="text-align:center">${o.id}</th>`).join("")}</tr></thead><tbody>${scoreRows}</tbody></table>
 
   <h2>Recommendation &amp; Justification</h2>
   <p><strong>${esc(memo.recommendation || "—")}</strong></p>
@@ -87,6 +89,9 @@ export function buildReportHtml(memo: DecisionMemoData): string {
 
   <h2>Risk Register</h2>
   ${memo.risks.length ? list(memo.risks) : "<p>—</p>"}
+
+  <h2>Reflection</h2>
+  <ul>${reflectionItems || "<li>—</li>"}</ul>
 </body>
 </html>`;
 }

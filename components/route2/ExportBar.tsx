@@ -9,7 +9,7 @@ import { buildReportJson, buildReportHtml } from "./exportDocuments";
 import { day7ExportFilename, downloadTextFile } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
 import { MissingList } from "@/components/ui/MissingList";
-import { TASK2, CRITERIA } from "@/lib/route2";
+import { TASK2 } from "@/lib/route2";
 import { ChevronDown } from "@/components/icons/LineIcons";
 import clsx from "clsx";
 
@@ -20,9 +20,8 @@ export function ExportBar() {
   const toggleCheck = useProgress((s) => s.toggleCheck);
   const [showMissing, setShowMissing] = useState(false);
 
-  const total = CRITERIA.length + 1; // 7 criteria + the decision block
-  const criteriaDoneAsUnits = CRITERIA.filter((c) => r2.criterionDoneCount(c.id) === 3).length;
-  const doneUnits = criteriaDoneAsUnits + (r2.decisionComplete ? 1 : 0);
+  const total = 5; // stages 2-6 (stage 1 is read-only briefing, stage 7 is the report itself)
+  const doneUnits = [r2.stage2Complete, r2.stage3Complete, r2.stage4Complete, r2.stage5Complete, r2.stage6Complete].filter(Boolean).length;
 
   const handleExport = () => {
     if (!r2.allComplete) {
@@ -49,7 +48,7 @@ export function ExportBar() {
           onClick={() => setShowMissing((v) => !v)}
           className="flex items-center gap-1.5 text-caption text-ash hover:text-ink"
         >
-          <span className="tabular-nums font-semibold text-ink">{doneUnits}</span> / {total} sections complete
+          <span className="tabular-nums font-semibold text-ink">{doneUnits}</span> / {total} stages complete
           {r2.missing.length > 0 && <ChevronDown className={clsx("h-3.5 w-3.5 transition-transform duration-150", showMissing && "rotate-180")} />}
         </button>
         <button type="button" onClick={handleExport} className="btn-accent">

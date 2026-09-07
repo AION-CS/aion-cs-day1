@@ -1,7 +1,8 @@
 /**
- * Route 2 — Application. All learner-facing copy and pure data for Day 7
+ * Route 2 — Application. All learner-facing copy and pure data for Day 8
  * live here so components stay presentational. Case used throughout:
- * Meridian Data Systems GmbH (fictional).
+ * Flexora Digital Services — the same company from Route 1, now facing the
+ * next decision: which single line of action to fund first.
  */
 
 import type { IconKey } from "@/lib/routes";
@@ -17,60 +18,58 @@ export const OPTION_IDS: OptionId[] = ["A", "B", "C"];
 export const R2 = {
   name: LEARNER_NAME_KEY,
   criterion: (criterionId: string, option: OptionId) => `r2:crit:${criterionId}:${option}`,
-  decisionPick: "r2:decision:pick",
-  decisionJustify: "r2:decision:justify",
-  followUp: (i: number) => `r2:decision:followup:${i}`,
-  risk: (i: number) => `r2:decision:risk:${i}`,
+  pick: "r2:s3:pick",
+  justify: "r2:s3:justify",
+  followUp: (i: number) => `r2:s4:followup:${i}`,
+  risk: (i: number) => `r2:s5:risk:${i}`,
+  reflection: (i: number) => `r2:s6:reflect:${i}`,
 } as const;
 
 // ---------------------------------------------------------------------------
-// Case brief — Meridian Data Systems GmbH
+// Case brief — Flexora's next decision
 // ---------------------------------------------------------------------------
 export const CASE_BRIEF = {
-  company: "Meridian Data Systems GmbH",
+  company: "Flexora Digital Services",
   setup:
-    "Management can fund only one central line of measures right now. As the infrastructure sustainability lead, you've been asked to run the trade-off analysis yourself and bring back a prioritized, defensible recommendation — not a gut-feeling ranking.",
+    "Following its cloud expansion, Flexora's leadership can fund only one central line of action right now. As the infrastructure sustainability lead, you've been asked to run the prioritisation yourself and bring back a defensible recommendation — not a gut-feeling ranking.",
   constraints: [
-    "Budget is limited.",
-    "The board expects visible progress, for both internal and external communication.",
-    "The data situation on actual load and consumption structure has gaps.",
-    "Security of supply and operational stability have high priority.",
-    "IT does not want to support purely symbolic measures.",
+    "The budget is limited.",
+    "Management expects rapid, visible progress.",
+    "The data situation on energy demand and overall impact is incomplete.",
+    "Departments want high flexibility and little central control.",
+    "IT wants to avoid future dependencies and cost explosions.",
   ],
 } as const;
 
 export const OPTIONS: { id: OptionId; label: string; short: string; detail: string }[] = [
   {
     id: "A",
-    label: "Extended Green Electricity Supply Contract",
-    short: "PPA / GoO expansion",
-    detail:
-      "Expand long-term Power Purchase Agreements and Guarantee-of-Origin certificate volume, so a larger share of purchased electricity carries a verified renewable designation.",
+    label: "Accelerated Migration",
+    short: "Move faster, dismantle local infrastructure sooner",
+    detail: "Accelerated migration of further applications to the cloud, in order to dismantle local infrastructure more quickly.",
   },
   {
     id: "B",
-    label: "Technical PUE Improvement Investment",
-    short: "Cooling & power-delivery retrofit",
-    detail:
-      "Capital investment in cooling and power-delivery upgrades — aisle containment, control tuning, a higher-efficiency UPS — to physically lower the facility's PUE.",
+    label: "Binding Cloud Governance",
+    short: "Transparency on usage, cost, workloads, responsibilities",
+    detail: "Building binding cloud governance with transparency on usage, cost, workloads, and responsibilities.",
   },
   {
     id: "C",
-    label: "Extended Management Model",
-    short: "Multi-metric transparency & governance",
-    detail:
-      "Build an internal system of multiple metrics, granular load transparency, and differentiated sustainability assessment across zones and services.",
+    label: "Technical Optimisation",
+    short: "Reduce idle time, storage growth, inefficient use",
+    detail: "Technical optimisation of existing cloud workloads to reduce idle time, storage growth, and inefficient resource use.",
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Materi — 4 blocks
+// Material — 5 blocks
 // ---------------------------------------------------------------------------
-export type MaterialSectionId = "forces" | "criteria" | "financing" | "governance";
+export type MaterialSectionId = "finops" | "sevendim" | "uncertainty" | "multiplier" | "shorttermism";
 
 export type MaterialSection = {
   id: MaterialSectionId;
-  n: 1 | 2 | 3 | 4;
+  n: 1 | 2 | 3 | 4 | 5;
   icon: IconKey;
   kicker: string;
   title: string;
@@ -82,71 +81,88 @@ export type MaterialSection = {
 
 export const MATERIAL: MaterialSection[] = [
   {
-    id: "forces",
+    id: "finops",
     n: 1,
-    icon: "target",
-    kicker: "1 · The core tension",
-    title: "The Trade-off Radar: Four Forces in Tension",
+    icon: "coins",
+    kicker: "1 · The industry's own framework",
+    title: "Cloud Financial & Governance Frameworks",
     definition:
-      "Any data centre sustainability decision sits inside a four-way tension. Sustainability is the actual reduction in emissions or footprint — not just the claim of it. Cost splits into capex (on-site generation, efficiency retrofits) and opex (PPA premiums, certificate purchases). Security of supply is diversification across energy sources and exposure to a single supplier or contract. Availability is the data centre's core operational promise — uptime — which any physical retrofit or operating-model change puts briefly at risk while it's being implemented.",
+      "The FinOps Foundation (part of the Linux Foundation) defines the industry-standard FinOps Framework as a continuous cycle of three phases: Inform (give every team visibility into what they're actually spending and running — allocation, benchmarking, budgeting), Optimize (act on that visibility — rightsizing, commitment discounts, eliminating waste), and Operate (embed the first two into ongoing governance — policies, automation, continuous improvement — so the cycle repeats rather than happening once).",
     insight:
-      "These forces trade against each other constantly. A long-term PPA can improve cost predictability and sustainability credentials, but reduces flexibility and can worsen security-of-supply diversification if it locks the company to a single generator or region. An efficiency retrofit lowers PUE and cost over time, but the implementation window itself is an availability risk if not carefully sequenced. A broad governance and transparency programme improves long-term credibility and decision quality, but delivers the least visible short-term progress for board communication — this is the exact tension the case in Task 2 is built on.",
+      "Task 2's three options map directly onto this cycle, and onto each other's prerequisites: Option B (governance) is almost entirely Inform work — you cannot optimise or operate what you cannot see. Option C (technical optimisation) is Optimize work — it depends on Inform having already surfaced where the waste is. Option A (accelerated migration) sits outside the cycle's discipline entirely if pursued alone — it changes scale without first passing through Inform or Optimize, which is exactly why it can increase cost and risk rather than reduce them.",
     takeaway:
-      "Professionals learn to see all four forces simultaneously, not to optimise one in isolation. Every option in Task 2 does well on some of these and badly on others — there is no option that wins on all four at once.",
+      "This is not three equally-ranked options — it's one maturity sequence with a shortcut being proposed. A credible recommendation names where in the FinOps cycle each option actually sits, not just how attractive it looks on its own.",
     callout: {
-      label: "This is the exact tension Task 2 is built on",
-      text: "Meridian's board wants visible progress. Its data has gaps. Its supply and stability priorities are high. No single measure satisfies all of that — which is precisely what makes this a prioritisation decision rather than an obvious choice.",
+      label: "Verify before you quote it",
+      text: "The FinOps Foundation updates its framework and member survey data regularly — if you cite a specific adoption statistic or maturity benchmark from them in a real report, check the current-year State of FinOps report rather than reusing a remembered figure.",
     },
   },
   {
-    id: "criteria",
+    id: "sevendim",
     n: 2,
-    icon: "layers",
-    kicker: "2 · The evaluation framework",
-    title: "A Seven-Criteria Prioritisation Framework for Infrastructure Decisions",
+    icon: "target",
+    kicker: "2 · The scoring framework",
+    title: "The 7-Dimension Assessment Model",
     definition:
-      "This framework is a synthesis of two established management tools, adapted for sustainability infrastructure decisions. The Impact–Effort Matrix — a standard portfolio-prioritisation tool used broadly in operations and product management — contributes the logic of comparing expected benefit against implementation cost and complexity. McKinsey's Three Horizons model (from The Alchemy of Growth, McKinsey & Company, 1999) contributes the discipline of separating short-term visible wins (Horizon 1) from structural, longer-horizon capability building (Horizon 3).",
+      "Seven dimensions, applied consistently to every option, turn a gut-feeling ranking into a defensible one: Strategic Leverage (how much this unlocks or enables future decisions, rather than closing them down), Sustainability Impact (the realistic, evidence-based environmental benefit — not the easiest one to communicate), Economic Viability (cost relative to benefit, under the stated budget constraint), Feasibility (realistic implementability given current organisational and technical maturity), Transparency Gain (how much the measure improves visibility into usage, cost, and workloads), Risk (the probability and severity of the measure failing or backfiring), and Long-Term Effect (whether the benefit compounds over time or fades once attention moves elsewhere).",
     insight:
-      "That Horizon 1 / Horizon 3 split is directly relevant here: a board wanting \"visible progress\" is asking for Horizon 1, while the structurally correct measure may take longer to show results and reads as Horizon 3. A credible recommendation names which horizon each option actually belongs to, instead of quietly presenting a Horizon 3 measure as if it were a quick win, or dismissing a Horizon 3 measure for not looking impressive fast enough.",
+      "Plotted on a radar chart, each option produces a distinct shape rather than a single score — one option can dominate on Feasibility and Economic Viability while trailing badly on Long-Term Effect, and that shape is more informative than any average. You'll build exactly this chart, live, in Stage 2 of Task 2: the same seven axes below, with your own answers.",
     takeaway:
-      "Seven criteria, applied consistently across every option, turn a gut-feeling ranking into a defensible one. Click through the wheel below — you'll use these exact seven definitions in Task 2.",
+      "No option wins on all seven axes at once — that is expected, not a flaw in the framework. The recommendation in Stage 3 is about which shape best fits the situation's actual constraints, not which option has the most axes lit up.",
     callout: {
-      label: "Why exactly these seven",
-      text: "Each criterion answers a question the other six can't: strategic leverage asks what this unlocks later; credibility asks whether it survives being questioned. A measure can score well on one and poorly on another — that's the point.",
+      label: "This is the tool, not a demonstration",
+      text: "The chart below is an empty shell on purpose. In Stage 2 it fills in with real data from your own seven questions — same component, same seven axes, live.",
     },
   },
   {
-    id: "financing",
+    id: "uncertainty",
     n: 3,
-    icon: "certificate",
-    kicker: "3 · Real-world grounding",
-    title: "Real-World Financing & Reporting Context",
+    icon: "layers",
+    kicker: "3 · Deciding without full data",
+    title: "Deciding Under Uncertainty",
     definition:
-      "This isn't abstract theory. Large hyperscale operators such as Google and Microsoft have scaled corporate renewable Power Purchase Agreements into multi-gigawatt global portfolios since roughly the early 2010s, making PPAs the dominant mechanism for large-scale renewable procurement in the sector. Data centre and colocation operators such as Equinix have also used green bonds — debt instruments earmarked for environmentally beneficial projects — to fund efficiency retrofits and renewable infrastructure. In the real world, \"Option A\" and \"Option B\" style choices are often blended rather than picked in isolation.",
+      "A classic strategy framework sorts actions by how they behave across an uncertain future: no-regret moves (worth taking in essentially every plausible scenario, because their cost is low and their downside is minimal), options (small, reversible steps that don't commit fully but keep valuable choices open for later, once more is known), and big bets (large, largely irreversible commitments made on a specific bet about how the future will unfold).",
     insight:
-      "There's also a formal reporting obligation now. Under Article 12 and Annex VII of the recast EU Energy Efficiency Directive (EU) 2023/1791, and its implementing Delegated Regulation (EU) 2024/1364 (adopted 14 March 2024), any EU data centre with an installed IT power demand of at least 500 kW must report a defined set of sustainability and energy KPIs annually to the European Database on Data Centres. The first report covered calendar year 2023 and was due 15 September 2024; from 2025 onward, the deadline is 15 May each year, covering the previous calendar year. Data is published in aggregated form at EU and country level — individual company data isn't made public where it constitutes a trade secret.",
+      "This is precisely the tool for justifying a decision when the data situation is incomplete — which Flexora's constraints explicitly describe. A no-regret move needs very little justification beyond \"this helps regardless of what happens next.\" A big bet needs the opposite: an explicit, stated reason for believing this particular future is the one to commit to, made in full view of the risk of being wrong.",
     takeaway:
-      "A widely-held misconception is worth correcting here: the EU Energy Efficiency Directive itself does not mandate a specific PUE threshold across the EU — it mandates reporting and transparency. It's national law, such as Germany's EnEfG (covered in Route 1), that sets binding PUE thresholds. Conflating \"the EU forces a PUE of X\" with \"the EU forces you to disclose your PUE\" is exactly the kind of imprecision a credible sustainability professional must avoid.",
+      "Naming which tier an option sits in is itself part of a credible justification. Saying \"I'm treating this as a no-regret move because X\" or \"I recognise this is a big bet, and here's why I'm making it anyway\" is stronger than presenting every choice as equally certain.",
     callout: {
-      label: "Directly relevant to Credibility",
-      text: "Disclosure ≠ performance mandate. Getting this distinction wrong in front of a board, an auditor, or a journalist is a credibility failure — which is exactly what the seventh criterion in this route is built to catch.",
+      label: "Direct use in Task 2",
+      text: "Stage 3 asks you to justify your final pick while explicitly naming what information is still missing. This framework is exactly how you do that without pretending to more certainty than you have.",
     },
   },
   {
-    id: "governance",
+    id: "multiplier",
     n: 4,
     icon: "gavel",
-    kicker: "4 · Who actually decides",
-    title: "Governance Flow: Who Actually Approves What",
+    kicker: "4 · The argument this route is built on",
+    title: "Why Governance Multiplies Everything Else",
     definition:
-      "In a mid-to-large organisation, this class of decision runs through a realistic chain: the Board or Executive Committee gives strategic sign-off and sets the budget ceiling. The CIO/CTO or Head of Infrastructure owns the trade-off analysis and makes the technical-strategic recommendation. IT Operations gives feasibility and operational-risk input, with an effective veto on availability grounds. Finance signs off on economic viability, especially for multi-year commitments like a PPA. The decision then goes back to the Board for final approval, with a reporting loop back down once implemented — linking directly to the disclosure obligations above.",
+      "Governance is not a fourth option that competes with migration and optimisation for the same budget line — it is the layer that determines how effectively the other two actually work. Without visibility into usage, cost, and workloads, a migration can silently increase total spend and energy demand (Route 1, Block 3's rebound effect in practice), and a technical optimisation can only ever catch the waste someone happened to notice.",
     insight:
-      "The quality of a recommendation is judged not only on its content but on whether it anticipates each stakeholder's objection before they raise it: has Finance's viability question already been answered? Has IT Operations' availability concern already been addressed? A recommendation that survives this chain on the first pass is a stronger recommendation than one that merely sounds good in isolation.",
+      "This is why governance behaves as a multiplier rather than an additive contribution: a migration paired with governance is worth more than a migration alone, and a migration without it can even net negative once uncontrolled growth is counted. The same relationship holds for optimisation — one-off cleanup versus cleanup backed by ongoing visibility that catches the next round of waste before it accumulates.",
     takeaway:
-      "Keep this chain in mind while you build your Task 2 recommendation — your justification should read as something that has already thought about what Finance and IT Operations would push back on.",
+      "This is the strongest argument for prioritising governance first, even though it's the least visible option in the short term (a tension Block 5 comes back to directly): it is the layer that makes the economies-of-scale efficiency argument from Route 1 actually realisable in practice, rather than theoretical.",
     callout: {
-      label: "Anticipate the objection before it's raised",
-      text: "\"We haven't checked with IT Operations yet\" is not a defensible position to bring to a board. The strongest recommendations are pre-negotiated in the analysis itself.",
+      label: "Not an argument against A or C",
+      text: "This doesn't mean migration and optimisation are wrong — it means their realistic value depends heavily on whether governance exists underneath them. Keep that dependency in mind heading into Stage 2's scoring.",
+    },
+  },
+  {
+    id: "shorttermism",
+    n: 5,
+    icon: "recycleLoop",
+    kicker: "5 · Why the fast option often isn't the safe one",
+    title: "The Trap of the Short-Term Win",
+    definition:
+      "An option that looks fast and impressive in the short term is often structurally fragile, because its visible progress isn't backed by the underlying capability needed to sustain it. Two recurring real-world patterns illustrate this directly: cloud cost overrun (spend growing well past forecast once usage scales without governance — a widely reported pattern across FinOps industry surveys) and vendor lock-in (a fast, deep commitment to one provider's proprietary services that becomes very costly to reverse once discovered).",
+    insight:
+      "Both patterns share the same shape: fast initial progress, followed by a sharper correction once the hidden cost or risk surfaces — usually later, and usually more expensive to fix than it would have been to prevent. A governance-first path shows less visible progress early, but each subsequent step is built on real visibility, so its trajectory doesn't require a later correction.",
+    takeaway:
+      "A board asking for \"visible progress\" is not wrong to want it — but a credible recommendation distinguishes between visible progress that is durable and visible progress that is a preview of a correction still to come.",
+    callout: {
+      label: "You'll see this diagram again",
+      text: "The branching timeline below reappears next to Stage 5 of Task 2, where you'll name two concrete risks of picking the fast-but-shallow path.",
     },
   },
 ];
@@ -157,61 +173,26 @@ export const MATERIAL: MaterialSection[] = [
 export type CriterionId =
   | "strategic-leverage"
   | "sustainability-impact"
-  | "informative-value"
   | "economic-viability"
   | "feasibility"
+  | "transparency-gain"
   | "risk"
-  | "credibility";
+  | "long-term-effect";
 
 export type Criterion = { id: CriterionId; n: number; label: string; definition: string };
 
 export const CRITERIA: Criterion[] = [
-  {
-    id: "strategic-leverage",
-    n: 1,
-    label: "Strategic Leverage",
-    definition: "How much this measure unlocks or enables future decisions and options, rather than closing them down.",
-  },
-  {
-    id: "sustainability-impact",
-    n: 2,
-    label: "Sustainability Impact",
-    definition: "The realistic, evidence-based magnitude of environmental benefit — not the magnitude that's easiest to communicate.",
-  },
-  {
-    id: "informative-value",
-    n: 3,
-    label: "Informative Value",
-    definition: "How much the measure improves the organisation's ability to actually know its own performance — its contribution to data and transparency.",
-  },
-  {
-    id: "economic-viability",
-    n: 4,
-    label: "Economic Viability",
-    definition: "Cost relative to benefit, evaluated under the stated budget constraint.",
-  },
-  {
-    id: "feasibility",
-    n: 5,
-    label: "Feasibility",
-    definition: "Realistic implementability given current organisational, technical, and data maturity.",
-  },
-  {
-    id: "risk",
-    n: 6,
-    label: "Risk",
-    definition: "The probability and severity of the measure failing, backfiring, or being reversed.",
-  },
-  {
-    id: "credibility",
-    n: 7,
-    label: "Credibility",
-    definition: "How well the measure would hold up under external scrutiny — auditors, journalists, regulators — versus how it merely sounds in a press release.",
-  },
+  { id: "strategic-leverage", n: 1, label: "Strategic Leverage", definition: "How much this measure unlocks or enables future decisions, rather than closing them down." },
+  { id: "sustainability-impact", n: 2, label: "Sustainability Impact", definition: "The realistic, evidence-based magnitude of environmental benefit — not the magnitude that's easiest to communicate." },
+  { id: "economic-viability", n: 3, label: "Economic Viability", definition: "Cost relative to benefit, evaluated under the stated budget constraint." },
+  { id: "feasibility", n: 4, label: "Feasibility", definition: "Realistic implementability given current organisational, technical, and data maturity." },
+  { id: "transparency-gain", n: 5, label: "Transparency Gain", definition: "How much the measure improves visibility into usage, cost, workloads, and responsibilities." },
+  { id: "risk", n: 6, label: "Risk", definition: "The probability and severity of the measure failing, backfiring, or being reversed." },
+  { id: "long-term-effect", n: 7, label: "Long-Term Effect", definition: "Whether the measure's benefit compounds over time, or fades once attention moves elsewhere." },
 ];
 
 // ---------------------------------------------------------------------------
-// Criterion statements — 7 criteria × 3 options × 3 statements, hand-written
+// Criterion statements — 7 criteria x 3 options x 3 statements, hand-written
 // ---------------------------------------------------------------------------
 export type Statement = { id: string; score: 1 | 2 | 3; text: string };
 export type CriterionOptionData = { statements: Statement[]; clue: string };
@@ -226,221 +207,245 @@ export const CRITERION_DATA: Record<CriterionId, Record<OptionId, CriterionOptio
   "strategic-leverage": {
     A: {
       statements: [
-        s("strategic-leverage", "A", 1, "Signs the company into a single generator or region for the contract term, which narrows which sourcing options are realistically still open afterwards."),
-        s("strategic-leverage", "A", 2, "Strengthens the renewable-supply position on paper, but by itself changes little about what the company can decide about its own infrastructure next."),
-        s("strategic-leverage", "A", 3, "Frees internal budget and attention that a technical programme would have consumed, making it easier to fund a further measure later from the same sustainability mandate."),
+        s("strategic-leverage", "A", 1, "Dismantling local infrastructure faster removes a fallback option — once it's gone, Flexora has little room to slow down or reverse course if the migration doesn't go as planned."),
+        s("strategic-leverage", "A", 2, "Moves more workloads onto cloud infrastructure, but by itself does nothing to change how future cloud decisions get made or who controls them."),
+        s("strategic-leverage", "A", 3, "Frees internal effort that would otherwise go to running dual infrastructure, giving the organisation more room to fund whichever measure the evidence justifies next."),
       ],
-      clue: "Re-read the constraint about security of supply — what happens to Meridian's future options once it's committed to one supplier for 10-20 years?",
+      clue: "Re-read the constraint about IT wanting to avoid future dependencies — what happens to Flexora's options once local infrastructure is gone?",
     },
     B: {
       statements: [
-        s("strategic-leverage", "B", 1, "A one-off retrofit fixes today's inefficiency but creates no new organisational capability — the next inefficiency will be found the same ad hoc way this one was."),
-        s("strategic-leverage", "B", 2, "Improves the technical baseline the company operates from, which future decisions can build on, without changing how those decisions actually get made."),
-        s("strategic-leverage", "B", 3, "A verified PUE improvement becomes a credible reference point that anchors every future efficiency or reporting conversation, including with regulators."),
+        s("strategic-leverage", "B", 1, "Written policy alone changes nothing if nobody has the mandate or tooling to actually enforce it once departments push back."),
+        s("strategic-leverage", "B", 2, "Establishes clearer rules for how cloud is used, which future decisions can reference, without yet changing what gets decided."),
+        s("strategic-leverage", "B", 3, "Becomes the framework every future cloud decision — migration pace, spend, architecture — has to run through, making it the highest-leverage option of the three."),
       ],
-      clue: "If this retrofit is a one-off, what happens to the next inefficiency nobody's watching for?",
+      clue: "Which of the three options changes how future decisions get made, rather than just what gets decided once?",
     },
     C: {
       statements: [
-        s("strategic-leverage", "C", 1, "Produces internal reports and dashboards, but without a mandate to act on them, the underlying decisions don't actually change."),
-        s("strategic-leverage", "C", 2, "Gives the organisation a repeatable way to compare options like A and B against each other next time, instead of relying on one-off analysis."),
-        s("strategic-leverage", "C", 3, "Becomes the backbone every future energy, efficiency, or reporting decision routes through — the highest-leverage of the three, because it changes how decisions get made, not just what was decided this once."),
+        s("strategic-leverage", "C", 1, "A one-off clean-up of idle workloads and storage fixes today's waste but creates no lasting capability to catch the next one."),
+        s("strategic-leverage", "C", 2, "Improves the technical baseline Flexora operates from, which later decisions can build on, without changing how those decisions get made."),
+        s("strategic-leverage", "C", 3, "Establishes a repeatable discipline for finding and removing waste, which compounds in value every future quarter it's applied."),
       ],
-      clue: "Which of the three options changes how future decisions like this one get made, not just what gets decided this time?",
+      clue: "If this clean-up happens once, what stops the same waste from reappearing next quarter?",
     },
   },
   "sustainability-impact": {
     A: {
       statements: [
-        s("sustainability-impact", "A", 1, "Certificates and contracts create a reporting entitlement to call the electricity \"renewable,\" without necessarily changing the carbon intensity of what's actually drawn from the grid at any given hour."),
-        s("sustainability-impact", "A", 2, "A physical PPA delivering into the buyer's own grid region adds real new renewable generation to the system the company draws from, beyond a paper claim."),
-        s("sustainability-impact", "A", 3, "At the scale Meridian could realistically contract, the measure meaningfully shifts the marginal generation mix in its supply region — an outcome few single data centre operators can credibly claim."),
+        s("sustainability-impact", "A", 1, "Migrating more workloads increases total cloud energy demand — without governance to manage that growth, the efficiency gain from cloud providers can be outpaced by it."),
+        s("sustainability-impact", "A", 2, "A faster migration does move workloads onto typically more efficient infrastructure, though the benefit depends entirely on how much new demand the move itself generates."),
+        s("sustainability-impact", "A", 3, "If paired with disciplined decommissioning of the local infrastructure it replaces, migration can produce a real net efficiency gain rather than just adding a second footprint on top of the first."),
       ],
-      clue: "Does a certificate change the carbon intensity of the electrons Meridian actually draws, or just the paperwork describing them?",
+      clue: "Re-read Route 1's Block 3 — does moving more workloads to the cloud guarantee a lower total footprint, or does it depend on what happens to demand?",
     },
     B: {
       statements: [
-        s("sustainability-impact", "B", 1, "A retrofit targeting only the most visible cooling units improves PUE on paper but leaves the facility's actual total energy draw close to where it started, since most load doesn't change."),
-        s("sustainability-impact", "B", 2, "A well-sequenced retrofit — containment, controls, a higher-efficiency UPS — produces a real, measurable drop in facility overhead energy, not just a ratio improvement."),
-        s("sustainability-impact", "B", 3, "Combined with utilisation and load-consolidation work, the retrofit could cut absolute facility energy substantially, not just the PUE ratio."),
+        s("sustainability-impact", "B", 1, "A governance policy, on its own, reduces nothing directly — it doesn't turn off a single idle server."),
+        s("sustainability-impact", "B", 2, "By making usage visible, governance creates the conditions for sustainability improvements to actually be found and acted on, even though it doesn't act by itself."),
+        s("sustainability-impact", "B", 3, "Sustained oversight of usage and workloads is what prevents the exact rebound effect that could otherwise cancel out efficiency gained elsewhere — the largest realistic long-run impact of the three."),
       ],
-      clue: "A retrofit changes PUE — does it necessarily change total facility energy if the IT load itself hasn't changed?",
+      clue: "Can a governance policy reduce energy use directly, on day one, without anyone acting on the transparency it creates?",
     },
     C: {
       statements: [
-        s("sustainability-impact", "C", 1, "A transparency system, on its own, consumes effort to build and doesn't reduce a single kilowatt-hour directly."),
-        s("sustainability-impact", "C", 2, "By revealing which zones are actually inefficient, it points budget at the interventions with the largest realistic environmental benefit, rather than the most visible one."),
-        s("sustainability-impact", "C", 3, "It removes guesswork from every sustainability decision going forward, compounding into the largest cumulative impact of the three options over multiple cycles."),
+        s("sustainability-impact", "C", 1, "A narrow clean-up targeting only the most visible idle workloads leaves most of the underlying waste untouched."),
+        s("sustainability-impact", "C", 2, "Directly reduces over-provisioning and idle resource use — real, measurable savings, though limited to what's already been identified."),
+        s("sustainability-impact", "C", 3, "Combined with ongoing monitoring, technical optimisation can cut total resource consumption substantially, attacking named sources of inefficiency directly rather than working around them."),
       ],
-      clue: "Can a transparency system reduce a single kilowatt-hour on its own, on day one?",
-    },
-  },
-  "informative-value": {
-    A: {
-      statements: [
-        s("informative-value", "A", 1, "A signed supply contract adds a line to the energy procurement file; it says nothing new about how or where Meridian actually consumes energy."),
-        s("informative-value", "A", 2, "GoO tracking introduces some visibility into the renewable share of the electricity mix, though not into how that electricity is used internally."),
-        s("informative-value", "A", 3, "Expanded contract reporting requirements bring detailed hourly consumption-matching data that Meridian didn't have to track before."),
-      ],
-      clue: "Does signing a supply contract tell Meridian anything new about where its own energy actually goes?",
-    },
-    B: {
-      statements: [
-        s("informative-value", "B", 1, "Retrofit vendors typically report before/after PUE at the facility level only, adding little detail about which zones or workloads actually changed."),
-        s("informative-value", "B", 2, "Modern retrofit equipment usually ships with its own sub-metering, adding real granularity for the systems it touches."),
-        s("informative-value", "B", 3, "The retrofit is instrumented as a full monitoring upgrade across the facility, closing the exact data gaps the constraints describe."),
-      ],
-      clue: "Retrofit vendors report facility-level PUE — does that close the load and consumption gaps the case describes?",
-    },
-    C: {
-      statements: [
-        s("informative-value", "C", 1, "Adds dashboards without new source data, so the numbers only restate what disparate teams already knew separately."),
-        s("informative-value", "C", 2, "Establishes new load- and zone-level monitoring that closes a meaningful share of the current data gaps."),
-        s("informative-value", "C", 3, "Directly closes the load and consumption data gap the case explicitly names, and produces exactly the multi-metric, differentiated view every other decision in this exercise depends on."),
-      ],
-      clue: "Which option is explicitly designed to close the data gap the constraints call out?",
+      clue: "Which option directly attacks a named source of waste, rather than working around it?",
     },
   },
   "economic-viability": {
     A: {
       statements: [
-        s("economic-viability", "A", 1, "Long-term PPA pricing is typically structured as a hedge, but signing now under a limited budget still means committing multi-year fixed costs before this year's uncertainty resolves."),
-        s("economic-viability", "A", 2, "Premium over grid price is moderate and spread across the contract term, which is manageable within a constrained annual budget."),
-        s("economic-viability", "A", 3, "A well-structured virtual PPA can even net a financial benefit if wholesale prices move favourably, on top of the sustainability credential."),
+        s("economic-viability", "A", 1, "Accelerating migration while dismantling local infrastructure means running both in parallel during the transition — a real cost spike exactly when the budget is limited."),
+        s("economic-viability", "A", 2, "Migration costs are largely usage-based and can be phased, but a faster pace still front-loads more spend into the limited-budget period."),
+        s("economic-viability", "A", 3, "Retiring local infrastructure sooner also retires its ongoing maintenance cost sooner, partially offsetting the migration spend within the same budget cycle."),
       ],
-      clue: "How does a multi-year fixed commitment interact with a budget the case describes as limited, this year specifically?",
+      clue: "What does running local infrastructure and an accelerated migration at the same time do to a budget that's already limited?",
     },
     B: {
       statements: [
-        s("economic-viability", "B", 1, "Cooling and power-delivery retrofits carry meaningful upfront capital cost that competes directly with a budget this exercise describes as limited."),
-        s("economic-viability", "B", 2, "Retrofit payback typically arrives within a few years from energy savings, but requires the capital outlay to clear the limited budget constraint first."),
-        s("economic-viability", "B", 3, "Targeted retrofits — containment, controls tuning — can be phased to fit within a limited budget while still returning most of the technical benefit."),
+        s("economic-viability", "B", 1, "Building binding governance needs new tooling, policy work, and cross-team time — a real cost even though it touches no hardware."),
+        s("economic-viability", "B", 2, "Mostly a process and tooling investment rather than infrastructure spend, so it fits a limited budget more easily than a migration or hardware change."),
+        s("economic-viability", "B", 3, "Once in place, governance prevents the kind of uncontrolled departmental spend the case already describes — a direct, ongoing cost saving on top of a low setup cost."),
       ],
-      clue: "Cooling and power-delivery retrofits mean capital equipment — how does that interact with a limited budget compared to a data or process investment?",
+      clue: "Which of the three options needs the least new infrastructure spend to get started?",
     },
     C: {
       statements: [
-        s("economic-viability", "C", 1, "A management and transparency system needs new tooling, data-governance work, and staff time — a real cost even without new hardware."),
-        s("economic-viability", "C", 2, "Mostly a data and process investment rather than capital equipment, so it fits a limited budget more easily than a physical retrofit."),
-        s("economic-viability", "C", 3, "Can be built incrementally on existing monitoring infrastructure at low marginal cost, freeing budget for whichever technical measure the data later justifies."),
+        s("economic-viability", "C", 1, "Technical optimisation work still needs engineering time to find and safely remove waste — not free, even without new procurement."),
+        s("economic-viability", "C", 2, "Mostly delivers savings from resources already being paid for, so it can pay for itself faster than an option needing new spend."),
+        s("economic-viability", "C", 3, "Removing idle and over-provisioned resources reduces the cloud bill directly and immediately — the most budget-friendly option of the three under a tight constraint."),
       ],
-      clue: "Which of the three options needs the least new hardware to get started?",
+      clue: "Which option reduces an existing cost directly, rather than adding a new one?",
     },
   },
   feasibility: {
     A: {
       statements: [
-        s("feasibility", "A", 1, "Requires legal negotiation with an external generator or supplier, a due-diligence cycle, and sign-off across procurement and finance before anything changes."),
-        s("feasibility", "A", 2, "Meridian already has some renewable contracts in place, so extending them is a scaling exercise rather than a new capability to build."),
-        s("feasibility", "A", 3, "Can be executed largely through the existing procurement relationship with minimal new internal process."),
+        s("feasibility", "A", 1, "Requires coordinating migration schedules, application compatibility checks, and a cutover plan across every team still running local infrastructure."),
+        s("feasibility", "A", 2, "Some applications are already partly on cloud, so accelerating is scaling an existing effort rather than starting a new one."),
+        s("feasibility", "A", 3, "Can be executed through the existing migration pipeline and vendor relationship, with minimal new process to design."),
       ],
-      clue: "Meridian already holds some renewable contracts — is extending an existing relationship the same kind of effort as building a new one?",
+      clue: "Is accelerating an already-started migration the same kind of effort as starting one from zero?",
     },
     B: {
       statements: [
-        s("feasibility", "B", 1, "Requires physical works inside a live facility — exactly the kind of change IT Operations is wary of, given the priority on operational stability."),
-        s("feasibility", "B", 2, "Can be phased zone-by-zone to limit exposure, but still requires scheduling live-facility work around uptime commitments."),
-        s("feasibility", "B", 3, "Can be piloted on a single non-critical zone first, keeping the rest of the facility untouched while results are validated."),
+        s("feasibility", "B", 1, "Requires agreement across departments that currently order cloud services independently and have little incentive to accept new central control."),
+        s("feasibility", "B", 2, "Can start with a lightweight policy and a basic usage dashboard, expanding scope once departments see the value."),
+        s("feasibility", "B", 3, "Can be piloted with a single policy area — cost visibility, for instance — first, building buy-in before wider rollout."),
       ],
-      clue: "Re-read the constraint on operational stability — what does live-facility retrofit work risk during implementation?",
+      clue: "Re-read the constraint on departments wanting flexibility and little central control — what does that mean for rolling out governance all at once versus gradually?",
     },
     C: {
       statements: [
-        s("feasibility", "C", 1, "Requires new tooling, cross-team data agreements, and six-plus months before it produces any usable output."),
-        s("feasibility", "C", 2, "Needs coordination across IT and facilities to agree on what to measure, but can reuse data Meridian already collects in parts of the facility."),
-        s("feasibility", "C", 3, "Can be piloted with existing data and a small cross-functional taskforce within one quarter, since it changes process and reporting, not physical infrastructure."),
+        s("feasibility", "C", 1, "Requires detailed workload-level data that, per the case, isn't fully available yet — some optimisation work would have to start with an audit."),
+        s("feasibility", "C", 2, "Can begin with the workloads Flexora already has visibility into, expanding as data improves."),
+        s("feasibility", "C", 3, "Can be piloted on a small, well-understood set of workloads within weeks, since it changes configuration and usage patterns, not organisational structure."),
       ],
-      clue: "Does this option require new physical infrastructure, or mostly agreement on what to measure?",
+      clue: "Does optimisation need perfect data everywhere before it can start anywhere?",
+    },
+  },
+  "transparency-gain": {
+    A: {
+      statements: [
+        s("transparency-gain", "A", 1, "Migrating more workloads adds more cloud infrastructure to track, without adding any new visibility into how it's used."),
+        s("transparency-gain", "A", 2, "Cloud-native monitoring tools that come with migrated workloads add some visibility Flexora didn't have on-premises."),
+        s("transparency-gain", "A", 3, "A full migration, done with a monitoring plan, could give Flexora more consistent, centralised visibility than the mixed on-prem/cloud setup it replaces."),
+      ],
+      clue: "Does moving a workload to the cloud automatically mean someone is watching what it costs or how it's used?",
+    },
+    B: {
+      statements: [
+        s("transparency-gain", "B", 1, "A policy document alone doesn't generate any data — it only says what should be tracked."),
+        s("transparency-gain", "B", 2, "Introduces some reporting requirements, giving partial visibility into spend and usage across departments."),
+        s("transparency-gain", "B", 3, "Directly closes the transparency gap the case names — usage, cost, workloads, and responsibilities all in one place — the largest transparency gain of the three by design."),
+      ],
+      clue: "Which option is explicitly built to close the exact transparency gap the case describes?",
+    },
+    C: {
+      statements: [
+        s("transparency-gain", "C", 1, "Optimisation work generates findings about specific workloads, but doesn't necessarily produce an ongoing reporting structure."),
+        s("transparency-gain", "C", 2, "Requires building some monitoring to find waste in the first place, which adds real but narrow visibility."),
+        s("transparency-gain", "C", 3, "Sustained optimisation work naturally produces detailed, ongoing usage data as a by-product, feeding directly into whatever governance model comes next."),
+      ],
+      clue: "Does finding and fixing inefficiency require building visibility into usage first?",
     },
   },
   risk: {
     A: {
       statements: [
-        s("risk", "A", 1, "A 10-20 year commitment to a single supplier concentrates exposure — if that supplier underperforms or the market shifts, Meridian is locked in regardless."),
-        s("risk", "A", 2, "Renewable pricing volatility is partly hedged by the contract structure, but Meridian still carries exposure if broader energy prices move sharply."),
-        s("risk", "A", 3, "Financially hedged virtual PPA structures largely insulate Meridian from downstream price risk, leaving mainly reputational exposure if the underlying project underdelivers."),
+        s("risk", "A", 1, "Accelerating migration while under budget and data-transparency pressure raises the chance of moving workloads before their cost and dependency implications are understood."),
+        s("risk", "A", 2, "Migration risk is manageable with careful sequencing, though the faster pace leaves less time to catch problems before they compound."),
+        s("risk", "A", 3, "A phased, well-tested migration plan keeps risk contained even at an accelerated pace, since each step can be validated before the next."),
       ],
-      clue: "If the supplier underperforms or the market shifts, what's Meridian's exposure on a 10-20 year single-supplier contract?",
+      clue: "Re-read the constraint about incomplete data — what does moving faster do to the chance of a mistake going unnoticed until it's expensive?",
     },
     B: {
       statements: [
-        s("risk", "B", 1, "Retrofit work inside a live facility risks an availability incident during implementation — precisely the outcome the operational-stability priority is meant to prevent."),
-        s("risk", "B", 2, "A carefully phased rollout limits blast radius, but some implementation-window risk to availability remains unavoidable."),
-        s("risk", "B", 3, "Piloting on a single non-critical zone before wider rollout keeps any implementation risk contained and reversible."),
+        s("risk", "B", 1, "A governance rollout risks being ignored or worked around if departments see it as central control being imposed on them."),
+        s("risk", "B", 2, "Rollout risk is mostly organisational — adoption and pushback — rather than technical, and is adjustable if the policy needs revising."),
+        s("risk", "B", 3, "Touches no live workloads directly, carrying no technical or availability risk, and is fully reversible if a specific rule doesn't work."),
       ],
-      clue: "Re-read the constraint on operational stability — what's the failure mode of retrofit work inside a live facility?",
+      clue: "Which option touches zero live workloads, and what does that mean for the kind of risk it carries?",
     },
     C: {
       statements: [
-        s("risk", "C", 1, "A new metrics system can surface uncomfortable numbers publicly before anyone has agreed how to explain them, creating a communications risk of its own."),
-        s("risk", "C", 2, "Rollout risk is mostly organisational — adoption, data-quality disputes — rather than operational, and is reversible if the model needs revising."),
-        s("risk", "C", 3, "Touches no physical infrastructure and carries no availability exposure, making it the lowest operational-risk option of the three by construction."),
+        s("risk", "C", 1, "Removing resources believed to be idle carries a real risk of breaking something still quietly in use, especially with incomplete usage data."),
+        s("risk", "C", 2, "Careful, staged removal with monitoring reduces the chance of an incident, though some risk of misjudging a workload's real usage remains."),
+        s("risk", "C", 3, "Piloting on a small, well-understood set of workloads first keeps this risk contained and reversible before wider rollout."),
       ],
-      clue: "Which option touches zero physical infrastructure, and what does that mean for availability risk?",
+      clue: "Re-read the constraint about incomplete data — what's the risk of removing a resource that looks idle but isn't?",
     },
   },
-  credibility: {
+  "long-term-effect": {
     A: {
       statements: [
-        s("credibility", "A", 1, "GoO-only claims without matched hourly consumption data are a well-documented target for auditor and journalist scrutiny over \"paper renewables.\""),
-        s("credibility", "A", 2, "A named, verifiable long-term PPA is harder to dismiss than certificates alone, though scrutiny of the underlying delivery structure is increasingly common."),
-        s("credibility", "A", 3, "A physical PPA delivering into Meridian's own grid region is about as defensible a renewable claim as a single company can make, matching the mechanism hyperscalers use at scale."),
+        s("long-term-effect", "A", 1, "An accelerated migration is a one-time shift — once complete, it says nothing about whether future cloud growth will be managed any better than today's."),
+        s("long-term-effect", "A", 2, "Leaves Flexora fully cloud-based, which simplifies some things structurally, but without governance the same uncontrolled-growth pattern can simply continue in the new environment."),
+        s("long-term-effect", "A", 3, "Combined with the other two measures later, a completed migration is a stable foundation — but taken alone, it does not structurally prevent the problems the case describes from recurring."),
       ],
-      clue: "Re-read the constraint about IT's stance on symbolic measures — how does that affect a claim built mainly on certificates rather than matched delivery data?",
+      clue: "Once the migration is done, does the case's underlying problem — uncontrolled, ad hoc cloud use — actually go away?",
     },
     B: {
       statements: [
-        s("credibility", "B", 1, "A single self-reported PUE figure, without independent verification, is exactly the kind of unaudited number regulators and journalists increasingly question."),
-        s("credibility", "B", 2, "A physically verifiable before/after PUE change is more defensible than a contractual claim, though it's still only one metric among several a sophisticated reviewer would ask about."),
-        s("credibility", "B", 3, "Independently measured, physically verified efficiency gains are among the hardest sustainability claims to challenge, since the underlying hardware change is directly inspectable."),
+        s("long-term-effect", "B", 1, "A governance policy that isn't actively maintained can quietly stop being followed within a year, the same way many internal policies fade."),
+        s("long-term-effect", "B", 2, "Provides a lasting structure for decisions, as long as someone keeps enforcing and updating it as the organisation changes."),
+        s("long-term-effect", "B", 3, "Structurally changes how every future cloud decision gets made, making it the only option of the three whose effect compounds rather than fades over time."),
       ],
-      clue: "Which is harder for an outside reviewer to dismiss: a self-reported ratio, or a physically inspectable hardware change?",
+      clue: "Which option changes the organisation's decision-making structure permanently, rather than fixing a specific problem once?",
     },
     C: {
       statements: [
-        s("credibility", "C", 1, "A new internal reporting model with no external validation yet is, at this stage, still an unverified claim about how rigorous Meridian's numbers are."),
-        s("credibility", "C", 2, "A differentiated, multi-metric model is structurally more credible than PUE-only reporting, even before any external audit."),
-        s("credibility", "C", 3, "Directly answers the \"credibility versus how it merely sounds\" test this criterion is built on — it's the only option that changes what Meridian can actually stand behind under scrutiny, not just what it can say."),
+        s("long-term-effect", "C", 1, "Optimisation savings tend to erode over time as new workloads are added the same ad hoc way the old ones were."),
+        s("long-term-effect", "C", 2, "Produces a cleaner baseline that lasts until the next round of uncontrolled growth catches up with it."),
+        s("long-term-effect", "C", 3, "If paired with ongoing monitoring, optimisation gains can be sustained rather than eroded — but without that pairing, the effect is temporary by nature."),
       ],
-      clue: "Which option is the only one that changes what Meridian can actually demonstrate under scrutiny, not just what it can say in a press release?",
+      clue: "Without governance to prevent new waste, how long does a one-time clean-up's benefit actually last?",
     },
   },
 };
+
+// ---------------------------------------------------------------------------
+// Stage 6 — Reflection (distinct, journal-style; still feeds the report)
+// ---------------------------------------------------------------------------
+export type ReflectionPrompt = { id: string; question: string };
+
+export const REFLECTION_PROMPTS: ReflectionPrompt[] = [
+  { id: "quick-solution", question: "Where might the cloud be seen in my organisation as a quick solution without properly assessing the long-term effects?" },
+  { id: "unnecessary-consumption", question: "Which cloud use probably generates unnecessary resource or energy consumption in our organisation?" },
+  { id: "attractive-but-weak", question: "Which decision would be attractive in the short term, but too weak strategically?" },
+  { id: "prioritise-differently", question: "What would a head of department, architect, manager, or consultant have to prioritise differently than a purely operationally minded implementer?" },
+];
 
 // ---------------------------------------------------------------------------
 // Task 2 — copy
 // ---------------------------------------------------------------------------
 export const FOLLOWUP_COUNT = 2;
 export const RISK_COUNT = 2;
+export const JUSTIFY_MIN_WORDS = 40;
 
 export const TASK2 = {
   kicker: "Task 2",
-  heading: "Prioritisation Decision Simulator",
-  subtext:
-    "Score all three options against the seven criteria from the materi. Do not just declare a gut-feeling ranking — reason through each criterion first. The radar chart reveals itself as you go.",
-  orderBanner: "Suggested order: score all 7 criteria, then decide. You can work in any order — nothing here is locked.",
-  criteriaHeading: "Score the three options",
-  criteriaInstructions:
-    "For each criterion, click the one statement under each option that best matches Meridian's situation. Use Show Clue if you're unsure — it points at the reasoning, not the answer.",
-  radarHeading: "Live comparison",
-  radarIntro: "Builds as you answer each criterion below. Distinguish the three options by line style, not colour alone.",
-  decision: {
-    heading: "Decision",
+  heading: "The Prioritization Decision",
+  intro:
+    "Work through the seven stages below — nothing is locked. Score the seven dimensions, watch the radar take shape, then make and defend a call under real uncertainty.",
+  orderBanner: "Suggested order: Stage 1 → 7. You can work in any order — the report at the end fills in as you go.",
+  stage1: { heading: "Stage 1 — The Situation", instructions: "Read the three options and five general conditions. Click each card to expand it." },
+  stage2: {
+    heading: "Stage 2 — Assess the 7 Dimensions",
+    instructions: "For each dimension, pick the one statement under each option that best matches Flexora's situation. Use Show Clue if you're unsure — it points at the reasoning, not the answer. The radar on the right builds live as you answer.",
+  },
+  stage3: {
+    heading: "Stage 3 — Make the Call",
+    instructions: "Based on the radar you've just built, choose one option as your final priority and justify it in writing.",
     pickLabel: "Final recommendation",
-    pickCaption: "Select the option you'd actually recommend to Meridian's board.",
+    pickCaption: "Select the option you'd actually recommend to Flexora's leadership.",
     justifyLabel: "Justification",
-    justifyCaption:
-      "You will not have perfect data. State your reasoning anyway — this is what a real prioritisation decision requires. Aim for at least ~40 words.",
-    followUpLabel: "Follow-up decisions",
-    followUpCaption: "What must be decided next, once this measure is approved?",
-    riskLabel: "Risks of the easy-but-shallow alternative",
-    riskCaption:
-      "Name two risks of picking a measure that is easy to communicate short-term but structurally weak — even if it isn't the option you recommended.",
+    justifyCaption: `Justify your choice — explicitly note what information is still missing and why you're deciding anyway. Aim for at least ${JUSTIFY_MIN_WORDS} words.`,
+  },
+  stage4: {
+    heading: "Stage 4 — Follow-Up Decisions",
+    instructions: "What are the most important follow-up decisions that result from this prioritisation?",
+  },
+  stage5: {
+    heading: "Stage 5 — Two Risks of the Wrong Shortcut",
+    instructions: "Describe two risks if a line of measures is chosen that is attractive in the short term but structurally weak — even if it isn't the option you recommended.",
+  },
+  stage6: {
+    heading: "Stage 6 — Reflection",
+    instructions: "Four questions to answer honestly and personally — these feed the report too, but there's no right answer to check here.",
+  },
+  stage7: {
+    heading: "Stage 7 — Live Report",
+    instructions: "A read-only recap of everything above, and the structured memo it produces — ready to export once every stage is complete.",
   },
   export: {
     filenameLevel: 2,
     filenameTask: 1,
-    taskLabel: "Prioritisation Decision Memo",
-    docHeading: "Prioritisation Decision Memo",
+    taskLabel: "Prioritization Decision Memo",
+    docHeading: "Prioritization Decision Memo",
   },
 } as const;

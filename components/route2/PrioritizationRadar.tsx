@@ -36,7 +36,7 @@ export function PrioritizationRadar() {
           </span>
         ))}
       </div>
-      <p className="mt-2 text-micro tabular-nums text-ash">{r2.criteriaDoneCount} / {r2.criteriaTotal} scores answered</p>
+      <p className="mt-2 text-micro tabular-nums text-ash">{r2.stage2DoneCount} / {r2.stage2Total} scores answered</p>
     </div>
   );
 }
