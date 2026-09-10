@@ -23,10 +23,10 @@ const slugify = (v: string) =>
  * `1-{name}-day8-l{level}task{taskNumber}` e.g. `1-muchson-day8-l2task1`. The
  * leading `1` is constant across every route (each route produces exactly
  * one export) — `l{level}` is what actually identifies which route/level it
- * came from. Function name kept as `day7ExportFilename` so Route 2's
- * existing import (out of scope for this rebuild) doesn't need to change.
+ * came from. The `day8` segment names the curriculum day (not this repo's
+ * version), so it stays `day8` even in the v2 rebuild.
  */
-export function day7ExportFilename(name: string, level: number, taskNumber: number): string {
+export function exportFilename(name: string, level: number, taskNumber: number): string {
   const who = slugify(name) || "learner";
   return `1-${who}-day8-l${level}task${taskNumber}`;
 }

@@ -6,7 +6,7 @@ import { markRouteExported } from "@/lib/routeGating";
 import { useRoute1 } from "./useRoute1";
 import { useDecisionReportData } from "./useDecisionReportData";
 import { buildReportJson, buildReportHtml } from "./exportDocuments";
-import { day7ExportFilename, downloadTextFile } from "@/lib/downloadFile";
+import { exportFilename, downloadTextFile } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
 import { MissingList } from "@/components/ui/MissingList";
 import { TASK1 } from "@/lib/route1";
@@ -29,7 +29,7 @@ export function ExportBar() {
       if (r1.missing[0]) scrollToAndFlash(r1.missing[0].id);
       return;
     }
-    const filename = day7ExportFilename(r1.name, TASK1.export.filenameLevel, TASK1.export.filenameTask);
+    const filename = exportFilename(r1.name, TASK1.export.filenameLevel, TASK1.export.filenameTask);
     downloadTextFile(`${filename}.json`, buildReportJson(r1, report, filename), "application/json");
     downloadTextFile(`${filename}.html`, buildReportHtml(report), "text/html");
     markRouteExported(toggleCheck, 1);
