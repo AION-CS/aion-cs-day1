@@ -3,7 +3,7 @@
 import { useProgress } from "@/lib/store";
 import { R3, GUTCHECK_PROMPTS, TASK3 } from "@/lib/route3";
 
-/** Stage 5 — narrative bridge into Helix, plus an optional gut-check that is never required to proceed. */
+/** Stage 3 — narrative bridge into Helix, plus an optional gut-check that is never required to proceed. */
 export function BridgeToHelix() {
   const notes = useProgress((s) => s.notes);
   const setNote = useProgress((s) => s.setNote);

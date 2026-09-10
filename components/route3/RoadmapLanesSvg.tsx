@@ -13,7 +13,7 @@ const LANE_W = W / 3 - 8;
 /**
  * The 3-horizon roadmap — Short-Term / Medium-Term / Structural lanes.
  * Purely presentational; reflects `counts` if given. Used as a static legend
- * in the material, and as Stage 4's visual + drop target (`interactive`) —
+ * in the material, and as Stage 2's visual + drop target (`interactive`) —
  * the parent renders real HTML zones underneath for chip detail/removal.
  */
 export function RoadmapLanesSvg({ counts, interactive = false }: { counts?: Partial<Record<HorizonId, number>>; interactive?: boolean }) {

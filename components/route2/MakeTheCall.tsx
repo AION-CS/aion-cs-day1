@@ -5,7 +5,7 @@ import { useProgress } from "@/lib/store";
 import { R2, OPTIONS, TASK2, JUSTIFY_MIN_WORDS } from "@/lib/route2";
 import { useRoute2 } from "./useRoute2";
 
-/** Stage 3 — pick a final option and justify it under acknowledged uncertainty. */
+/** Stage 2 — pick a final option and justify it under acknowledged uncertainty. */
 export function MakeTheCall() {
   const r2 = useRoute2();
   const choose = useProgress((s) => s.choose);
@@ -16,8 +16,8 @@ export function MakeTheCall() {
   return (
     <div className="space-y-5">
       <div id="r2-stage3-pick">
-        <p className="text-caption font-semibold text-ink">{TASK2.stage3.pickLabel}</p>
-        <p className="text-micro text-ash">{TASK2.stage3.pickCaption}</p>
+        <p className="text-caption font-semibold text-ink">{TASK2.stage2.pickLabel}</p>
+        <p className="text-micro text-ash">{TASK2.stage2.pickCaption}</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {OPTIONS.map((o) => {
             const active = r2.pick === o.id;
@@ -40,8 +40,8 @@ export function MakeTheCall() {
       </div>
 
       <label id="r2-stage3-justify" className="block">
-        <span className="text-caption font-semibold text-ink">{TASK2.stage3.justifyLabel}</span>
-        <p className="text-micro text-ash">{TASK2.stage3.justifyCaption}</p>
+        <span className="text-caption font-semibold text-ink">{TASK2.stage2.justifyLabel}</span>
+        <p className="text-micro text-ash">{TASK2.stage2.justifyCaption}</p>
         <textarea
           value={r2.justify}
           onChange={(e) => setNote(R2.justify, e.target.value)}

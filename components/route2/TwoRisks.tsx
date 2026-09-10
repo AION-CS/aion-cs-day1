@@ -5,7 +5,7 @@ import { R2, RISK_COUNT } from "@/lib/route2";
 import { useRoute2 } from "./useRoute2";
 import { QuickWinTimelineSvg } from "./QuickWinTimelineSvg";
 
-/** Stage 4 — two risks of the fast-but-shallow alternative, with the Block 5 timeline as a visual reminder. */
+/** Stage 2 — two risks of the fast-but-shallow alternative, with the Block 5 timeline as a visual reminder. */
 export function TwoRisks() {
   const r2 = useRoute2();
   const setNote = useProgress((s) => s.setNote);

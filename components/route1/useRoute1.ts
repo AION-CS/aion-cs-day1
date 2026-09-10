@@ -85,20 +85,20 @@ export function useRoute1() {
     if (!stage2Complete) {
       items.push({
         id: "r1-stage2",
-        label: `Stage 2: ${EVIDENCE_ITEMS.length - stage2DoneCount} of ${EVIDENCE_ITEMS.length} evidence cards not yet sorted into Benefit/Risk`,
+        label: `Stage 1: ${EVIDENCE_ITEMS.length - stage2DoneCount} of ${EVIDENCE_ITEMS.length} evidence cards not yet sorted into Benefit/Risk`,
       });
     }
     if (!stage3Complete) {
       items.push({
         id: "r1-stage3",
-        label: `Stage 3: ${EVIDENCE_ITEMS.length - stage3DoneCount} of ${EVIDENCE_ITEMS.length} cards not yet placed on the wheel`,
+        label: `Stage 2: ${EVIDENCE_ITEMS.length - stage3DoneCount} of ${EVIDENCE_ITEMS.length} cards not yet placed on the wheel`,
       });
     }
     for (const id of stage4MissingIds) {
       const prompt = STATEMENT_PROMPTS.find((p) => p.id === id);
       items.push({
         id: `r1-stage4-${id}`,
-        label: `Stage 4: complete the sentence starting "${prompt?.starter ?? id}"`,
+        label: `Stage 3: complete the sentence starting "${prompt?.starter ?? id}"`,
       });
     }
     if (!stage5Complete) {
@@ -106,8 +106,8 @@ export function useRoute1() {
         id: "r1-stage2",
         label:
           stage5Items.length === 0
-            ? "Stage 2: tag at least one card as Risk, then classify it Technical or Governance"
-            : `Stage 2: ${stage5Items.length - stage5DoneCount} of ${stage5Items.length} Risk cards not yet tagged Technical/Governance`,
+            ? "Stage 1: tag at least one card as Risk, then classify it Technical or Governance"
+            : `Stage 1: ${stage5Items.length - stage5DoneCount} of ${stage5Items.length} Risk cards not yet tagged Technical/Governance`,
       });
     }
     return items;

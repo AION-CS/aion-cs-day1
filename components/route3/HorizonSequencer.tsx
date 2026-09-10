@@ -20,7 +20,7 @@ type Handlers = {
   onItemClick: (id: string) => void;
 };
 
-/** Stage 4 — drag the 4 chosen levers onto Short/Medium/Structural, then mark exactly one as the first move. */
+/** Stage 2 — drag the 4 chosen levers onto Short/Medium/Structural, then mark exactly one as the first move. */
 export function HorizonSequencer() {
   const r3 = useRoute3();
   const choose = useProgress((s) => s.choose);
@@ -130,7 +130,7 @@ export function HorizonSequencer() {
   }, [placements, levers]);
 
   if (levers.length === 0) {
-    return <p className="rounded-xl border border-dashed border-line bg-canvas p-4 text-caption text-ash">Nothing to sequence yet — select your 4 levers in Stage 3 first. This section stays open and fills in as soon as you do.</p>;
+    return <p className="rounded-xl border border-dashed border-line bg-canvas p-4 text-caption text-ash">Nothing to sequence yet — select your 4 levers in Stage 2 first. This section stays open and fills in as soon as you do.</p>;
   }
 
   const pool = levers.filter((l) => !placements[l.id]);

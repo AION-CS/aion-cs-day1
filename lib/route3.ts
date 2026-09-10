@@ -2,7 +2,7 @@
  * Route 3 — Management Decision. All learner-facing copy and pure data live
  * here so components stay presentational. Two cases in one progressive
  * flow: SkyBridge Solutions GmbH (diagnostic, Stages 1-4) bridges into
- * Helix Digital Platforms (executive proposal, Stage 6).
+ * Helix Digital Platforms (executive proposal, Stage 3).
  */
 
 import type { IconKey } from "@/lib/routes";
@@ -272,7 +272,7 @@ export const MATERIAL: MaterialSection[] = [
     insight:
       "This is a deliberate simplification that unifies terms from across the whole course into one consistent model, so every stage of this route can refer back to the same five components instead of juggling route-specific vocabulary. It is not a new set of concepts — it's the same ideas from Routes 1 and 2, organised for management-level decision-making.",
     takeaway:
-      "You'll use this exact model, interactively, in Stage 2 — mapping SkyBridge's own evidence onto these five components before recommending anything.",
+      "You'll use this exact model, interactively, in Stage 1 — mapping SkyBridge's own evidence onto these five components before recommending anything.",
     callout: {
       label: "This is the anchor for the whole route",
       text: "Every later stage refers back to these five components. If a stage asks you to name a trade-off or a lever, it's implicitly asking which of these five it touches.",
@@ -289,7 +289,7 @@ export const MATERIAL: MaterialSection[] = [
     insight:
       "A recommendation aimed only at symptoms needs to be repeated every cycle, because nothing about the underlying cause changed. A recommendation aimed at a lever changes what produces the symptom, so the same problem doesn't need solving again next quarter.",
     takeaway:
-      "In Stage 3, you'll be offered several candidate actions — some are levers, some are symptom-level distractors dressed up as solutions. Telling them apart is the actual skill being tested.",
+      "In Stage 2, you'll be offered several candidate actions — some are levers, some are symptom-level distractors dressed up as solutions. Telling them apart is the actual skill being tested.",
     callout: {
       label: "A test you can apply anywhere",
       text: "Ask of any proposed action: \"if we do only this, does the underlying cause still exist next quarter?\" If yes, it's a symptom fix, not a lever.",
@@ -306,7 +306,7 @@ export const MATERIAL: MaterialSection[] = [
     insight:
       "Choosing the right first move is a strategic decision on its own, independent of which lever is objectively \"biggest\": a well-chosen Short-Term move builds credibility and often produces the data a later Structural move needs to be justified — while starting with an ambitious Structural commitment before any visibility exists repeats the exact mistake Route 2's Block 5 warned about.",
     takeaway:
-      "You'll build a real roadmap in Stage 4 — placing your chosen levers onto these three horizons, and naming exactly one as the first move.",
+      "You'll build a real roadmap in Stage 2 — placing your chosen levers onto these three horizons, and naming exactly one as the first move.",
     callout: {
       label: "First move ≠ biggest move",
       text: "The first move on a credible roadmap is usually the one that de-risks or informs the moves after it — not the one with the largest headline impact.",
@@ -323,10 +323,10 @@ export const MATERIAL: MaterialSection[] = [
     insight:
       "Each of these seven elements answers an objection before it's raised: (1) answers \"why should we spend time on this,\" (6) answers \"who do we hold accountable,\" (7) answers \"why not just wait for better data.\" A proposal missing any of the seven leaves that objection for someone in the room to raise live.",
     takeaway:
-      "This is the exact scaffold you'll fill in for Helix Digital Platforms in Stage 6 — not a new framework, but the assembly of everything from Routes 1-3 into one board-ready document.",
+      "This is the exact scaffold you'll fill in for Helix Digital Platforms in Stage 3 — not a new framework, but the assembly of everything from Routes 1-3 into one board-ready document.",
     callout: {
       label: "Direct use in Task 3",
-      text: "Stage 6 gives you a sentence-starter for each of these seven elements. Treat this block as the answer key for what each one is actually asking.",
+      text: "Stage 3 gives you a sentence-starter for each of these seven elements. Treat this block as the answer key for what each one is actually asking.",
     },
   },
 ];
@@ -338,28 +338,40 @@ export const TASK3 = {
   kicker: "Task 3",
   heading: "SkyBridge Diagnostic → Helix Executive Proposal",
   intro:
-    "A capstone task in two parts: first diagnose SkyBridge Solutions, then step into the advisor role for Helix Digital Platforms. Work through the seven stages below — nothing is locked.",
-  orderBanner: "Suggested order: Stage 1 → 7. You can work in any order — the report at the end fills in as you go.",
-  stage1: { heading: "Stage 1 — SkyBridge Briefing", instructions: "Read the case and click each of the six evidence cards to expand it." },
+    "A capstone task in two parts: first diagnose SkyBridge Solutions, then step into the advisor role for Helix Digital Platforms. Work through the three stages below — nothing is locked.",
+  orderBanner: "Suggested order: Stage 1 → 3. You can work in any order — the report at the end fills in as you go.",
+  group1: {
+    heading: "Stage 1 — Diagnose SkyBridge",
+    instructions: "Read the case, then map each piece of evidence onto the Decision Architecture model.",
+  },
+  group2: {
+    heading: "Stage 2 — Levers & Roadmap",
+    instructions: "Pick the real root-cause levers, then sequence them into a roadmap with a first move.",
+  },
+  group3: {
+    heading: "Stage 3 — Proposal & Export",
+    instructions: "Step into the advisor role for Helix, build the executive proposal, then review and export it.",
+  },
+  stage1: { heading: "SkyBridge Briefing", instructions: "Read the case and click each of the six evidence cards to expand it." },
   stage2: {
-    heading: "Stage 2 — Map to the Decision Architecture",
+    heading: "Map to the Decision Architecture",
     instructions: "Drag each evidence card onto the one Decision Architecture component it fits best. Use the clue if you're unsure; undo/redo freely.",
   },
   stage3: {
-    heading: "Stage 3 — Find the 4 Levers",
+    heading: "Find the 4 Levers",
     instructions: `Select exactly ${LEVERS_REQUIRED_COUNT} of the candidate actions below — the ones you judge as real root-cause levers, not symptom-level fixes — and justify each briefly.`,
   },
   stage4: {
-    heading: "Stage 4 — Recommend & Sequence",
+    heading: "Recommend & Sequence",
     instructions: "Drag your four chosen levers onto Short-Term, Medium-Term, or Structural. Then mark exactly one as your first move and justify why it goes first.",
   },
   stage5: {
-    heading: "Stage 5 — Bridge to Helix",
+    heading: "Bridge to Helix",
     instructions: "You've just diagnosed SkyBridge. Now you'll advise Helix Digital Platforms — a company facing the same tensions, at a higher and more strategic level.",
     gutcheckIntro: "Optional gut-check — not required to continue:",
   },
   stage6: {
-    heading: "Stage 6 — Build the Executive Proposal",
+    heading: "Build the Executive Proposal",
     instructions: "Seven sections, the same structure from Block 5 of the material. Complete each one for Helix.",
     s1Starter: "Sustainable cloud use matters strategically for Helix because",
     s3Starter: "Future cloud measures should be assessed and prioritized by",
@@ -367,7 +379,7 @@ export const TASK3 = {
     s7WaitStarter: "because waiting would mean",
   },
   stage7: {
-    heading: "Stage 7 — Live Report & Export",
+    heading: "Live Report & Export",
     instructions: "A read-only recap of everything above, and the management proposal it produces — ready to export once every stage is complete.",
   },
   export: {

@@ -4,7 +4,7 @@ import { useProgress } from "@/lib/store";
 import { R2, FOLLOWUP_COUNT } from "@/lib/route2";
 import { useRoute2 } from "./useRoute2";
 
-/** Stage 3 (cont.) — the most important follow-up decisions that result from the recommendation just above. */
+/** Stage 2 (cont.) — the most important follow-up decisions that result from the recommendation just above. */
 export function FollowUpDecisions() {
   const r2 = useRoute2();
   const setNote = useProgress((s) => s.setNote);

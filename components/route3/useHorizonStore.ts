@@ -14,7 +14,7 @@ type HorizonState = {
   redo: (current: HorizonPlacements) => HorizonPlacements | null;
 };
 
-/** Ephemeral undo/redo history for Stage 4's drag mechanic — same pattern as Route 1/2. */
+/** Ephemeral undo/redo history for Stage 2's drag mechanic — same pattern as Route 1/2. */
 export const useHorizonStore = create<HorizonState>()((set, get) => ({
   past: [],
   future: [],

@@ -27,7 +27,7 @@ export function Material() {
           <DecisionArchitectureModel />
         </div>
         <p className="mt-2 text-center text-micro text-ash">
-          An empty shell on purpose — you'll map SkyBridge's own evidence onto this exact model in Stage 2.
+          An empty shell on purpose — you'll map SkyBridge's own evidence onto this exact model in Stage 1.
         </p>
       </MaterialBlock>
 
@@ -38,7 +38,7 @@ export function Material() {
       <MaterialBlock block={horizons}>
         <RoadmapLanesSvg />
         <p className="mt-2 text-center text-micro text-ash">
-          Same three lanes, functional, in Stage 4 — you'll drag your chosen levers onto them.
+          Same three lanes, functional, in Stage 2 — you'll drag your chosen levers onto them.
         </p>
       </MaterialBlock>
 

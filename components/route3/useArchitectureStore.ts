@@ -14,7 +14,7 @@ type ArchitectureState = {
   redo: (current: ArchitecturePlacements) => ArchitecturePlacements | null;
 };
 
-/** Ephemeral undo/redo history for Stage 2's drag mechanic — same pattern as Route 1/2. */
+/** Ephemeral undo/redo history for Stage 1's drag mechanic — same pattern as Route 1/2. */
 export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   past: [],
   future: [],

@@ -14,7 +14,7 @@ function vertex(cx: number, cy: number, r: number, i: number, n: number): [numbe
 /**
  * The Decision Architecture Model — 5 nodes around a central hub. Purely
  * presentational (reflects `counts`, owns no state). Used two ways: a static
- * legend in the material, and Stage 2's visual + drop target (`interactive`),
+ * legend in the material, and Stage 1's visual + drop target (`interactive`),
  * with the parent rendering the real HTML zones underneath for detail/removal.
  */
 export function DecisionArchitectureModel({

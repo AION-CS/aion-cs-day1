@@ -4,7 +4,7 @@ import { useProgress } from "@/lib/store";
 import { R2, REFLECTION_PROMPTS } from "@/lib/route2";
 import { useRoute2 } from "./useRoute2";
 
-/** Stage 5 — two personal/coaching-style reflections. Visually distinct (journal-like) from the analytical stages above, but still feeds the report. */
+/** Stage 3 — two personal/coaching-style reflections. Visually distinct (journal-like) from the analytical stages above, but still feeds the report. */
 export function ReflectionStage() {
   const r2 = useRoute2();
   const setNote = useProgress((s) => s.setNote);

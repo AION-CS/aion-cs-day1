@@ -127,14 +127,14 @@ export const MATERIAL: MaterialSection[] = [
       "This is also the most actionable list in this material: unlike the provider's own PUE or hardware roadmap, every one of these five sources of waste is within the customer organisation's own control, starting with visibility into what is actually running.",
     callout: {
       label: "Before you move on",
-      text: "The wheel below is a summary of everything in this material as one working framework. Study it — you will use it directly, as an interactive tool, in Stage 3 of Task 1.",
+      text: "The wheel below is a summary of everything in this material as one working framework. Study it — you will use it directly, as an interactive tool, in Stage 2 of Task 1.",
     },
   },
 ];
 
 // ---------------------------------------------------------------------------
 // The 6-Dimension Wheel — used as a materials summary and, functionally, as
-// the Stage 3 drag target in Task 1.
+// the Stage 2 drag target in Task 1.
 // ---------------------------------------------------------------------------
 export type DimensionId = "scalability" | "cost" | "controllability" | "sustainability" | "governance" | "dependencies";
 
@@ -289,29 +289,37 @@ export const TASK1 = {
   kicker: "Task 1",
   heading: "Flexora Cloud Decision Audit",
   intro:
-    "Flexora Digital Services is a fictional company, built to let you apply everything from the material above. Work through the five stages below — nothing is locked, and each one feeds the live Decision Brief on the right, which is what you'll actually export.",
-  orderBanner: "Suggested order: Stage 1 → 5. You can work in any order — the report on the right fills in as you go, whichever stage you start with.",
+    "Flexora Digital Services is a fictional company, built to let you apply everything from the material above. Work through the three stages below — nothing is locked, and each one feeds the live Decision Brief on the right, which is what you'll actually export.",
+  orderBanner: "Suggested order: Stage 1 → 3. You can work in any order — the report on the right fills in as you go, whichever stage you start with.",
   stage1: {
-    heading: "Stage 1 — Case Briefing",
-    instructions: "Read the dossier and click each evidence card to expand it. These six cards are what you'll classify in Stages 2 and 3.",
+    heading: "Stage 1 — Read & Classify",
+    instructions: "Read the dossier, then sort each of the six evidence cards into Benefit or Risk / Challenge.",
+    part1: {
+      label: "Case Briefing",
+      instructions: "Read the dossier and click each evidence card to expand it. These six cards are what you'll classify next, and again on the wheel in Stage 2.",
+    },
+    part2: {
+      label: "Sort: Benefit vs Risk",
+      instructions:
+        "Drag each of the six evidence cards into Benefit or Risk / Challenge — or tap a card, then tap a bucket. Use the clue if you're unsure; undo/redo freely. Every card you land on Risk also asks one more thing right there: is it an Individual Technical Problem or a Management / Governance Problem?",
+    },
   },
   stage2: {
-    heading: "Stage 2 — Sort: Benefit vs Risk",
+    heading: "Stage 2 — Map to the 6-Dimension Wheel",
     instructions:
-      "Drag each of the six evidence cards into Benefit or Risk / Challenge — or tap a card, then tap a bucket. Use the clue if you're unsure; undo/redo freely. Every card you land on Risk also asks one more thing right there: is it an Individual Technical Problem or a Management / Governance Problem?",
+      "Drag the same six cards onto the wheel — one segment each, whichever dimension the evidence is most dominantly about. A card can only touch one segment: pick the strongest fit.",
   },
   stage3: {
-    heading: "Stage 3 — Classify into the 6-Dimension Wheel",
-    instructions:
-      "Now drag the same six cards onto the wheel — one segment each, whichever dimension the evidence is most dominantly about. A card can only touch one segment: pick the strongest fit.",
-  },
-  stage4: {
-    heading: "Stage 4 — Write 2 Sustainability Statements",
-    instructions: "Complete each sentence in your own words, grounded in the material and in Flexora's situation.",
-  },
-  stage5: {
-    heading: "Stage 5 — Live Report",
-    instructions: "A read-only recap of everything above, and the structured brief it produces — ready to export once every stage is complete.",
+    heading: "Stage 3 — Synthesize & Export",
+    instructions: "Complete two sustainability statements in your own words, then review and export the live brief.",
+    part1: {
+      label: "Write 2 Sustainability Statements",
+      instructions: "Complete each sentence in your own words, grounded in the material and in Flexora's situation.",
+    },
+    part2: {
+      label: "Live Report",
+      instructions: "A read-only recap of everything above, and the structured brief it produces — ready to export once every stage is complete.",
+    },
   },
   export: {
     docHeading: "Cloud Decision Audit Brief",

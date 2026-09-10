@@ -7,7 +7,7 @@ import { R1, CASE_BRIEF, EVIDENCE_ITEMS } from "@/lib/route1";
 import { ScaleTensionSvg } from "./ScaleTensionSvg";
 import { ChevronDown } from "@/components/icons/LineIcons";
 
-/** Stage 1 — the Flexora dossier as clickable/expandable evidence cards, plus the learner's name field. */
+/** Stage 1 (Read & Classify) — the Flexora dossier as clickable/expandable evidence cards, plus the learner's name field. */
 export function CaseBrief() {
   const name = useProgress((s) => s.notes[R1.name] ?? "");
   const setNote = useProgress((s) => s.setNote);
@@ -62,8 +62,8 @@ export function CaseBrief() {
                 </button>
                 {open && (
                   <div className="reveal-in border-t border-line p-3 text-micro text-ash">
-                    This card will be sorted twice in the stages below: once as Benefit vs Risk (Stage 2), and once onto the
-                    6-Dimension Wheel (Stage 3).
+                    This card will be sorted twice in the stages below: once as Benefit vs Risk (Stage 1), and once onto the
+                    6-Dimension Wheel (Stage 2).
                   </div>
                 )}
               </div>

@@ -110,35 +110,35 @@ export function useRoute3() {
   const missing = useMemo<MissingItem[]>(() => {
     const items: MissingItem[] = [];
     if (!nameComplete) items.push({ id: "r3-name", label: "Add your name so the export can be labelled correctly" });
-    if (!stage2Complete) items.push({ id: "r3-stage2", label: `Stage 2: ${SKYBRIDGE_EVIDENCE.length - stage2DoneCount} of ${SKYBRIDGE_EVIDENCE.length} evidence cards not yet mapped` });
-    if (!stage3CountOk) items.push({ id: "r3-stage3", label: `Stage 3: you've selected ${stage3Selected.length} of the required ${LEVERS_REQUIRED_COUNT} levers` });
+    if (!stage2Complete) items.push({ id: "r3-stage2", label: `Stage 1: ${SKYBRIDGE_EVIDENCE.length - stage2DoneCount} of ${SKYBRIDGE_EVIDENCE.length} evidence cards not yet mapped` });
+    if (!stage3CountOk) items.push({ id: "r3-stage3", label: `Stage 2: you've selected ${stage3Selected.length} of the required ${LEVERS_REQUIRED_COUNT} levers` });
     else if (stage3MissingReasons.length > 0) {
       for (const id of stage3MissingReasons) {
         const lever = LEVERS.find((l) => l.id === id);
-        items.push({ id: `r3-stage3-${id}`, label: `Stage 3: add a reason for "${lever?.text ?? id}"` });
+        items.push({ id: `r3-stage3-${id}`, label: `Stage 2: add a reason for "${lever?.text ?? id}"` });
       }
     }
     if (stage3Complete && !stage4SequencingComplete) {
-      items.push({ id: "r3-stage4", label: `Stage 4: ${stage4Levers.length - stage4DoneCount} of ${stage4Levers.length} levers not yet placed on the roadmap` });
+      items.push({ id: "r3-stage4", label: `Stage 2: ${stage4Levers.length - stage4DoneCount} of ${stage4Levers.length} levers not yet placed on the roadmap` });
     }
     if (stage3Complete && !stage4FirstMoveComplete) {
-      items.push({ id: "r3-stage4-firstmove", label: "Stage 4: mark one lever as the first move and justify it" });
+      items.push({ id: "r3-stage4-firstmove", label: "Stage 2: mark one lever as the first move and justify it" });
     }
-    if (!strategicRelevance.trim()) items.push({ id: "r3-stage6-relevance", label: "Stage 6: complete the strategic relevance statement" });
+    if (!strategicRelevance.trim()) items.push({ id: "r3-stage6-relevance", label: "Stage 3: complete the strategic relevance statement" });
     guidingDecisions.forEach((d, i) => {
-      if (!d.trim()) items.push({ id: `r3-stage6-guiding-${i}`, label: `Stage 6: add guiding decision #${i + 1}` });
+      if (!d.trim()) items.push({ id: `r3-stage6-guiding-${i}`, label: `Stage 3: add guiding decision #${i + 1}` });
     });
-    if (!prioritizationLogic.trim()) items.push({ id: "r3-stage6-logic", label: "Stage 6: complete the prioritization logic statement" });
+    if (!prioritizationLogic.trim()) items.push({ id: "r3-stage6-logic", label: "Stage 3: complete the prioritization logic statement" });
     tradeoffs.forEach((t, i) => {
-      if (!t.trim()) items.push({ id: `r3-stage6-tradeoff-${i}`, label: `Stage 6: name trade-off #${i + 1}` });
+      if (!t.trim()) items.push({ id: `r3-stage6-tradeoff-${i}`, label: `Stage 3: name trade-off #${i + 1}` });
     });
-    if (!firstMeasure.trim() || !firstMeasureJustify.trim()) items.push({ id: "r3-stage6-firstmeasure", label: "Stage 6: name and justify the first prioritized line of measures" });
+    if (!firstMeasure.trim() || !firstMeasureJustify.trim()) items.push({ id: "r3-stage6-firstmeasure", label: "Stage 3: name and justify the first prioritized line of measures" });
     for (const r of PROPOSAL_ROLES) {
       if (!roleFields[r.id]?.trim()) {
-        items.push({ id: "r3-stage6-roles", label: `Stage 6: complete the approval/review row for ${r.label}` });
+        items.push({ id: "r3-stage6-roles", label: `Stage 3: complete the approval/review row for ${r.label}` });
       }
     }
-    if (!decideNow.trim() || !waitingMeans.trim()) items.push({ id: "r3-stage6-decidenow", label: "Stage 6: complete the decide-now-despite-incomplete-data statement" });
+    if (!decideNow.trim() || !waitingMeans.trim()) items.push({ id: "r3-stage6-decidenow", label: "Stage 3: complete the decide-now-despite-incomplete-data statement" });
     return items;
   }, [
     nameComplete, stage2Complete, stage2DoneCount, stage3CountOk, stage3Selected.length, stage3MissingReasons,

@@ -5,7 +5,7 @@ import { R3, HELIX, PROPOSAL_ROLES, TRADEOFF_COUNT, GUIDING_DECISION_COUNT, TASK
 import { useRoute3 } from "./useRoute3";
 import { DecisionArchitectureModel } from "./DecisionArchitectureModel";
 
-/** Stage 6 — the seven-section executive proposal scaffold for Helix Digital Platforms. */
+/** Stage 3 — the seven-section executive proposal scaffold for Helix Digital Platforms. */
 export function HelixProposalBuilder() {
   const r3 = useRoute3();
   const setNote = useProgress((s) => s.setNote);

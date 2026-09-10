@@ -13,7 +13,7 @@ const STEPS = [
   "Decide now, despite gaps",
 ];
 
-/** Block 5 — the 7-step shape of a decision-ready proposal, used directly as Stage 6's scaffold. */
+/** Block 5 — the 7-step shape of a decision-ready proposal, used directly as Stage 3's scaffold. */
 export function ProposalChecklistSvg() {
   const rowH = 34;
   return (

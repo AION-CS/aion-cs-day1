@@ -53,7 +53,7 @@ export function CaseBriefSkyBridge() {
                 </button>
                 {open && (
                   <div className="reveal-in border-t border-line p-3 text-micro text-ash">
-                    You'll map this card onto the Decision Architecture Model in Stage 2.
+                    You'll map this card onto the Decision Architecture Model in Stage 1.
                   </div>
                 )}
               </div>

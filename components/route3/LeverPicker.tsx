@@ -11,7 +11,7 @@ function wordCount(text: string): number {
   return text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
 }
 
-/** Stage 3 — pick exactly the 4 real root-cause levers out of 8 candidates, and justify each. */
+/** Stage 2 — pick exactly the 4 real root-cause levers out of 8 candidates, and justify each. */
 export function LeverPicker() {
   const r3 = useRoute3();
   const choose = useProgress((s) => s.choose);

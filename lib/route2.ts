@@ -106,12 +106,12 @@ export const MATERIAL: MaterialSection[] = [
     definition:
       "Seven dimensions, applied consistently to every option, turn a gut-feeling ranking into a defensible one: Strategic Leverage (how much this unlocks or enables future decisions, rather than closing them down), Sustainability Impact (the realistic, evidence-based environmental benefit — not the easiest one to communicate), Economic Viability (cost relative to benefit, under the stated budget constraint), Feasibility (realistic implementability given current organisational and technical maturity), Transparency Gain (how much the measure improves visibility into usage, cost, and workloads), Risk (the probability and severity of the measure failing or backfiring), and Long-Term Effect (whether the benefit compounds over time or fades once attention moves elsewhere).",
     insight:
-      "Plotted on a radar chart, each option produces a distinct shape rather than a single score — one option can dominate on Feasibility and Economic Viability while trailing badly on Long-Term Effect, and that shape is more informative than any average. Task 2 scores four of these seven dimensions live — Sustainability Impact, Economic Viability, Feasibility, and Risk — in Stage 2, building the same four axes below with your own answers.",
+      "Plotted on a radar chart, each option produces a distinct shape rather than a single score — one option can dominate on Feasibility and Economic Viability while trailing badly on Long-Term Effect, and that shape is more informative than any average. Task 2 scores four of these seven dimensions live — Sustainability Impact, Economic Viability, Feasibility, and Risk — in Stage 1, building the same four axes below with your own answers.",
     takeaway:
-      "No option wins on every scored axis at once — that is expected, not a flaw in the framework. The recommendation in Stage 3 is about which shape best fits the situation's actual constraints, not which option has the most axes lit up. Strategic Leverage, Transparency Gain, and Long-Term Effect stay part of how you reason about the case even though Task 2 doesn't score them directly.",
+      "No option wins on every scored axis at once — that is expected, not a flaw in the framework. The recommendation in Stage 2 is about which shape best fits the situation's actual constraints, not which option has the most axes lit up. Strategic Leverage, Transparency Gain, and Long-Term Effect stay part of how you reason about the case even though Task 2 doesn't score them directly.",
     callout: {
       label: "This is the tool, not a demonstration",
-      text: "The chart below is an empty shell on purpose. In Stage 2 it fills in with real data from four of the seven dimensions above — same component, live.",
+      text: "The chart below is an empty shell on purpose. In Stage 1 it fills in with real data from four of the seven dimensions above — same component, live.",
     },
   },
   {
@@ -128,7 +128,7 @@ export const MATERIAL: MaterialSection[] = [
       "Naming which tier an option sits in is itself part of a credible justification. Saying \"I'm treating this as a no-regret move because X\" or \"I recognise this is a big bet, and here's why I'm making it anyway\" is stronger than presenting every choice as equally certain.",
     callout: {
       label: "Direct use in Task 2",
-      text: "Stage 3 asks you to justify your final pick while explicitly naming what information is still missing. This framework is exactly how you do that without pretending to more certainty than you have.",
+      text: "Stage 2 asks you to justify your final pick while explicitly naming what information is still missing. This framework is exactly how you do that without pretending to more certainty than you have.",
     },
   },
   {
@@ -145,7 +145,7 @@ export const MATERIAL: MaterialSection[] = [
       "This is the strongest argument for prioritising governance first, even though it's the least visible option in the short term (a tension Block 5 comes back to directly): it is the layer that makes the economies-of-scale efficiency argument from Route 1 actually realisable in practice, rather than theoretical.",
     callout: {
       label: "Not an argument against A or C",
-      text: "This doesn't mean migration and optimisation are wrong — it means their realistic value depends heavily on whether governance exists underneath them. Keep that dependency in mind heading into Stage 2's scoring.",
+      text: "This doesn't mean migration and optimisation are wrong — it means their realistic value depends heavily on whether governance exists underneath them. Keep that dependency in mind heading into Stage 1's scoring.",
     },
   },
   {
@@ -162,7 +162,7 @@ export const MATERIAL: MaterialSection[] = [
       "A board asking for \"visible progress\" is not wrong to want it — but a credible recommendation distinguishes between visible progress that is durable and visible progress that is a preview of a correction still to come.",
     callout: {
       label: "You'll see this diagram again",
-      text: "The branching timeline below reappears next to Stage 4 of Task 2, where you'll name two concrete risks of picking the fast-but-shallow path.",
+      text: "The branching timeline below reappears next to Stage 2 of Task 2, where you'll name two concrete risks of picking the fast-but-shallow path.",
     },
   },
 ];
@@ -341,30 +341,38 @@ export const TASK2 = {
   kicker: "Task 2",
   heading: "The Prioritization Decision",
   intro:
-    "Work through the five stages below — nothing is locked. Score the four dimensions, watch the radar take shape, then make and defend a call under real uncertainty.",
-  orderBanner: "Suggested order: Stage 1 → 5. You can work in any order — the report at the end fills in as you go.",
-  stage1: { heading: "Stage 1 — The Situation", instructions: "Read the three options and five general conditions. Click each card to expand it." },
-  stage2: {
-    heading: "Stage 2 — Assess the 4 Dimensions",
-    instructions: "For each dimension, pick the one statement under each option that best matches Flexora's situation. Use Show Clue if you're unsure — it points at the reasoning, not the answer. The radar on the right builds live as you answer.",
+    "Work through the three stages below — nothing is locked. Score the four dimensions, watch the radar take shape, then make and defend a call under real uncertainty.",
+  orderBanner: "Suggested order: Stage 1 → 3. You can work in any order — the report at the end fills in as you go.",
+  stage1: {
+    heading: "Stage 1 — Understand & Assess",
+    instructions: "Read the situation, then score each option against the four dimensions to build the radar.",
+    part1: { label: "The Situation", instructions: "Read the three options and five general conditions. Click each card to expand it." },
+    part2: {
+      label: "Assess the 4 Dimensions",
+      instructions: "For each dimension, pick the one statement under each option that best matches Flexora's situation. Use Show Clue if you're unsure — it points at the reasoning, not the answer. The radar on the right builds live as you answer.",
+    },
   },
-  stage3: {
-    heading: "Stage 3 — Make the Call & Follow-Up",
-    instructions:
-      "Based on the radar you've just built, choose one option as your final priority and justify it in writing. Then name the most important follow-up decisions that result from it.",
+  stage2: {
+    heading: "Stage 2 — Decide & Stress-Test",
+    instructions: "Make the call based on the radar, then pressure-test it against the risk of the easy-but-shallow shortcut.",
     pickLabel: "Final recommendation",
     pickCaption: "Select the option you'd actually recommend to Flexora's leadership.",
     justifyLabel: "Justification",
     justifyCaption: `Justify your choice — explicitly note what information is still missing and why you're deciding anyway. Aim for at least ${JUSTIFY_MIN_WORDS} words.`,
     followUpLabel: "Follow-up decisions",
     followUpCaption: "What must now be decided next, once this measure is approved?",
+    part1: {
+      label: "Make the Call & Follow-Up",
+      instructions:
+        "Based on the radar you've just built, choose one option as your final priority and justify it in writing. Then name the most important follow-up decisions that result from it.",
+    },
+    part2: {
+      label: "Two Risks of the Wrong Shortcut",
+      instructions: "Describe two risks if a line of measures is chosen that is attractive in the short term but structurally weak — even if it isn't the option you recommended.",
+    },
   },
-  stage4: {
-    heading: "Stage 4 — Two Risks of the Wrong Shortcut",
-    instructions: "Describe two risks if a line of measures is chosen that is attractive in the short term but structurally weak — even if it isn't the option you recommended.",
-  },
-  stage5: {
-    heading: "Stage 5 — Reflection & Live Report",
+  stage3: {
+    heading: "Stage 3 — Reflection & Live Report",
     instructions: "Two questions to answer honestly and personally, then a read-only recap of everything above and the structured memo it produces — ready to export once every stage is complete.",
   },
   export: {

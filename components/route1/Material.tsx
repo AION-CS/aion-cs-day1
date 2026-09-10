@@ -43,7 +43,7 @@ export function Material() {
         <SectionHeading
           kicker="Summary"
           title="The 6-Dimension Wheel"
-          intro="Every challenge and inefficiency above sorts into one of six dimensions. You'll use this exact wheel, interactively, in Stage 3 of Task 1 — study the six questions below now."
+          intro="Every challenge and inefficiency above sorts into one of six dimensions. You'll use this exact wheel, interactively, in Stage 2 of Task 1 — study the six questions below now."
         />
         <div className="card grid gap-6 p-5 lg:grid-cols-[280px_1fr] lg:items-center">
           <DimensionWheel size={280} />

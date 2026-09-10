@@ -27,7 +27,7 @@ function snapshotOf(placement: Record<string, DimensionId | undefined>): WheelPl
 }
 
 /**
- * Stage 3 — same drag-or-tap mechanic as Stage 2/Day 7's Technical vs.
+ * Stage 2 — same drag-or-tap mechanic as Stage 1/Day 7's Technical vs.
  * Governance split, generalised from 2 zones to the wheel's 6 dimensions.
  * The wheel SVG is a live visual (per-dimension counts) and a valid drop
  * target itself; the zone list below it is the same target set, rendered as

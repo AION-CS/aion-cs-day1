@@ -12,7 +12,7 @@ const PAD = 30;
  * A branching timeline: the "quick win now" path rises fast then drops
  * sharply as hidden cost/risk surfaces; the "governance first" path rises
  * slower but stays stable and keeps climbing. Reusable at any size — the
- * full version in Block 5, a small reminder next to Stage 4 of Task 2.
+ * full version in Block 5, a small reminder next to Stage 2 of Task 2.
  */
 export function QuickWinTimelineSvg({ compact = false }: { compact?: boolean }) {
   const x0 = PAD;

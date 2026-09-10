@@ -9,7 +9,7 @@ function wordCount(text: string): number {
   return text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
 }
 
-/** Stage 4 — two sentence-starters, completed in the learner's own words. */
+/** Stage 3 — two sentence-starters, completed in the learner's own words. */
 export function StatementBuilder() {
   const r1 = useRoute1();
   const setNote = useProgress((s) => s.setNote);

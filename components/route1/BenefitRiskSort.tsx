@@ -26,7 +26,7 @@ function snapshotOf(placement: Record<string, Verdict2 | undefined>): BenefitRis
 }
 
 /**
- * Stage 2 — drag (native pointer events) or tap-then-tap-a-zone; full
+ * Stage 1 — drag (native pointer events) or tap-then-tap-a-zone; full
  * undo/redo history. Pattern cloned from Day 7's Technical/Governance split:
  * the *current* placement always comes from the persisted progress store via
  * useRoute1, and this component only layers an undo/redo history on top.
@@ -288,7 +288,7 @@ function Zone({
   );
 }
 
-/** Inline Stage 2 tag: is this Risk card a technical problem or a governance one? Replaces the old standalone re-drag stage. */
+/** Inline Stage 1 tag: is this Risk card a technical problem or a governance one? Replaces the old standalone re-drag stage. */
 function TechGovTag({
   itemId,
   side,

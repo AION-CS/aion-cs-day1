@@ -92,20 +92,20 @@ export function useRoute2() {
     if (!stage2Complete) {
       items.push({
         id: "r2-stage2",
-        label: `Stage 2: ${stage2Total - stage2DoneCount} of ${stage2Total} dimension × option answers not yet given`,
+        label: `Stage 1: ${stage2Total - stage2DoneCount} of ${stage2Total} dimension × option answers not yet given`,
       });
     }
-    if (!pickComplete) items.push({ id: "r2-stage3-pick", label: "Stage 3: choose a recommended option (A, B, or C)" });
-    if (!justifyComplete) items.push({ id: "r2-stage3-justify", label: "Stage 3: add your justification for the recommendation" });
+    if (!pickComplete) items.push({ id: "r2-stage3-pick", label: "Stage 2: choose a recommended option (A, B, or C)" });
+    if (!justifyComplete) items.push({ id: "r2-stage3-justify", label: "Stage 2: add your justification for the recommendation" });
 
     followUps.forEach((f, i) => {
-      if (!f.trim()) items.push({ id: `r2-stage4-${i}`, label: `Stage 3: add follow-up decision #${i + 1}` });
+      if (!f.trim()) items.push({ id: `r2-stage4-${i}`, label: `Stage 2: add follow-up decision #${i + 1}` });
     });
     risks.forEach((r, i) => {
-      if (!r.trim()) items.push({ id: `r2-stage5-${i}`, label: `Stage 4: name risk #${i + 1} of the easy-but-shallow alternative` });
+      if (!r.trim()) items.push({ id: `r2-stage5-${i}`, label: `Stage 2: name risk #${i + 1} of the easy-but-shallow alternative` });
     });
     REFLECTION_PROMPTS.forEach((p, i) => {
-      if (!reflections[i]?.trim()) items.push({ id: `r2-stage6-${i}`, label: `Stage 5: answer "${p.question}"` });
+      if (!reflections[i]?.trim()) items.push({ id: `r2-stage6-${i}`, label: `Stage 3: answer "${p.question}"` });
     });
 
     return items;

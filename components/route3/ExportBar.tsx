@@ -44,7 +44,7 @@ export function ExportBar() {
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button type="button" onClick={() => setShowMissing((v) => !v)} className="flex items-center gap-1.5 text-caption text-ash hover:text-ink">
-          <span className="tabular-nums font-semibold text-ink">{doneStages}</span> / {total} stages complete
+          <span className="tabular-nums font-semibold text-ink">{doneStages}</span> / {total} checks complete
           {r3.missing.length > 0 && <ChevronDown className={clsx("h-3.5 w-3.5 transition-transform duration-150", showMissing && "rotate-180")} />}
         </button>
         <button type="button" onClick={handleExport} className="btn-accent">

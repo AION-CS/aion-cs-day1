@@ -29,55 +29,65 @@ export function TaskFlow() {
         <p className="text-caption text-ash">{TASK2.orderBanner}</p>
       </div>
 
-      <div id="r2-stage1">
+      <div>
         <h3 className="text-h3 text-ink">{TASK2.stage1.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK2.stage1.instructions}</p>
-        <div className="mt-4">
-          <CaseBrief />
-        </div>
-      </div>
 
-      <div id="r2-stage2" className="lg:grid lg:grid-cols-[1fr_360px] lg:items-start lg:gap-8">
-        <div>
-          <h3 className="text-h3 text-ink">{TASK2.stage2.heading}</h3>
-          <p className="mt-1 text-caption text-ash">{TASK2.stage2.instructions}</p>
-          <div className="mt-4 space-y-4">
-            {CRITERIA.map((c) => (
-              <CriterionCard key={c.id} criterion={c} />
-            ))}
+        <div id="r2-stage1" className="mt-5">
+          <p className="text-caption font-semibold text-ink">{TASK2.stage1.part1.label}</p>
+          <p className="mt-1 text-micro text-ash">{TASK2.stage1.part1.instructions}</p>
+          <div className="mt-4">
+            <CaseBrief />
           </div>
         </div>
-        <div className="mt-6 lg:mt-0 lg:sticky lg:top-20">
-          <PrioritizationRadar />
+
+        <div id="r2-stage2" className="mt-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start lg:gap-8">
+          <div>
+            <p className="text-caption font-semibold text-ink">{TASK2.stage1.part2.label}</p>
+            <p className="mt-1 text-micro text-ash">{TASK2.stage1.part2.instructions}</p>
+            <div className="mt-4 space-y-4">
+              {CRITERIA.map((c) => (
+                <CriterionCard key={c.id} criterion={c} />
+              ))}
+            </div>
+          </div>
+          <div className="mt-6 lg:mt-0 lg:sticky lg:top-20">
+            <PrioritizationRadar />
+          </div>
         </div>
       </div>
 
-      <div id="r2-stage3">
-        <h3 className="text-h3 text-ink">{TASK2.stage3.heading}</h3>
-        <p className="mt-1 text-caption text-ash">{TASK2.stage3.instructions}</p>
-        <div className="mt-4 space-y-5">
-          <MakeTheCall />
-          <div>
-            <p className="text-caption font-semibold text-ink">{TASK2.stage3.followUpLabel}</p>
-            <p className="text-micro text-ash">{TASK2.stage3.followUpCaption}</p>
-            <div className="mt-2">
-              <FollowUpDecisions />
+      <div>
+        <h3 className="text-h3 text-ink">{TASK2.stage2.heading}</h3>
+        <p className="mt-1 text-caption text-ash">{TASK2.stage2.instructions}</p>
+
+        <div id="r2-stage3" className="mt-5">
+          <p className="text-caption font-semibold text-ink">{TASK2.stage2.part1.label}</p>
+          <p className="mt-1 text-micro text-ash">{TASK2.stage2.part1.instructions}</p>
+          <div className="mt-4 space-y-5">
+            <MakeTheCall />
+            <div>
+              <p className="text-caption font-semibold text-ink">{TASK2.stage2.followUpLabel}</p>
+              <p className="text-micro text-ash">{TASK2.stage2.followUpCaption}</p>
+              <div className="mt-2">
+                <FollowUpDecisions />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div id="r2-stage4">
-        <h3 className="text-h3 text-ink">{TASK2.stage4.heading}</h3>
-        <p className="mt-1 text-caption text-ash">{TASK2.stage4.instructions}</p>
-        <div className="mt-4">
-          <TwoRisks />
+        <div id="r2-stage4" className="mt-6">
+          <p className="text-caption font-semibold text-ink">{TASK2.stage2.part2.label}</p>
+          <p className="mt-1 text-micro text-ash">{TASK2.stage2.part2.instructions}</p>
+          <div className="mt-4">
+            <TwoRisks />
+          </div>
         </div>
       </div>
 
       <div id="r2-stage5">
-        <h3 className="text-h3 text-ink">{TASK2.stage5.heading}</h3>
-        <p className="mt-1 text-caption text-ash">{TASK2.stage5.instructions}</p>
+        <h3 className="text-h3 text-ink">{TASK2.stage3.heading}</h3>
+        <p className="mt-1 text-caption text-ash">{TASK2.stage3.instructions}</p>
         <div className="mt-4">
           <ReflectionStage />
         </div>

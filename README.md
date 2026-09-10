@@ -49,7 +49,7 @@ Case: **Flexora Digital Services**. Material covers cloud fundamentals, the
 economies-of-scale efficiency argument (utilisation, automation, professional
 data-centre operations), the core tension between that efficiency and rising energy
 demand, typical challenges of cloud use, and the six recurring sources of
-inefficiency. The learner then works through a six-stage audit of Flexora's cloud
+inefficiency. The learner then works through a three-stage audit of Flexora's cloud
 plans against that evidence, feeding a live Decision Brief that is what gets exported.
 Exports as `...-l1task1`.
 

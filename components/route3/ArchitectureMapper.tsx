@@ -26,7 +26,7 @@ function snapshotOf(placement: Record<string, NodeId | undefined>): Architecture
   return snap;
 }
 
-/** Stage 2 — drag (or tap-then-tap) each evidence card onto one Decision Architecture node. Same mechanic as Route 1/2. */
+/** Stage 1 — drag (or tap-then-tap) each evidence card onto one Decision Architecture node. Same mechanic as Route 1/2. */
 export function ArchitectureMapper() {
   const r3 = useRoute3();
   const choose = useProgress((s) => s.choose);

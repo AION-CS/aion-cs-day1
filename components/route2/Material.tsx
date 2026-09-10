@@ -28,7 +28,7 @@ export function Material() {
           <RadarChart axes={CRITERIA.map((c) => ({ id: c.id, label: c.label }))} series={[]} maxScore={3} />
           <p className="mt-2 text-micro text-ash">
             An empty shell on purpose — this is the exact chart, with the exact four axes, that fills in live with
-            your own answers in Stage 2 of Task 2.
+            your own answers in Stage 1 of Task 2.
           </p>
           <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
             {SEVEN_DIMENSIONS.map((d, i) => (

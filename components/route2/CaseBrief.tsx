@@ -66,7 +66,7 @@ export function CaseBrief() {
               </button>
               {open && (
                 <div className="reveal-in border-t border-line p-3 text-micro text-ash">
-                  This condition applies to all three options — weigh it in every dimension of Stage 2.
+                  This condition applies to all three options — weigh it in every dimension of Stage 1.
                 </div>
               )}
             </div>

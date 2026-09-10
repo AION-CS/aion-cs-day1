@@ -48,7 +48,7 @@ export function MentorTools() {
     choose(R3.s4.firstMove, first.id);
     setNote(R3.s4.firstMoveJustify, "It's a no-regret move: valuable regardless of which future direction SkyBridge takes next, and it produces the data every later decision depends on.");
 
-    GUTCHECK_PROMPTS.forEach((p, i) => setNote(R3.s5.gutcheck(i), "Worth revisiting once the dashboard from Stage 4 is live."));
+    GUTCHECK_PROMPTS.forEach((p, i) => setNote(R3.s5.gutcheck(i), "Worth revisiting once the dashboard from Stage 2 is live."));
 
     setNote(
       R3.s6.strategicRelevance,

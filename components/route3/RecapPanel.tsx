@@ -15,7 +15,7 @@ export function RecapPanel({ r3 }: { r3: Route3State }) {
       </div>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Architecture mapping</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Architecture mapping</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
           {SKYBRIDGE_EVIDENCE.map((it) => (
             <li key={it.id} className="flex items-baseline justify-between gap-2">
@@ -27,14 +27,14 @@ export function RecapPanel({ r3 }: { r3: Route3State }) {
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Chosen levers</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Chosen levers</h3>
         <ul className="mt-1.5 space-y-1 text-micro text-ink">
           {r3.stage3Selected.map((id) => <li key={id}>{LEVERS.find((l) => l.id === id)?.text}</li>)}
         </ul>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 4 — Sequencing</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Sequencing</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
           {r3.stage4Levers.map((l) => (
             <li key={l.id} className="flex items-baseline justify-between gap-2">
@@ -47,7 +47,7 @@ export function RecapPanel({ r3 }: { r3: Route3State }) {
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 6 — Helix proposal</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Helix proposal</h3>
         <p className="mt-1.5 text-micro"><span className="text-ash">Relevance: </span><span className="text-ink">{r3.strategicRelevance || "—"}</span></p>
         <p className="mt-1 text-micro"><span className="text-ash">Logic: </span><span className="text-ink">{r3.prioritizationLogic || "—"}</span></p>
         <p className="mt-1 text-micro"><span className="text-ash">First measure: </span><span className="text-ink">{r3.firstMeasure || "—"}</span></p>

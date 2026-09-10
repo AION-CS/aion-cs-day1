@@ -26,11 +26,11 @@ function vertex(cx: number, cy: number, r: number, i: number): [number, number] 
  * `counts`/`highlightedId` but owns no state. Used two ways:
  *  - Materials summary (read-only, no counts): a labelled legend of the
  *    framework.
- *  - Stage 3 (interactive): the parent renders real HTML drop zones below
+ *  - Stage 2 (interactive): the parent renders real HTML drop zones below
  *    it (same pattern as the technical/governance split) and passes live
  *    per-dimension counts here so the wheel visually reflects placements.
  *    `data-dropzone` is still set on each wedge so tapping/dropping directly
- *    on the wheel also works, matching Stage 3's own zones below it.
+ *    on the wheel also works, matching Stage 2's own zones below it.
  */
 export function DimensionWheel({
   size = 320,

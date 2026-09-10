@@ -13,7 +13,7 @@ export function RecapPanel({ r2 }: { r2: Route2State }) {
       </div>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Scores</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Scores</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
           {CRITERIA.map((c) => (
             <li key={c.id} className="flex items-baseline justify-between gap-2">
@@ -27,27 +27,27 @@ export function RecapPanel({ r2 }: { r2: Route2State }) {
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — The Call</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — The Call</h3>
         <p className="mt-1.5 text-micro"><span className="text-ash">Pick: </span><span className="font-semibold text-ink">{r2.pick || "—"}</span></p>
         <p className="mt-1 text-micro text-ink">{r2.justify || "—"}</p>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Follow-Ups</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Follow-Ups</h3>
         <ul className="mt-1.5 space-y-1 text-micro text-ink">
           {r2.followUps.map((f, i) => <li key={i}>{f || "—"}</li>)}
         </ul>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 4 — Risks</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Risks</h3>
         <ul className="mt-1.5 space-y-1 text-micro text-ink">
           {r2.risks.map((r, i) => <li key={i}>{r || "—"}</li>)}
         </ul>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 5 — Reflection</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Reflection</h3>
         <ul className="mt-1.5 space-y-1.5 text-micro">
           {REFLECTION_PROMPTS.map((p, i) => (
             <li key={p.id}>

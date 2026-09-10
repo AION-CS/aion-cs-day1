@@ -15,7 +15,7 @@ export function RecapPanel({ r1 }: { r1: Route1State }) {
       </div>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Benefit / Risk</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Benefit / Risk</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
           {EVIDENCE_ITEMS.map((it) => (
             <li key={it.id} className="flex items-baseline justify-between gap-2">
@@ -27,7 +27,7 @@ export function RecapPanel({ r1 }: { r1: Route1State }) {
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Wheel dimension</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Wheel dimension</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
           {EVIDENCE_ITEMS.map((it) => (
             <li key={it.id} className="flex items-baseline justify-between gap-2">
@@ -39,7 +39,7 @@ export function RecapPanel({ r1 }: { r1: Route1State }) {
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 4 — Statements</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Statements</h3>
         <ul className="mt-1.5 space-y-1.5 text-micro">
           {STATEMENT_PROMPTS.map((p) => (
             <li key={p.id}>
@@ -51,7 +51,7 @@ export function RecapPanel({ r1 }: { r1: Route1State }) {
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Technical / Governance Tag (Stage 2)</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Technical / Governance Tag (Stage 1)</h3>
         {r1.stage5Items.length === 0 ? (
           <p className="mt-1.5 text-micro text-ash">No Risk-tagged cards yet.</p>
         ) : (
