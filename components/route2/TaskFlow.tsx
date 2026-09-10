@@ -1,7 +1,8 @@
 "use client";
 
-import { TASK2, CRITERIA } from "@/lib/route2";
+import { TASK2, CRITERIA, materialRefs } from "@/lib/route2";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Info } from "@/components/icons/LineIcons";
 import { CaseBrief } from "./CaseBrief";
 import { CriterionCard } from "./CriterionCard";
@@ -45,6 +46,7 @@ export function TaskFlow() {
           <div>
             <p className="text-caption font-semibold text-ink">{TASK2.stage1.part2.label}</p>
             <p className="mt-1 text-micro text-ash">{TASK2.stage1.part2.instructions}</p>
+            <MaterialRefs refs={materialRefs(TASK2.stage1.part2.material)} />
             <div className="mt-4 space-y-4">
               {CRITERIA.map((c) => (
                 <CriterionCard key={c.id} criterion={c} />
@@ -64,6 +66,7 @@ export function TaskFlow() {
         <div id="r2-stage3" className="mt-5">
           <p className="text-caption font-semibold text-ink">{TASK2.stage2.part1.label}</p>
           <p className="mt-1 text-micro text-ash">{TASK2.stage2.part1.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK2.stage2.part1.material)} />
           <div className="mt-4 space-y-5">
             <MakeTheCall />
             <div>
@@ -79,6 +82,7 @@ export function TaskFlow() {
         <div id="r2-stage4" className="mt-6">
           <p className="text-caption font-semibold text-ink">{TASK2.stage2.part2.label}</p>
           <p className="mt-1 text-micro text-ash">{TASK2.stage2.part2.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK2.stage2.part2.material)} />
           <div className="mt-4">
             <TwoRisks />
           </div>

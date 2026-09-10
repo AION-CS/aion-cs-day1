@@ -195,6 +195,24 @@
   border-radius: theme("borderRadius.2xl");
 }
 
+/* Same idea in the accent, for a material reference chip: arriving somewhere
+   you asked to go is not a warning, so it must not read like the red one. */
+@keyframes flashRef {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(14, 122, 90, 0);
+    background-color: transparent;
+  }
+  25% {
+    box-shadow: 0 0 0 4px rgba(14, 122, 90, 0.35);
+    background-color: rgba(14, 122, 90, 0.06);
+  }
+}
+.anim-flash-ref {
+  animation: flashRef 1.2s ease-in-out;
+  border-radius: theme("borderRadius.2xl");
+}
+
 /* No-op feedback when Undo/Redo is clicked at a stack boundary — still clickable, just nothing to do. */
 @keyframes shakeNoop {
   0%,

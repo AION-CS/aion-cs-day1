@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { MATERIAL, CRITERIA, SEVEN_DIMENSIONS } from "@/lib/route2";
+import { MATERIAL, CRITERIA, SEVEN_DIMENSIONS, materialAnchorId } from "@/lib/route2";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
 import { RadarChart } from "@/components/ui/RadarChart";
@@ -19,11 +19,11 @@ export function Material() {
         intro="About 60 minutes. Each block pairs a framework with a diagram — the second one is the working tool you'll actually use in Task 2."
       />
 
-      <MaterialBlock block={finops}>
+      <MaterialBlock block={finops} anchorId={materialAnchorId("finops")}>
         <FinOpsCycleSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={sevendim}>
+      <MaterialBlock block={sevendim} anchorId={materialAnchorId("sevendim")}>
         <div>
           <RadarChart axes={CRITERIA.map((c) => ({ id: c.id, label: c.label }))} series={[]} maxScore={3} />
           <p className="mt-2 text-micro text-ash">
@@ -44,15 +44,15 @@ export function Material() {
         </div>
       </MaterialBlock>
 
-      <MaterialBlock block={uncertainty}>
+      <MaterialBlock block={uncertainty} anchorId={materialAnchorId("uncertainty")}>
         <NoRegretPyramidSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={multiplier}>
+      <MaterialBlock block={multiplier} anchorId={materialAnchorId("multiplier")}>
         <GovernanceMultiplierSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={shorttermism}>
+      <MaterialBlock block={shorttermism} anchorId={materialAnchorId("shorttermism")}>
         <QuickWinTimelineSvg />
       </MaterialBlock>
     </div>

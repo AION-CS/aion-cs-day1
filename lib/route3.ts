@@ -240,8 +240,28 @@ export type MaterialSection = {
   definition: string;
   insight: string;
   takeaway: string;
+  /** Standard #11a — decision rules, phrased the way Task 3 will need them. */
+  reasoning: string[];
   callout: { label: string; text: string };
 };
+
+/** DOM anchor a task step's MaterialRefs chip scrolls to. */
+export function materialAnchorId(id: MaterialSectionId): string {
+  return `r3-material-${id}`;
+}
+
+const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
+  shift: "Block 1 · Analyst to decision-maker",
+  "architecture-model": "Block 2 · Decision Architecture",
+  iceberg: "Block 3 · Levers vs. symptoms",
+  horizons: "Block 4 · Horizons of action",
+  "proposal-structure": "Block 5 · Proposal structure",
+};
+
+/** Chips for a task step: which material sections it draws on. */
+export function materialRefs(ids: MaterialSectionId[]) {
+  return ids.map((id) => ({ anchorId: materialAnchorId(id), label: MATERIAL_LABELS[id] }));
+}
 
 export const MATERIAL: MaterialSection[] = [
   {
@@ -256,6 +276,11 @@ export const MATERIAL: MaterialSection[] = [
       "MIT Sloan's Center for Information Systems Research (CISR) has published research since the early 2010s arguing that digital and cloud governance decisions are increasingly board-level and executive-committee matters, not delegated IT decisions — because the trade-offs (cost, risk, speed, control) now carry enough weight to shape overall company strategy, not just system architecture.",
     takeaway:
       "Every question in this route should be answered the way a management team actually decides things: under a budget constraint, under incomplete data, and with an eye on who is accountable if it goes wrong — not just what is technically correct.",
+    reasoning: [
+      "Every answer in this route is a management answer, not a technical one: it has to survive a budget constraint, incomplete data, and the question \"who is accountable if this goes wrong?\"",
+      "That is also the standard your Stage 3 proposal is judged by — a technically correct measure with no named owner and no review point is not yet a decision.",
+      "Rules out the tempting wrong answer: the most technically sophisticated option is not automatically the right recommendation. Ask what a board can actually approve, fund, and hold someone to.",
+    ],
     callout: {
       label: "Verify before you cite it",
       text: "MIT CISR and Gartner publish updated governance research regularly — if you reference a specific study or statistic from them in a real proposal, check their current publication rather than reusing a remembered claim.",
@@ -273,6 +298,12 @@ export const MATERIAL: MaterialSection[] = [
       "This is a deliberate simplification that unifies terms from across the whole course into one consistent model, so every stage of this route can refer back to the same five components instead of juggling route-specific vocabulary. It is not a new set of concepts — it's the same ideas from Routes 1 and 2, organised for management-level decision-making.",
     takeaway:
       "You'll use this exact model, interactively, in Stage 1 — mapping SkyBridge's own evidence onto these five components before recommending anything.",
+    reasoning: [
+      "Mapping evidence in Stage 1: ask what the card is fundamentally about, not what it eventually causes. \"No uniform standards\" is about who sets the rules (Governance); \"parallel on-prem and cloud structures\" is about how the system is built (Architecture); \"storage growing\" is about what is being consumed (Usage & Demand).",
+      "Economics is the component for anything framed as cost, budget, or economical use — including a mandate phrased as \"develop cloud use economically\".",
+      "Sustainability Impact means the realistic outcome, deliberately kept separate from the sustainability claim. A card about wanting to report a result is not evidence of one.",
+      "Rules out the tempting wrong answer: several cards touch more than one component. Each gets exactly one — pick the component the card names in its own words, not the root cause behind it.",
+    ],
     callout: {
       label: "This is the anchor for the whole route",
       text: "Every later stage refers back to these five components. If a stage asks you to name a trade-off or a lever, it's implicitly asking which of these five it touches.",
@@ -290,6 +321,12 @@ export const MATERIAL: MaterialSection[] = [
       "A recommendation aimed only at symptoms needs to be repeated every cycle, because nothing about the underlying cause changed. A recommendation aimed at a lever changes what produces the symptom, so the same problem doesn't need solving again next quarter.",
     takeaway:
       "In Stage 2, you'll be offered several candidate actions — some are levers, some are symptom-level distractors dressed up as solutions. Telling them apart is the actual skill being tested.",
+    reasoning: [
+      "The test for Stage 2's lever selection is one question: \"if we do only this, does the underlying cause still exist next quarter?\" If yes, it is a symptom fix, not a lever.",
+      "Distractors in the candidate list look responsible and are easy to approve — a discount negotiation lowers unit price without touching what drives usage; a budget cap limits spend without revealing what is driving it; a communications campaign changes what is said, not what is consumed.",
+      "A real lever creates a capability the organisation did not have (visibility, standards, monitoring) or removes the structural cause of the symptom (parallel systems, redundant infrastructure).",
+      "Rules out the tempting wrong answer: \"it saves money\" is not enough to make something a lever. Ask whether the saving repeats itself without anyone watching.",
+    ],
     callout: {
       label: "A test you can apply anywhere",
       text: "Ask of any proposed action: \"if we do only this, does the underlying cause still exist next quarter?\" If yes, it's a symptom fix, not a lever.",
@@ -307,6 +344,12 @@ export const MATERIAL: MaterialSection[] = [
       "Choosing the right first move is a strategic decision on its own, independent of which lever is objectively \"biggest\": a well-chosen Short-Term move builds credibility and often produces the data a later Structural move needs to be justified — while starting with an ambitious Structural commitment before any visibility exists repeats the exact mistake Route 2's Block 5 warned about.",
     takeaway:
       "You'll build a real roadmap in Stage 2 — placing your chosen levers onto these three horizons, and naming exactly one as the first move.",
+    reasoning: [
+      "Placing a lever on a horizon: ask what it needs before it can start. Already-available data and tooling means Short-Term; cross-team buy-in or a rollout means Medium-Term; changing architecture or the operating model means Structural.",
+      "The first move is the one that de-risks or informs everything after it — usually a Short-Term visibility move — not the one with the largest headline impact.",
+      "Your first-move justification should say what the later moves gain from it. \"It produces the data the structural decision depends on\" is a management argument; \"it is quick\" is not.",
+      "Rules out the tempting wrong answer: starting with the biggest Structural commitment before any visibility exists repeats exactly the mistake Route 2's Block 5 described.",
+    ],
     callout: {
       label: "First move ≠ biggest move",
       text: "The first move on a credible roadmap is usually the one that de-risks or informs the moves after it — not the one with the largest headline impact.",
@@ -324,6 +367,13 @@ export const MATERIAL: MaterialSection[] = [
       "Each of these seven elements answers an objection before it's raised: (1) answers \"why should we spend time on this,\" (6) answers \"who do we hold accountable,\" (7) answers \"why not just wait for better data.\" A proposal missing any of the seven leaves that objection for someone in the room to raise live.",
     takeaway:
       "This is the exact scaffold you'll fill in for Helix Digital Platforms in Stage 3 — not a new framework, but the assembly of everything from Routes 1-3 into one board-ready document.",
+    reasoning: [
+      "Each of the seven sections answers an objection before it is raised — write each one as if the objection had just been said out loud in the room.",
+      "Section 4 (trade-off) means something you consciously accept and can defend, phrased as one against the other: speed against control, flexibility against governance. A benefit with no cost attached is not a trade-off.",
+      "Section 6 (roles) is answering \"who do we hold accountable?\" — name what each role approves and when it reviews, not just that it is \"involved\".",
+      "Section 7 is answering \"why not wait for better data?\" — so it needs both halves: what must be decided now, and what waiting would actually cost.",
+      "Rules out the tempting wrong answer: a proposal that lists measures without naming a decision, an owner, or a trade-off reads as a status update, not a board proposal.",
+    ],
     callout: {
       label: "Direct use in Task 3",
       text: "Stage 3 gives you a sentence-starter for each of these seven elements. Treat this block as the answer key for what each one is actually asking.",
@@ -356,14 +406,17 @@ export const TASK3 = {
   stage2: {
     heading: "Map to the Decision Architecture",
     instructions: "Drag each evidence card onto the one Decision Architecture component it fits best. Use the clue if you're unsure; undo/redo freely.",
+    material: ["architecture-model", "shift"] as MaterialSectionId[],
   },
   stage3: {
     heading: "Find the 4 Levers",
     instructions: `Select exactly ${LEVERS_REQUIRED_COUNT} of the candidate actions below — the ones you judge as real root-cause levers, not symptom-level fixes — and justify each briefly.`,
+    material: ["iceberg", "architecture-model"] as MaterialSectionId[],
   },
   stage4: {
     heading: "Recommend & Sequence",
     instructions: "Drag your four chosen levers onto Short-Term, Medium-Term, or Structural. Then mark exactly one as your first move and justify why it goes first.",
+    material: ["horizons", "iceberg"] as MaterialSectionId[],
   },
   stage5: {
     heading: "Bridge to Helix",
@@ -373,6 +426,7 @@ export const TASK3 = {
   stage6: {
     heading: "Build the Executive Proposal",
     instructions: "Seven sections, the same structure from Block 5 of the material. Complete each one for Helix.",
+    material: ["proposal-structure", "shift", "architecture-model"] as MaterialSectionId[],
     s1Starter: "Sustainable cloud use matters strategically for Helix because",
     s3Starter: "Future cloud measures should be assessed and prioritized by",
     s7DecideStarter: "Even without complete data, Helix must decide now to",

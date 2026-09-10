@@ -15,11 +15,14 @@ export function Reveal({
   className,
   delay = 0,
   as: Tag = "div",
+  id,
 }: {
   children: React.ReactNode;
   className?: string;
   delay?: number;
   as?: keyof JSX.IntrinsicElements;
+  /** Anchor for scroll-to-and-flash targets (material sections cited by a task step). */
+  id?: string;
 }) {
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
@@ -59,6 +62,7 @@ export function Reveal({
   return (
     <Comp
       ref={ref as any}
+      id={id}
       className={clsx(!settled && "fade-up", visible && !settled && "is-visible", className)}
       style={!settled && delay ? { transitionDelay: `${delay}ms` } : undefined}
     >

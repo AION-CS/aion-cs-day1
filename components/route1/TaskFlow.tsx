@@ -1,7 +1,8 @@
 "use client";
 
-import { TASK1 } from "@/lib/route1";
+import { TASK1, materialRefs } from "@/lib/route1";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Info } from "@/components/icons/LineIcons";
 import { CaseBrief } from "./CaseBrief";
 import { BenefitRiskSort } from "./BenefitRiskSort";
@@ -41,6 +42,7 @@ export function TaskFlow() {
         <div id="r1-stage2" className="mt-6">
           <p className="text-caption font-semibold text-ink">{TASK1.stage1.part2.label}</p>
           <p className="mt-1 text-micro text-ash">{TASK1.stage1.part2.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK1.stage1.part2.material)} />
           <div className="mt-4">
             <BenefitRiskSort />
           </div>
@@ -50,6 +52,7 @@ export function TaskFlow() {
       <div id="r1-stage3">
         <h3 className="text-h3 text-ink">{TASK1.stage2.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK1.stage2.instructions}</p>
+        <MaterialRefs refs={materialRefs(TASK1.stage2.material)} />
         <div className="mt-4">
           <WheelClassifier />
         </div>
@@ -62,6 +65,7 @@ export function TaskFlow() {
         <div id="r1-stage4" className="mt-5">
           <p className="text-caption font-semibold text-ink">{TASK1.stage3.part1.label}</p>
           <p className="mt-1 text-micro text-ash">{TASK1.stage3.part1.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK1.stage3.part1.material)} />
           <div className="mt-4">
             <StatementBuilder />
           </div>

@@ -1,4 +1,4 @@
-import { MATERIAL } from "@/lib/route3";
+import { MATERIAL, materialAnchorId } from "@/lib/route3";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
 import { SevenDimensionHoneySvg } from "./SevenDimensionHoneySvg";
@@ -18,11 +18,11 @@ export function Material() {
         intro="About 60 minutes. The second block is the model the whole route runs on."
       />
 
-      <MaterialBlock block={shift}>
+      <MaterialBlock block={shift} anchorId={materialAnchorId("shift")}>
         <SevenDimensionHoneySvg />
       </MaterialBlock>
 
-      <MaterialBlock block={architectureModel}>
+      <MaterialBlock block={architectureModel} anchorId={materialAnchorId("architecture-model")}>
         <div className="mx-auto max-w-sm">
           <DecisionArchitectureModel />
         </div>
@@ -31,18 +31,18 @@ export function Material() {
         </p>
       </MaterialBlock>
 
-      <MaterialBlock block={iceberg}>
+      <MaterialBlock block={iceberg} anchorId={materialAnchorId("iceberg")}>
         <IcebergSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={horizons}>
+      <MaterialBlock block={horizons} anchorId={materialAnchorId("horizons")}>
         <RoadmapLanesSvg />
         <p className="mt-2 text-center text-micro text-ash">
           Same three lanes, functional, in Stage 2 — you'll drag your chosen levers onto them.
         </p>
       </MaterialBlock>
 
-      <MaterialBlock block={proposalStructure}>
+      <MaterialBlock block={proposalStructure} anchorId={materialAnchorId("proposal-structure")}>
         <ProposalChecklistSvg />
       </MaterialBlock>
     </div>

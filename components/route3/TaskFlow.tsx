@@ -1,7 +1,8 @@
 "use client";
 
-import { TASK3 } from "@/lib/route3";
+import { TASK3, materialRefs } from "@/lib/route3";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Info } from "@/components/icons/LineIcons";
 import { CaseBriefSkyBridge } from "./CaseBriefSkyBridge";
 import { ArchitectureMapper } from "./ArchitectureMapper";
@@ -41,6 +42,7 @@ export function TaskFlow() {
         <div id="r3-stage2" className="mt-6">
           <p className="text-caption font-semibold text-ink">{TASK3.stage2.heading}</p>
           <p className="mt-1 text-micro text-ash">{TASK3.stage2.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK3.stage2.material)} />
           <div className="mt-4"><ArchitectureMapper /></div>
         </div>
       </div>
@@ -52,12 +54,14 @@ export function TaskFlow() {
         <div id="r3-stage3" className="mt-5">
           <p className="text-caption font-semibold text-ink">{TASK3.stage3.heading}</p>
           <p className="mt-1 text-micro text-ash">{TASK3.stage3.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK3.stage3.material)} />
           <div className="mt-4"><LeverPicker /></div>
         </div>
 
         <div id="r3-stage4" className="mt-6">
           <p className="text-caption font-semibold text-ink">{TASK3.stage4.heading}</p>
           <p className="mt-1 text-micro text-ash">{TASK3.stage4.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK3.stage4.material)} />
           <div className="mt-4"><HorizonSequencer /></div>
         </div>
       </div>
@@ -71,6 +75,7 @@ export function TaskFlow() {
         <div id="r3-stage6" className="mt-6">
           <p className="text-caption font-semibold text-ink">{TASK3.stage6.heading}</p>
           <p className="mt-1 text-micro text-ash">{TASK3.stage6.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK3.stage6.material)} />
           <div className="mt-4"><HelixProposalBuilder /></div>
         </div>
 

@@ -223,3 +223,14 @@ export function ChevronDown({ className }: P) {
     </svg>
   );
 }
+
+/** Used only by MaterialRefs — marks a chip that jumps back up to the material. */
+export function BookOpen({ className }: P) {
+  return (
+    <svg {...base} className={className ?? "h-4 w-4"}>
+      <path d="M12 7.2v11" />
+      <path d="M12 7.2C10.6 6 8.8 5.4 6.2 5.4H4v11h2.2c2.6 0 4.4.6 5.8 1.8" />
+      <path d="M12 7.2c1.4-1.2 3.2-1.8 5.8-1.8H20v11h-2.2c-2.6 0-4.4.6-5.8 1.8" />
+    </svg>
+  );
+}

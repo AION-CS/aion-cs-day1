@@ -30,10 +30,10 @@ export const R1 = {
 // ---------------------------------------------------------------------------
 // Material — 5 blocks, each pairing prose with a custom SVG/visual.
 // ---------------------------------------------------------------------------
-export type MaterialSectionId = "fundamentals" | "scale" | "tension" | "challenges" | "inefficiency";
+export type MaterialSectionId = "fundamentals" | "scale" | "tension" | "challenges" | "inefficiency" | "wheel";
 
 export type MaterialSection = {
-  id: MaterialSectionId;
+  id: Exclude<MaterialSectionId, "wheel">;
   n: 1 | 2 | 3 | 4 | 5;
   icon: IconKey;
   kicker: string;
@@ -41,8 +41,34 @@ export type MaterialSection = {
   definition: string;
   insight: string;
   takeaway: string;
+  /**
+   * Standard #11a — the decision rules this block hands the task, phrased the
+   * way the task will need them, including the rule that rules out the
+   * plausible wrong answer. Rendered as "How to decide when this comes up in
+   * the task".
+   */
+  reasoning: string[];
   callout: { label: string; text: string };
 };
+
+/** DOM anchor a task step's MaterialRefs chip scrolls to. */
+export function materialAnchorId(id: MaterialSectionId): string {
+  return `r1-material-${id}`;
+}
+
+const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
+  fundamentals: "Block 1 · Cloud benefits",
+  scale: "Block 2 · Economies of scale",
+  tension: "Block 3 · The core tension",
+  challenges: "Block 4 · Typical challenges",
+  inefficiency: "Block 5 · Sources of inefficiency",
+  wheel: "Summary · The 6-Dimension Wheel",
+};
+
+/** Chips for a task step: which material sections it draws on. */
+export function materialRefs(ids: MaterialSectionId[]) {
+  return ids.map((id) => ({ anchorId: materialAnchorId(id), label: MATERIAL_LABELS[id] }));
+}
 
 export const MATERIAL: MaterialSection[] = [
   {
@@ -57,6 +83,12 @@ export const MATERIAL: MaterialSection[] = [
       "These benefits are not marketing claims — they follow directly from the underlying model. A shared resource pool, exposed through self-service APIs, is what makes elasticity and fast provisioning possible: you are drawing from capacity the provider has already built for thousands of customers, not waiting for your own hardware order to arrive. Standardisation and high availability follow from the same shared-infrastructure logic: the provider maintains one hardened, replicated environment instead of every customer maintaining their own.",
     takeaway:
       "Each of these six benefits is real, but each has a boundary condition worth remembering before Task 1: elasticity only helps if actual demand is variable; lower own-infrastructure effort does not mean lower total cost; and standardisation benefits the provider's operating model as much as it benefits you. Keep that pairing — real benefit, real boundary — in mind as you read the next four blocks.",
+    reasoning: [
+      "Sorting Benefit vs Risk: if a card describes a condition one of these six benefits exists to absorb — growing demand, slow procurement, high own-infrastructure effort — it is a Benefit. It is a reason the move makes sense, not a warning about it.",
+      "\"Data volumes and storage requirements are continuously increasing\" is the textbook case for elasticity, so it sorts as Benefit. Growth only becomes a Risk when the case also says the growth is unmanaged or the data is retained with no lifecycle policy — read the card, not your worst-case assumption.",
+      "A card calling your own infrastructure inefficient is also a Benefit: it names the gap the efficiency argument in Block 2 is meant to close.",
+      "Every benefit has a boundary condition (elasticity needs variable demand; lower operating effort is not lower total cost). Use the boundary to explain your reasoning in Stage 3 — not to flip a Benefit into a Risk.",
+    ],
     callout: {
       label: "Why this matters for the case ahead",
       text: "Flexora's management is expecting exactly these six benefits from its cloud expansion — more speed, less operating burden. Whether the evidence actually supports that expectation is what Task 1 asks you to test.",
@@ -74,6 +106,11 @@ export const MATERIAL: MaterialSection[] = [
       "The clearest evidence of this gap is PUE (Power Usage Effectiveness — the ratio of total facility energy to IT equipment energy; a lower number means less energy lost to cooling, power delivery, and other overhead). The Uptime Institute's 2026 Global Data Center Survey put the industry-wide annual average PUE at 1.52 (1.36 once larger facilities are weighted proportionally), while leading hyperscale operators report PUEs as low as 1.08, typically in the 1.1–1.2 range for their newest facilities. The average enterprise-operated facility, by contrast, still runs at roughly 2.1 — effectively losing over half of the power it draws to non-IT overhead.",
     takeaway:
       "This is the strongest technical and economic argument for moving workloads to the cloud: a well-run hyperscale facility can deliver the same computing work using meaningfully less energy per unit of IT load than most companies' own data centres. That argument is about efficiency per unit of work, though — not about what happens to total energy demand once migration makes computing cheaper and easier to consume. That distinction is exactly where the next block picks up.",
+    reasoning: [
+      "Wheel dimension: when a card contrasts your own infrastructure with the cloud's, the dominant dimension is Cost. An enterprise facility at PUE ≈ 2.1 against hyperscale at 1.1–1.2 is a cost-of-energy gap before it is anything else.",
+      "\"Partly inefficient, but easy to control\" is exactly the profile this block says the cloud improves on — efficiency yes, control no. That is why it reads as a reason for the move rather than an objection to it.",
+      "Rules out the tempting wrong answer: this block does not say a migration lowers total energy use. That claim belongs to Block 3, and Block 3 disagrees. Never cite a PUE number as proof of a sustainability outcome.",
+    ],
     callout: {
       label: "Source and currency of these figures",
       text: "Figures above are from the Uptime Institute's 2026 Global Data Center Survey. PUE benchmarks shift year to year as facilities are built and retired — always check the current-year survey before quoting a number in a real report.",
@@ -91,6 +128,11 @@ export const MATERIAL: MaterialSection[] = [
       "This mirrors a pattern economists have observed since the 19th century (Jevons' paradox): making a resource more efficient to use often increases total consumption of it, rather than reducing it, because the lower cost per unit removes a natural brake on demand. In a corporate cloud context, this shows up very concretely — a lower friction to spin up a new cloud resource (Block 1's \"faster provisioning\") is also a lower friction to leave that resource running unused (a direct link to Block 5's \"sources of inefficiency\").",
     takeaway:
       "The practical consequence: whether a specific cloud migration is genuinely more sustainable depends less on which provider you choose, and more on whether the organisation actively manages the demand side — governance over what gets provisioned, and discipline about decommissioning what is no longer needed. A provider's efficiency is a ceiling on how sustainable your cloud use can be; it is not a guarantee.",
+    reasoning: [
+      "Any card about announcing, communicating, or reporting a sustainability result belongs to the Sustainability dimension — and it is a Risk until someone has measured the demand side. Wanting to report a success is not the same as having evidence for one.",
+      "Efficiency per unit of work and total consumption are two different numbers. If a card only establishes the first, it cannot support a claim about the second.",
+      "This is also the backbone of both Stage 3 statements: genuine sustainability needs an efficient provider AND managed demand; it fails when demand growth outruns the efficiency gain.",
+    ],
     callout: {
       label: "You'll see this again",
       text: "The diagram below reappears, smaller, at the start of Task 1 — Flexora's own numbers are a live example of efficiency and total demand moving in opposite directions from what management expects.",
@@ -108,6 +150,12 @@ export const MATERIAL: MaterialSection[] = [
       "These six are not independent — they compound. A governance gap (no policy on who can order cloud services) is very often the root cause behind both a transparency problem (nobody has full visibility) and a cost-control problem (spend accumulates unnoticed across many small, individually-approved purchases). Vendor lock-in and data sovereignty are more structural: they are consequences of specific technical and legal choices made early in an adoption, and are expensive to reverse later.",
     takeaway:
       "Every one of these six challenges maps onto one of the six dimensions in the wheel at the end of this material — that mapping is the framework you will actually use in Task 1, not just a list to memorise.",
+    reasoning: [
+      "Governance or Controllability? A card about who may order or approve something maps to Governance. A card about whether anyone can see and steer what is already running maps to Controllability. \"No uniform cloud governance\" is the first; \"departments order independently\" is the second.",
+      "Technical or Management/Governance problem? Ask what is actually missing. If what's missing is a rule, a mandate, or an owner — nobody has decided who may do what — it is a Governance problem. If what's missing is a capability someone could build (a central provisioning path with guardrails, a cost dashboard, monitoring), it is a Technical problem, even when the symptom shows up as departmental behaviour.",
+      "Anything about what the organisation tells the outside world is decided by leadership, not engineering — classify it as Governance.",
+      "These six challenges compound: a governance gap is usually the root cause behind a transparency gap and a cost gap. When the wheel forces one segment, pick the dimension the card names most directly, not the root cause sitting behind it.",
+    ],
     callout: {
       label: "Not a reason to avoid cloud",
       text: "None of these six challenges argue against cloud adoption itself — they argue for adopting it deliberately, with governance and monitoring built in from the start rather than added after problems appear.",
@@ -125,6 +173,11 @@ export const MATERIAL: MaterialSection[] = [
       "Each of these is a demand-side problem, not a supply-side one — none of it is fixed by choosing a more efficient hyperscale provider, because the underlying resource is being consumed unnecessarily in the first place. This is the direct, practical face of Block 3's rebound effect: the same low friction that makes cloud fast and convenient (Block 1) is what allows over-provisioning and zombie workloads to accumulate unnoticed.",
     takeaway:
       "This is also the most actionable list in this material: unlike the provider's own PUE or hardware roadmap, every one of these five sources of waste is within the customer organisation's own control, starting with visibility into what is actually running.",
+    reasoning: [
+      "\"Cloud costs are rising faster than expected\" is a Cost-dimension Risk, and its cause is almost always on this list. Because over-provisioning, zombie workloads, and oversized resources are fixed by rightsizing and clean-up work, tag it as an Individual Technical Problem rather than a governance one.",
+      "Rules out the tempting wrong answer: growing storage is not automatically waste. Growth on its own is demand (Block 1); growth with no lifecycle or deletion policy is waste. Only the second is a Risk.",
+      "Every source here is demand-side and inside the customer's own control — none is fixed by switching to a more efficient provider. That is what makes this the most actionable list in the material, and the backbone of your second Stage 3 statement.",
+    ],
     callout: {
       label: "Before you move on",
       text: "The wheel below is a summary of everything in this material as one working framework. Study it — you will use it directly, as an interactive tool, in Stage 2 of Task 1.",
@@ -302,12 +355,14 @@ export const TASK1 = {
       label: "Sort: Benefit vs Risk",
       instructions:
         "Drag each of the six evidence cards into Benefit or Risk / Challenge — or tap a card, then tap a bucket. Use the clue if you're unsure; undo/redo freely. Every card you land on Risk also asks one more thing right there: is it an Individual Technical Problem or a Management / Governance Problem?",
+      material: ["fundamentals", "scale", "challenges", "inefficiency"] as MaterialSectionId[],
     },
   },
   stage2: {
     heading: "Stage 2 — Map to the 6-Dimension Wheel",
     instructions:
       "Drag the same six cards onto the wheel — one segment each, whichever dimension the evidence is most dominantly about. A card can only touch one segment: pick the strongest fit.",
+    material: ["challenges", "inefficiency", "wheel"] as MaterialSectionId[],
   },
   stage3: {
     heading: "Stage 3 — Synthesize & Export",
@@ -315,6 +370,7 @@ export const TASK1 = {
     part1: {
       label: "Write 2 Sustainability Statements",
       instructions: "Complete each sentence in your own words, grounded in the material and in Flexora's situation.",
+      material: ["tension", "inefficiency"] as MaterialSectionId[],
     },
     part2: {
       label: "Live Report",

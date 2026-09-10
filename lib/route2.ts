@@ -76,8 +76,28 @@ export type MaterialSection = {
   definition: string;
   insight: string;
   takeaway: string;
+  /** Standard #11a — decision rules, phrased the way Task 2 will need them. */
+  reasoning: string[];
   callout: { label: string; text: string };
 };
+
+/** DOM anchor a task step's MaterialRefs chip scrolls to. */
+export function materialAnchorId(id: MaterialSectionId): string {
+  return `r2-material-${id}`;
+}
+
+const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
+  finops: "Block 1 · FinOps cycle",
+  sevendim: "Block 2 · Assessment model",
+  uncertainty: "Block 3 · Deciding under uncertainty",
+  multiplier: "Block 4 · Governance multiplier",
+  shorttermism: "Block 5 · The short-term trap",
+};
+
+/** Chips for a task step: which material sections it draws on. */
+export function materialRefs(ids: MaterialSectionId[]) {
+  return ids.map((id) => ({ anchorId: materialAnchorId(id), label: MATERIAL_LABELS[id] }));
+}
 
 export const MATERIAL: MaterialSection[] = [
   {
@@ -92,6 +112,11 @@ export const MATERIAL: MaterialSection[] = [
       "Task 2's three options map directly onto this cycle, and onto each other's prerequisites: Option B (governance) is almost entirely Inform work — you cannot optimise or operate what you cannot see. Option C (technical optimisation) is Optimize work — it depends on Inform having already surfaced where the waste is. Option A (accelerated migration) sits outside the cycle's discipline entirely if pursued alone — it changes scale without first passing through Inform or Optimize, which is exactly why it can increase cost and risk rather than reduce them.",
     takeaway:
       "This is not three equally-ranked options — it's one maturity sequence with a shortcut being proposed. A credible recommendation names where in the FinOps cycle each option actually sits, not just how attractive it looks on its own.",
+    reasoning: [
+      "Placing the three options: Option B (governance) is Inform work, Option C (optimisation) is Optimize work, and Option A (accelerated migration) sits outside the cycle — it changes scale without passing through either. Name that placement in your Stage 2 justification; it is the cleanest argument available to you.",
+      "The cycle is also a prerequisite chain: you cannot optimise what you cannot see. If you rank C above B, your justification has to say how the waste gets found without the visibility B provides.",
+      "Rules out the tempting wrong answer: 'A is fastest, so A scores best on Feasibility' confuses speed of starting with likelihood of succeeding. Feasibility asks whether it can realistically be implemented here, given this organisation's data and maturity.",
+    ],
     callout: {
       label: "Verify before you quote it",
       text: "The FinOps Foundation updates its framework and member survey data regularly — if you cite a specific adoption statistic or maturity benchmark from them in a real report, check the current-year State of FinOps report rather than reusing a remembered figure.",
@@ -109,6 +134,12 @@ export const MATERIAL: MaterialSection[] = [
       "Plotted on a radar chart, each option produces a distinct shape rather than a single score — one option can dominate on Feasibility and Economic Viability while trailing badly on Long-Term Effect, and that shape is more informative than any average. Task 2 scores four of these seven dimensions live — Sustainability Impact, Economic Viability, Feasibility, and Risk — in Stage 1, building the same four axes below with your own answers.",
     takeaway:
       "No option wins on every scored axis at once — that is expected, not a flaw in the framework. The recommendation in Stage 2 is about which shape best fits the situation's actual constraints, not which option has the most axes lit up. Strategic Leverage, Transparency Gain, and Long-Term Effect stay part of how you reason about the case even though Task 2 doesn't score them directly.",
+    reasoning: [
+      "In Stage 1 you pick, for each option, the one statement that best matches Flexora's situation — not the statement that sounds most positive. Check it against the five stated constraints (limited budget, pressure for visible progress, incomplete data, departments wanting autonomy, IT wanting no new dependencies) before you choose.",
+      "Sustainability Impact means the evidence-based effect, not the communicable one. An option that reduces nothing directly today but makes reductions findable can still be the strongest on this axis over time — Route 1's Block 3 is why.",
+      "Economic Viability is cost against benefit under a limited budget, so an option that cuts an existing bill scores differently from one that adds new spend. Risk asks how badly it fails and how reversible it is — an option touching no live workload carries a different kind of risk from one deleting resources.",
+      "Rules out the tempting wrong answer: a low score on one axis is not a veto, and the option with the most high scores does not automatically win. The shape matters more than the count — that is what Stage 2 asks you to read.",
+    ],
     callout: {
       label: "This is the tool, not a demonstration",
       text: "The chart below is an empty shell on purpose. In Stage 1 it fills in with real data from four of the seven dimensions above — same component, live.",
@@ -126,6 +157,12 @@ export const MATERIAL: MaterialSection[] = [
       "This is precisely the tool for justifying a decision when the data situation is incomplete — which Flexora's constraints explicitly describe. A no-regret move needs very little justification beyond \"this helps regardless of what happens next.\" A big bet needs the opposite: an explicit, stated reason for believing this particular future is the one to commit to, made in full view of the risk of being wrong.",
     takeaway:
       "Naming which tier an option sits in is itself part of a credible justification. Saying \"I'm treating this as a no-regret move because X\" or \"I recognise this is a big bet, and here's why I'm making it anyway\" is stronger than presenting every choice as equally certain.",
+    reasoning: [
+      "Your Stage 2 justification is stronger if it names the tier: \"I treat this as a no-regret move because it pays off in every plausible scenario\", or \"this is a big bet, and here is the future I am betting on\".",
+      "Because Flexora's data on energy demand and total impact is explicitly incomplete, a justification that claims certainty is weaker than one that states what is still missing and decides anyway. The instruction to name missing information is not a formality — it is the tier argument.",
+      "Rules out the tempting wrong answer: \"we need more data first\" is not a decision. If you would still act the same way under every scenario, that is a no-regret move and waiting has a cost of its own.",
+      "The same three tiers give you the follow-up decisions: what must be decided next is usually the option you deliberately kept open rather than closed.",
+    ],
     callout: {
       label: "Direct use in Task 2",
       text: "Stage 2 asks you to justify your final pick while explicitly naming what information is still missing. This framework is exactly how you do that without pretending to more certainty than you have.",
@@ -143,6 +180,11 @@ export const MATERIAL: MaterialSection[] = [
       "This is why governance behaves as a multiplier rather than an additive contribution: a migration paired with governance is worth more than a migration alone, and a migration without it can even net negative once uncontrolled growth is counted. The same relationship holds for optimisation — one-off cleanup versus cleanup backed by ongoing visibility that catches the next round of waste before it accumulates.",
     takeaway:
       "This is the strongest argument for prioritising governance first, even though it's the least visible option in the short term (a tension Block 5 comes back to directly): it is the layer that makes the economies-of-scale efficiency argument from Route 1 actually realisable in practice, rather than theoretical.",
+    reasoning: [
+      "When scoring, treat governance as a multiplier on the other two, not as a third competing item: score B's impact partly by what it makes possible for A and C, because that is how it actually behaves.",
+      "This is the standard argument for recommending B first in Stage 2 — and the standard counter-argument is that B changes nothing on day one. A credible justification has to answer that objection, not ignore it.",
+      "Rules out the tempting wrong answer: choosing A or C is not wrong here. It is only weak if your justification does not say how the visibility problem gets solved anyway — because without it, the same waste returns.",
+    ],
     callout: {
       label: "Not an argument against A or C",
       text: "This doesn't mean migration and optimisation are wrong — it means their realistic value depends heavily on whether governance exists underneath them. Keep that dependency in mind heading into Stage 1's scoring.",
@@ -160,6 +202,12 @@ export const MATERIAL: MaterialSection[] = [
       "Both patterns share the same shape: fast initial progress, followed by a sharper correction once the hidden cost or risk surfaces — usually later, and usually more expensive to fix than it would have been to prevent. A governance-first path shows less visible progress early, but each subsequent step is built on real visibility, so its trajectory doesn't require a later correction.",
     takeaway:
       "A board asking for \"visible progress\" is not wrong to want it — but a credible recommendation distinguishes between visible progress that is durable and visible progress that is a preview of a correction still to come.",
+    reasoning: [
+      "The two risks you name in Stage 2 should be consequences, not restatements. \"It is short-term\" is a label; \"spend keeps growing past forecast because nobody gains visibility, and the correction lands in a later budget cycle\" is a risk.",
+      "The two named patterns give you ready material: cost overrun (spend outruns the business case once usage scales without governance) and lock-in (a fast, deep commitment that is expensive to reverse once discovered).",
+      "Write the risks about the attractive-but-shallow path even if you recommended it yourself — the point is to show you can see the failure mode of your own choice, which is what a management reader is checking for.",
+      "Rules out the tempting wrong answer: \"visible progress\" is not the flaw. The flaw is visible progress that is not backed by the capability needed to sustain it.",
+    ],
     callout: {
       label: "You'll see this diagram again",
       text: "The branching timeline below reappears next to Stage 2 of Task 2, where you'll name two concrete risks of picking the fast-but-shallow path.",
@@ -350,6 +398,7 @@ export const TASK2 = {
     part2: {
       label: "Assess the 4 Dimensions",
       instructions: "For each dimension, pick the one statement under each option that best matches Flexora's situation. Use Show Clue if you're unsure — it points at the reasoning, not the answer. The radar on the right builds live as you answer.",
+      material: ["finops", "sevendim", "multiplier"] as MaterialSectionId[],
     },
   },
   stage2: {
@@ -365,10 +414,12 @@ export const TASK2 = {
       label: "Make the Call & Follow-Up",
       instructions:
         "Based on the radar you've just built, choose one option as your final priority and justify it in writing. Then name the most important follow-up decisions that result from it.",
+      material: ["uncertainty", "multiplier", "sevendim"] as MaterialSectionId[],
     },
     part2: {
       label: "Two Risks of the Wrong Shortcut",
       instructions: "Describe two risks if a line of measures is chosen that is attractive in the short term but structurally weak — even if it isn't the option you recommended.",
+      material: ["shorttermism", "multiplier"] as MaterialSectionId[],
     },
   },
   stage3: {
