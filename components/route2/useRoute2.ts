@@ -59,7 +59,7 @@ export function useRoute2() {
   const justifyComplete = justify.trim().length > 0;
   const stage3Complete = pickComplete && justifyComplete;
 
-  // --- Stage 4 — Follow-up decisions ------------------------------------------
+  // --- Stage 3 (cont.) — Follow-up decisions ----------------------------------
   const followUps = useMemo(() => {
     const arr: string[] = [];
     for (let i = 0; i < FOLLOWUP_COUNT; i++) arr.push(hydrated ? notes[R2.followUp(i)] ?? "" : "");
@@ -67,7 +67,7 @@ export function useRoute2() {
   }, [hydrated, notes]);
   const stage4Complete = followUps.every((f) => f.trim().length > 0);
 
-  // --- Stage 5 — Two risks -----------------------------------------------------
+  // --- Stage 4 — Two risks -----------------------------------------------------
   const risks = useMemo(() => {
     const arr: string[] = [];
     for (let i = 0; i < RISK_COUNT; i++) arr.push(hydrated ? notes[R2.risk(i)] ?? "" : "");
@@ -75,7 +75,7 @@ export function useRoute2() {
   }, [hydrated, notes]);
   const stage5Complete = risks.every((r) => r.trim().length > 0);
 
-  // --- Stage 6 — Reflection ----------------------------------------------------
+  // --- Stage 5 — Reflection ----------------------------------------------------
   const reflections = useMemo(() => {
     const arr: string[] = [];
     for (let i = 0; i < REFLECTION_PROMPTS.length; i++) arr.push(hydrated ? notes[R2.reflection(i)] ?? "" : "");
@@ -99,13 +99,13 @@ export function useRoute2() {
     if (!justifyComplete) items.push({ id: "r2-stage3-justify", label: "Stage 3: add your justification for the recommendation" });
 
     followUps.forEach((f, i) => {
-      if (!f.trim()) items.push({ id: `r2-stage4-${i}`, label: `Stage 4: add follow-up decision #${i + 1}` });
+      if (!f.trim()) items.push({ id: `r2-stage4-${i}`, label: `Stage 3: add follow-up decision #${i + 1}` });
     });
     risks.forEach((r, i) => {
-      if (!r.trim()) items.push({ id: `r2-stage5-${i}`, label: `Stage 5: name risk #${i + 1} of the easy-but-shallow alternative` });
+      if (!r.trim()) items.push({ id: `r2-stage5-${i}`, label: `Stage 4: name risk #${i + 1} of the easy-but-shallow alternative` });
     });
     REFLECTION_PROMPTS.forEach((p, i) => {
-      if (!reflections[i]?.trim()) items.push({ id: `r2-stage6-${i}`, label: `Stage 6: answer "${p.question}"` });
+      if (!reflections[i]?.trim()) items.push({ id: `r2-stage6-${i}`, label: `Stage 5: answer "${p.question}"` });
     });
 
     return items;

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import clsx from "clsx";
 import { useProgress } from "@/lib/store";
-import { R1, EVIDENCE_ITEMS, type Verdict2, type EvidenceItem } from "@/lib/route1";
+import { R1, EVIDENCE_ITEMS, STAGE5_CLASSIFICATION, type Verdict2, type Side5, type EvidenceItem } from "@/lib/route1";
 import { useRoute1 } from "./useRoute1";
 import { useBenefitRiskStore, type BenefitRiskPlacements } from "./useBenefitRiskStore";
 import { ClueToggle } from "@/components/ui/ClueToggle";
@@ -34,6 +34,8 @@ function snapshotOf(placement: Record<string, Verdict2 | undefined>): BenefitRis
 export function BenefitRiskSort() {
   const r1 = useRoute1();
   const choose = useProgress((s) => s.choose);
+  const stage5Side = r1.stage5Side;
+  const tagSide = (itemId: string, side: Side5) => choose(R1.stage5.side(itemId), side);
 
   const past = useBenefitRiskStore((s) => s.past);
   const future = useBenefitRiskStore((s) => s.future);
@@ -200,7 +202,16 @@ export function BenefitRiskSort() {
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <Zone label="Benefit" zone="benefit" items={zoneItems("benefit")} onZoneClick={onZoneClick} handlers={handlers} />
-        <Zone label="Risk / Challenge" zone="risk" items={zoneItems("risk")} onZoneClick={onZoneClick} handlers={handlers} />
+        <Zone
+          label="Risk / Challenge"
+          zone="risk"
+          items={zoneItems("risk")}
+          onZoneClick={onZoneClick}
+          handlers={handlers}
+          renderBelowItem={(it) => (
+            <TechGovTag key={`tag-${it.id}`} itemId={it.id} side={stage5Side[it.id]} onTag={tagSide} />
+          )}
+        />
       </div>
 
       {draggingItem && dragPos && wasDragRef.current && (
@@ -246,28 +257,64 @@ function Zone({
   items,
   onZoneClick,
   handlers,
+  renderBelowItem,
 }: {
   label: string;
   zone: Verdict2;
   items: EvidenceItem[];
   onZoneClick: (zone: Verdict2) => void;
   handlers: Handlers;
+  renderBelowItem?: (item: EvidenceItem) => React.ReactNode;
 }) {
   return (
     <div
       data-dropzone={zone}
       onClick={() => onZoneClick(zone)}
       className={clsx(
-        "min-h-[120px] space-y-1.5 rounded-xl border p-3",
+        "min-h-[120px] space-y-2.5 rounded-xl border p-3",
         handlers.selectedId ? "border-accent/50 bg-accentSoft/40 cursor-pointer" : "border-line",
       )}
     >
       <p className="text-micro font-semibold uppercase tracking-wide text-ash">{label}</p>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="space-y-1.5">
         {items.map((it) => (
-          <Chip key={it.id} item={it} placed handlers={handlers} />
+          <div key={it.id} className="flex flex-wrap items-start gap-1.5">
+            <Chip item={it} placed handlers={handlers} />
+            {renderBelowItem?.(it)}
+          </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Inline Stage 2 tag: is this Risk card a technical problem or a governance one? Replaces the old standalone re-drag stage. */
+function TechGovTag({
+  itemId,
+  side,
+  onTag,
+}: {
+  itemId: string;
+  side: Side5 | undefined;
+  onTag: (itemId: string, side: Side5) => void;
+}) {
+  const clue = STAGE5_CLASSIFICATION[itemId]?.clue;
+  return (
+    <div onClick={(e) => e.stopPropagation()} className="flex flex-wrap items-center gap-1">
+      {(["technical", "governance"] as const).map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onTag(itemId, s)}
+          className={clsx(
+            "rounded-full border px-2 py-0.5 text-micro font-medium transition-colors duration-150",
+            side === s ? "border-accent bg-accentSoft text-ink" : "border-line bg-paper text-ash hover:border-ash",
+          )}
+        >
+          {s === "technical" ? "Technical" : "Governance"}
+        </button>
+      ))}
+      {clue && <ClueToggle clue={clue} />}
     </div>
   );
 }

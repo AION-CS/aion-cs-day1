@@ -230,7 +230,7 @@ export const EVIDENCE_ITEMS: EvidenceItem[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Stage 4 — three sentence-starter statements.
+// Stage 4 — two sentence-starter statements.
 // ---------------------------------------------------------------------------
 export type StatementPrompt = {
   id: string;
@@ -249,18 +249,14 @@ export const STATEMENT_PROMPTS: StatementPrompt[] = [
     starter: "A cloud migration fails to be sustainable if",
     helper: "Consider which of Block 5's sources of inefficiency would undo an efficient provider's advantage.",
   },
-  {
-    id: "theoretical-vs-real",
-    starter: "The difference between theoretical cloud efficiency and real sustainable use is",
-    helper: "This is the whole route's core idea in one sentence — what a provider's infrastructure makes possible versus what an organisation actually does with it.",
-  },
 ];
 
 export const STATEMENT_MIN_WORDS = 10;
 
 // ---------------------------------------------------------------------------
-// Stage 5 — Technical vs. Management/Governance split of Stage 2's "risk"
-// items. The working set is derived live from the learner's own Stage 2
+// Technical vs. Management/Governance split of Stage 2's "risk" items — an
+// inline tag shown right on each Risk-zone card in Stage 2 (not a separate
+// stage). The working set is derived live from the learner's own Stage 2
 // verdicts (see useRoute1) — the classification below is reference data for
 // every evidence item that CAN appear here, used to drive clues and the
 // report, not to gate which items show up.
@@ -293,8 +289,8 @@ export const TASK1 = {
   kicker: "Task 1",
   heading: "Flexora Cloud Decision Audit",
   intro:
-    "Flexora Digital Services is a fictional company, built to let you apply everything from the material above. Work through the six stages below — nothing is locked, and each one feeds the live Decision Brief on the right, which is what you'll actually export.",
-  orderBanner: "Suggested order: Stage 1 → 6. You can work in any order — the report on the right fills in as you go, whichever stage you start with.",
+    "Flexora Digital Services is a fictional company, built to let you apply everything from the material above. Work through the five stages below — nothing is locked, and each one feeds the live Decision Brief on the right, which is what you'll actually export.",
+  orderBanner: "Suggested order: Stage 1 → 5. You can work in any order — the report on the right fills in as you go, whichever stage you start with.",
   stage1: {
     heading: "Stage 1 — Case Briefing",
     instructions: "Read the dossier and click each evidence card to expand it. These six cards are what you'll classify in Stages 2 and 3.",
@@ -302,7 +298,7 @@ export const TASK1 = {
   stage2: {
     heading: "Stage 2 — Sort: Benefit vs Risk",
     instructions:
-      "Drag each of the six evidence cards into Benefit or Risk / Challenge — or tap a card, then tap a bucket. Use the clue if you're unsure; undo/redo freely.",
+      "Drag each of the six evidence cards into Benefit or Risk / Challenge — or tap a card, then tap a bucket. Use the clue if you're unsure; undo/redo freely. Every card you land on Risk also asks one more thing right there: is it an Individual Technical Problem or a Management / Governance Problem?",
   },
   stage3: {
     heading: "Stage 3 — Classify into the 6-Dimension Wheel",
@@ -310,17 +306,11 @@ export const TASK1 = {
       "Now drag the same six cards onto the wheel — one segment each, whichever dimension the evidence is most dominantly about. A card can only touch one segment: pick the strongest fit.",
   },
   stage4: {
-    heading: "Stage 4 — Write 3 Sustainability Statements",
+    heading: "Stage 4 — Write 2 Sustainability Statements",
     instructions: "Complete each sentence in your own words, grounded in the material and in Flexora's situation.",
   },
   stage5: {
-    heading: "Stage 5 — Technical vs Management Sort",
-    instructions:
-      "Every card you tagged Risk in Stage 2 appears below. Classify each as an Individual Technical Problem or a Management / Governance Problem.",
-    empty: "Nothing to classify yet — tag at least one card as Risk in Stage 2 first. This section stays open; it will fill in as soon as you do.",
-  },
-  stage6: {
-    heading: "Stage 6 — Live Report",
+    heading: "Stage 5 — Live Report",
     instructions: "A read-only recap of everything above, and the structured brief it produces — ready to export once every stage is complete.",
   },
   export: {

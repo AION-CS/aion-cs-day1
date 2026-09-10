@@ -19,7 +19,7 @@ export type ManagementReportData = {
   tradeoffs: string[];
   firstMeasure: string;
   firstMeasureJustify: string;
-  roles: { label: string; approves: string; reviews: string }[];
+  roles: { label: string; mandate: string }[];
   decideNow: string;
   waitingMeans: string;
 };
@@ -61,8 +61,7 @@ export function useManagementReportData(): ManagementReportData {
       firstMeasureJustify: r3.firstMeasureJustify,
       roles: PROPOSAL_ROLES.map((role) => ({
         label: role.label,
-        approves: r3.roleFields[role.id]?.approves ?? "",
-        reviews: r3.roleFields[role.id]?.reviews ?? "",
+        mandate: r3.roleFields[role.id] ?? "",
       })),
       decideNow: r3.decideNow,
       waitingMeans: r3.waitingMeans,

@@ -48,7 +48,7 @@ export function useRoute1() {
   const stage3DoneCount = Object.keys(stage3Dimension).length;
   const stage3Complete = stage3DoneCount >= EVIDENCE_ITEMS.length;
 
-  // --- Stage 4 — 3 sustainability statements ---------------------------------
+  // --- Stage 4 — 2 sustainability statements ---------------------------------
   const stage4Statement = useMemo(() => {
     const map: Record<string, string> = {};
     if (!hydrated) return map;
@@ -60,7 +60,7 @@ export function useRoute1() {
   const stage4MissingIds = STATEMENT_PROMPTS.filter((p) => !stage4Statement[p.id]?.trim()).map((p) => p.id);
   const stage4Complete = stage4MissingIds.length === 0;
 
-  // --- Stage 5 — Technical vs Management, working set = Stage 2's "risk" ----
+  // --- Technical vs Governance tag, working set = Stage 2's "risk" cards --
   const stage5Items = useMemo(
     () => EVIDENCE_ITEMS.filter((it) => stage2Verdict[it.id] === "risk"),
     [stage2Verdict],
@@ -103,11 +103,11 @@ export function useRoute1() {
     }
     if (!stage5Complete) {
       items.push({
-        id: "r1-stage5",
+        id: "r1-stage2",
         label:
           stage5Items.length === 0
-            ? "Stage 5: tag at least one card as Risk in Stage 2, then classify it here"
-            : `Stage 5: ${stage5Items.length - stage5DoneCount} of ${stage5Items.length} risk cards not yet classified`,
+            ? "Stage 2: tag at least one card as Risk, then classify it Technical or Governance"
+            : `Stage 2: ${stage5Items.length - stage5DoneCount} of ${stage5Items.length} Risk cards not yet tagged Technical/Governance`,
       });
     }
     return items;

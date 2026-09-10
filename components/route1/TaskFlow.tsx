@@ -7,7 +7,6 @@ import { CaseBrief } from "./CaseBrief";
 import { BenefitRiskSort } from "./BenefitRiskSort";
 import { WheelClassifier } from "./WheelClassifier";
 import { StatementBuilder } from "./StatementBuilder";
-import { TechGovSort } from "./TechGovSort";
 import { RecapPanel } from "./RecapPanel";
 import { DecisionReportDoc } from "./DecisionReportDoc";
 import { useRoute1 } from "./useRoute1";
@@ -62,14 +61,6 @@ export function TaskFlow() {
       <div id="r1-stage5">
         <h3 className="text-h3 text-ink">{TASK1.stage5.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK1.stage5.instructions}</p>
-        <div className="mt-4">
-          <TechGovSort />
-        </div>
-      </div>
-
-      <div id="r1-stage6">
-        <h3 className="text-h3 text-ink">{TASK1.stage6.heading}</h3>
-        <p className="mt-1 text-caption text-ash">{TASK1.stage6.instructions}</p>
         <div className="mt-4 grid gap-5 lg:grid-cols-2">
           <div className="rounded-2xl border border-line bg-canvas p-5">
             <RecapPanel r1={r1} />

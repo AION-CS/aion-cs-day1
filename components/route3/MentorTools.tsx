@@ -22,10 +22,10 @@ const DEMO_TRADEOFFS = [
   "Speed of provisioning vs. central control — governance will slow some requests to gain visibility.",
   "Short-term visible progress vs. structural soundness — the first move is deliberately not the flashiest one.",
 ];
-const DEMO_ROLE_FIELDS: Record<string, { approves: string; reviews: string }> = {
-  board: { approves: "Budget ceiling and the overall proposal", reviews: "Quarterly, at board session" },
-  cio: { approves: "The technical-strategic recommendation", reviews: "Monthly, against roadmap milestones" },
-  ops: { approves: "Feasibility sign-off on each measure", reviews: "Continuously, via the dashboard once live" },
+const DEMO_ROLE_FIELDS: Record<string, string> = {
+  board: "Approves the budget ceiling and overall proposal · reviews quarterly, at board session",
+  cio: "Approves the technical-strategic recommendation · reviews monthly, against roadmap milestones",
+  ops: "Approves feasibility sign-off on each measure · reviews continuously, via the dashboard once live",
 };
 
 /** Mentor-only: fills every field on Route 3's Task 3 with plausible, model-quality demo answers. */
@@ -66,8 +66,7 @@ export function MentorTools() {
       "It is the one measure every other future decision depends on having data from, and it carries essentially no downside risk.",
     );
     PROPOSAL_ROLES.forEach((role) => {
-      setNote(R3.s6.role(role.id, "approves"), DEMO_ROLE_FIELDS[role.id]?.approves ?? "");
-      setNote(R3.s6.role(role.id, "reviews"), DEMO_ROLE_FIELDS[role.id]?.reviews ?? "");
+      setNote(R3.s6.role(role.id), DEMO_ROLE_FIELDS[role.id] ?? "");
     });
     setNote(R3.s6.decideNow, "fund the transparency dashboard now");
     setNote(R3.s6.waitingMeans, "another budget cycle passes with departments still spending independently and no data to prioritise against");

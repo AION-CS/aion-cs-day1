@@ -6,13 +6,10 @@ import { MentorFillButton } from "@/components/ui/MentorFillButton";
 
 /** Which of the 3 statements (by score) is the model pick for each criterion x option pairing. */
 const DEMO_SCORES: Record<CriterionId, Record<OptionId, 1 | 2 | 3>> = {
-  "strategic-leverage": { A: 1, B: 3, C: 2 },
   "sustainability-impact": { A: 1, B: 3, C: 2 },
   "economic-viability": { A: 1, B: 2, C: 3 },
   feasibility: { A: 3, B: 2, C: 2 },
-  "transparency-gain": { A: 1, B: 3, C: 2 },
   risk: { A: 1, B: 3, C: 2 },
-  "long-term-effect": { A: 1, B: 3, C: 2 },
 };
 
 const DEMO_FOLLOWUPS = [
@@ -30,8 +27,6 @@ const DEMO_JUSTIFY =
 
 const DEMO_REFLECTIONS: Record<string, string> = {
   "quick-solution": "Whenever a department requests more cloud capacity to \"solve\" a deadline pressure without anyone checking whether the workload is actually needed long-term.",
-  "unnecessary-consumption": "Storage that's kept indefinitely from finished projects, and dev/test environments left running outside working hours.",
-  "attractive-but-weak": "Accelerating migration purely to show board progress, without governance to prevent the same uncontrolled growth continuing in the new environment.",
   "prioritise-differently": "An operationally minded implementer optimises for this quarter's uptime and velocity; a manager or architect has to weigh what the decision costs the organisation two or three years out, even if that's invisible right now.",
 };
 

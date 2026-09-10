@@ -87,13 +87,8 @@ export function useRoute3() {
   const firstMeasure = hydrated ? notes[R3.s6.firstMeasure] ?? "" : "";
   const firstMeasureJustify = hydrated ? notes[R3.s6.firstMeasureJustify] ?? "" : "";
   const roleFields = useMemo(() => {
-    const map: Record<string, { approves: string; reviews: string }> = {};
-    for (const r of PROPOSAL_ROLES) {
-      map[r.id] = {
-        approves: hydrated ? notes[R3.s6.role(r.id, "approves")] ?? "" : "",
-        reviews: hydrated ? notes[R3.s6.role(r.id, "reviews")] ?? "" : "",
-      };
-    }
+    const map: Record<string, string> = {};
+    for (const r of PROPOSAL_ROLES) map[r.id] = hydrated ? notes[R3.s6.role(r.id)] ?? "" : "";
     return map;
   }, [hydrated, notes]);
   const decideNow = hydrated ? notes[R3.s6.decideNow] ?? "" : "";
@@ -106,7 +101,7 @@ export function useRoute3() {
     tradeoffs.every((t) => t.trim().length > 0) &&
     firstMeasure.trim().length > 0 &&
     firstMeasureJustify.trim().length > 0 &&
-    PROPOSAL_ROLES.every((r) => roleFields[r.id]?.approves.trim() && roleFields[r.id]?.reviews.trim()) &&
+    PROPOSAL_ROLES.every((r) => roleFields[r.id]?.trim()) &&
     decideNow.trim().length > 0 &&
     waitingMeans.trim().length > 0;
 
@@ -139,7 +134,7 @@ export function useRoute3() {
     });
     if (!firstMeasure.trim() || !firstMeasureJustify.trim()) items.push({ id: "r3-stage6-firstmeasure", label: "Stage 6: name and justify the first prioritized line of measures" });
     for (const r of PROPOSAL_ROLES) {
-      if (!roleFields[r.id]?.approves.trim() || !roleFields[r.id]?.reviews.trim()) {
+      if (!roleFields[r.id]?.trim()) {
         items.push({ id: "r3-stage6-roles", label: `Stage 6: complete the approval/review row for ${r.label}` });
       }
     }

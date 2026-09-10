@@ -106,12 +106,12 @@ export const MATERIAL: MaterialSection[] = [
     definition:
       "Seven dimensions, applied consistently to every option, turn a gut-feeling ranking into a defensible one: Strategic Leverage (how much this unlocks or enables future decisions, rather than closing them down), Sustainability Impact (the realistic, evidence-based environmental benefit — not the easiest one to communicate), Economic Viability (cost relative to benefit, under the stated budget constraint), Feasibility (realistic implementability given current organisational and technical maturity), Transparency Gain (how much the measure improves visibility into usage, cost, and workloads), Risk (the probability and severity of the measure failing or backfiring), and Long-Term Effect (whether the benefit compounds over time or fades once attention moves elsewhere).",
     insight:
-      "Plotted on a radar chart, each option produces a distinct shape rather than a single score — one option can dominate on Feasibility and Economic Viability while trailing badly on Long-Term Effect, and that shape is more informative than any average. You'll build exactly this chart, live, in Stage 2 of Task 2: the same seven axes below, with your own answers.",
+      "Plotted on a radar chart, each option produces a distinct shape rather than a single score — one option can dominate on Feasibility and Economic Viability while trailing badly on Long-Term Effect, and that shape is more informative than any average. Task 2 scores four of these seven dimensions live — Sustainability Impact, Economic Viability, Feasibility, and Risk — in Stage 2, building the same four axes below with your own answers.",
     takeaway:
-      "No option wins on all seven axes at once — that is expected, not a flaw in the framework. The recommendation in Stage 3 is about which shape best fits the situation's actual constraints, not which option has the most axes lit up.",
+      "No option wins on every scored axis at once — that is expected, not a flaw in the framework. The recommendation in Stage 3 is about which shape best fits the situation's actual constraints, not which option has the most axes lit up. Strategic Leverage, Transparency Gain, and Long-Term Effect stay part of how you reason about the case even though Task 2 doesn't score them directly.",
     callout: {
       label: "This is the tool, not a demonstration",
-      text: "The chart below is an empty shell on purpose. In Stage 2 it fills in with real data from your own seven questions — same component, same seven axes, live.",
+      text: "The chart below is an empty shell on purpose. In Stage 2 it fills in with real data from four of the seven dimensions above — same component, live.",
     },
   },
   {
@@ -162,37 +162,47 @@ export const MATERIAL: MaterialSection[] = [
       "A board asking for \"visible progress\" is not wrong to want it — but a credible recommendation distinguishes between visible progress that is durable and visible progress that is a preview of a correction still to come.",
     callout: {
       label: "You'll see this diagram again",
-      text: "The branching timeline below reappears next to Stage 5 of Task 2, where you'll name two concrete risks of picking the fast-but-shallow path.",
+      text: "The branching timeline below reappears next to Stage 4 of Task 2, where you'll name two concrete risks of picking the fast-but-shallow path.",
     },
   },
 ];
 
 // ---------------------------------------------------------------------------
-// The 7 criteria
+// The 4 criteria
 // ---------------------------------------------------------------------------
-export type CriterionId =
-  | "strategic-leverage"
-  | "sustainability-impact"
-  | "economic-viability"
-  | "feasibility"
-  | "transparency-gain"
-  | "risk"
-  | "long-term-effect";
+export type CriterionId = "sustainability-impact" | "economic-viability" | "feasibility" | "risk";
 
 export type Criterion = { id: CriterionId; n: number; label: string; definition: string };
 
 export const CRITERIA: Criterion[] = [
-  { id: "strategic-leverage", n: 1, label: "Strategic Leverage", definition: "How much this measure unlocks or enables future decisions, rather than closing them down." },
-  { id: "sustainability-impact", n: 2, label: "Sustainability Impact", definition: "The realistic, evidence-based magnitude of environmental benefit — not the magnitude that's easiest to communicate." },
-  { id: "economic-viability", n: 3, label: "Economic Viability", definition: "Cost relative to benefit, evaluated under the stated budget constraint." },
-  { id: "feasibility", n: 4, label: "Feasibility", definition: "Realistic implementability given current organisational, technical, and data maturity." },
-  { id: "transparency-gain", n: 5, label: "Transparency Gain", definition: "How much the measure improves visibility into usage, cost, workloads, and responsibilities." },
-  { id: "risk", n: 6, label: "Risk", definition: "The probability and severity of the measure failing, backfiring, or being reversed." },
-  { id: "long-term-effect", n: 7, label: "Long-Term Effect", definition: "Whether the measure's benefit compounds over time, or fades once attention moves elsewhere." },
+  { id: "sustainability-impact", n: 1, label: "Sustainability Impact", definition: "The realistic, evidence-based magnitude of environmental benefit — not the magnitude that's easiest to communicate." },
+  { id: "economic-viability", n: 2, label: "Economic Viability", definition: "Cost relative to benefit, evaluated under the stated budget constraint." },
+  { id: "feasibility", n: 3, label: "Feasibility", definition: "Realistic implementability given current organisational, technical, and data maturity." },
+  { id: "risk", n: 4, label: "Risk", definition: "The probability and severity of the measure failing, backfiring, or being reversed." },
+];
+
+/**
+ * The full 7-dimension framework as taught in the material (Block 2) — kept
+ * complete even though Task 2 only scores the 4 CRITERIA above live. Used
+ * for the material's dimension-card grid so the reading stays unabridged;
+ * NOT used by the radar/scoring mechanic (see CRITERIA for that).
+ */
+export const SEVEN_DIMENSIONS: { id: string; label: string; definition: string; scoredInTask: boolean }[] = [
+  { id: "strategic-leverage", label: "Strategic Leverage", definition: "How much this measure unlocks or enables future decisions, rather than closing them down.", scoredInTask: false },
+  { id: "sustainability-impact", label: "Sustainability Impact", definition: "The realistic, evidence-based magnitude of environmental benefit — not the magnitude that's easiest to communicate.", scoredInTask: true },
+  { id: "economic-viability", label: "Economic Viability", definition: "Cost relative to benefit, evaluated under the stated budget constraint.", scoredInTask: true },
+  { id: "feasibility", label: "Feasibility", definition: "Realistic implementability given current organisational, technical, and data maturity.", scoredInTask: true },
+  { id: "transparency-gain", label: "Transparency Gain", definition: "How much the measure improves visibility into usage, cost, workloads, and responsibilities.", scoredInTask: false },
+  { id: "risk", label: "Risk", definition: "The probability and severity of the measure failing, backfiring, or being reversed.", scoredInTask: true },
+  { id: "long-term-effect", label: "Long-Term Effect", definition: "Whether the measure's benefit compounds over time, or fades once attention moves elsewhere.", scoredInTask: false },
 ];
 
 // ---------------------------------------------------------------------------
-// Criterion statements — 7 criteria x 3 options x 3 statements, hand-written
+// Criterion statements — 4 criteria x 3 options x 3 statements, hand-written.
+// (Strategic Leverage, Transparency Gain, and Long-Term Effect were cut from
+// the 7-criterion original to bring Task 2 down to a lighter, ~20-minute
+// task; CRITERION_DATA below still carries their statement blocks removed to
+// avoid dead data — see git history if reintroducing one.)
 // ---------------------------------------------------------------------------
 export type Statement = { id: string; score: 1 | 2 | 3; text: string };
 export type CriterionOptionData = { statements: Statement[]; clue: string };
@@ -204,32 +214,6 @@ const s = (criterionId: string, option: OptionId, score: 1 | 2 | 3, text: string
 });
 
 export const CRITERION_DATA: Record<CriterionId, Record<OptionId, CriterionOptionData>> = {
-  "strategic-leverage": {
-    A: {
-      statements: [
-        s("strategic-leverage", "A", 1, "Dismantling local infrastructure faster removes a fallback option — once it's gone, Flexora has little room to slow down or reverse course if the migration doesn't go as planned."),
-        s("strategic-leverage", "A", 2, "Moves more workloads onto cloud infrastructure, but by itself does nothing to change how future cloud decisions get made or who controls them."),
-        s("strategic-leverage", "A", 3, "Frees internal effort that would otherwise go to running dual infrastructure, giving the organisation more room to fund whichever measure the evidence justifies next."),
-      ],
-      clue: "Re-read the constraint about IT wanting to avoid future dependencies — what happens to Flexora's options once local infrastructure is gone?",
-    },
-    B: {
-      statements: [
-        s("strategic-leverage", "B", 1, "Written policy alone changes nothing if nobody has the mandate or tooling to actually enforce it once departments push back."),
-        s("strategic-leverage", "B", 2, "Establishes clearer rules for how cloud is used, which future decisions can reference, without yet changing what gets decided."),
-        s("strategic-leverage", "B", 3, "Becomes the framework every future cloud decision — migration pace, spend, architecture — has to run through, making it the highest-leverage option of the three."),
-      ],
-      clue: "Which of the three options changes how future decisions get made, rather than just what gets decided once?",
-    },
-    C: {
-      statements: [
-        s("strategic-leverage", "C", 1, "A one-off clean-up of idle workloads and storage fixes today's waste but creates no lasting capability to catch the next one."),
-        s("strategic-leverage", "C", 2, "Improves the technical baseline Flexora operates from, which later decisions can build on, without changing how those decisions get made."),
-        s("strategic-leverage", "C", 3, "Establishes a repeatable discipline for finding and removing waste, which compounds in value every future quarter it's applied."),
-      ],
-      clue: "If this clean-up happens once, what stops the same waste from reappearing next quarter?",
-    },
-  },
   "sustainability-impact": {
     A: {
       statements: [
@@ -308,32 +292,6 @@ export const CRITERION_DATA: Record<CriterionId, Record<OptionId, CriterionOptio
       clue: "Does optimisation need perfect data everywhere before it can start anywhere?",
     },
   },
-  "transparency-gain": {
-    A: {
-      statements: [
-        s("transparency-gain", "A", 1, "Migrating more workloads adds more cloud infrastructure to track, without adding any new visibility into how it's used."),
-        s("transparency-gain", "A", 2, "Cloud-native monitoring tools that come with migrated workloads add some visibility Flexora didn't have on-premises."),
-        s("transparency-gain", "A", 3, "A full migration, done with a monitoring plan, could give Flexora more consistent, centralised visibility than the mixed on-prem/cloud setup it replaces."),
-      ],
-      clue: "Does moving a workload to the cloud automatically mean someone is watching what it costs or how it's used?",
-    },
-    B: {
-      statements: [
-        s("transparency-gain", "B", 1, "A policy document alone doesn't generate any data — it only says what should be tracked."),
-        s("transparency-gain", "B", 2, "Introduces some reporting requirements, giving partial visibility into spend and usage across departments."),
-        s("transparency-gain", "B", 3, "Directly closes the transparency gap the case names — usage, cost, workloads, and responsibilities all in one place — the largest transparency gain of the three by design."),
-      ],
-      clue: "Which option is explicitly built to close the exact transparency gap the case describes?",
-    },
-    C: {
-      statements: [
-        s("transparency-gain", "C", 1, "Optimisation work generates findings about specific workloads, but doesn't necessarily produce an ongoing reporting structure."),
-        s("transparency-gain", "C", 2, "Requires building some monitoring to find waste in the first place, which adds real but narrow visibility."),
-        s("transparency-gain", "C", 3, "Sustained optimisation work naturally produces detailed, ongoing usage data as a by-product, feeding directly into whatever governance model comes next."),
-      ],
-      clue: "Does finding and fixing inefficiency require building visibility into usage first?",
-    },
-  },
   risk: {
     A: {
       statements: [
@@ -360,32 +318,6 @@ export const CRITERION_DATA: Record<CriterionId, Record<OptionId, CriterionOptio
       clue: "Re-read the constraint about incomplete data — what's the risk of removing a resource that looks idle but isn't?",
     },
   },
-  "long-term-effect": {
-    A: {
-      statements: [
-        s("long-term-effect", "A", 1, "An accelerated migration is a one-time shift — once complete, it says nothing about whether future cloud growth will be managed any better than today's."),
-        s("long-term-effect", "A", 2, "Leaves Flexora fully cloud-based, which simplifies some things structurally, but without governance the same uncontrolled-growth pattern can simply continue in the new environment."),
-        s("long-term-effect", "A", 3, "Combined with the other two measures later, a completed migration is a stable foundation — but taken alone, it does not structurally prevent the problems the case describes from recurring."),
-      ],
-      clue: "Once the migration is done, does the case's underlying problem — uncontrolled, ad hoc cloud use — actually go away?",
-    },
-    B: {
-      statements: [
-        s("long-term-effect", "B", 1, "A governance policy that isn't actively maintained can quietly stop being followed within a year, the same way many internal policies fade."),
-        s("long-term-effect", "B", 2, "Provides a lasting structure for decisions, as long as someone keeps enforcing and updating it as the organisation changes."),
-        s("long-term-effect", "B", 3, "Structurally changes how every future cloud decision gets made, making it the only option of the three whose effect compounds rather than fades over time."),
-      ],
-      clue: "Which option changes the organisation's decision-making structure permanently, rather than fixing a specific problem once?",
-    },
-    C: {
-      statements: [
-        s("long-term-effect", "C", 1, "Optimisation savings tend to erode over time as new workloads are added the same ad hoc way the old ones were."),
-        s("long-term-effect", "C", 2, "Produces a cleaner baseline that lasts until the next round of uncontrolled growth catches up with it."),
-        s("long-term-effect", "C", 3, "If paired with ongoing monitoring, optimisation gains can be sustained rather than eroded — but without that pairing, the effect is temporary by nature."),
-      ],
-      clue: "Without governance to prevent new waste, how long does a one-time clean-up's benefit actually last?",
-    },
-  },
 };
 
 // ---------------------------------------------------------------------------
@@ -395,8 +327,6 @@ export type ReflectionPrompt = { id: string; question: string };
 
 export const REFLECTION_PROMPTS: ReflectionPrompt[] = [
   { id: "quick-solution", question: "Where might the cloud be seen in my organisation as a quick solution without properly assessing the long-term effects?" },
-  { id: "unnecessary-consumption", question: "Which cloud use probably generates unnecessary resource or energy consumption in our organisation?" },
-  { id: "attractive-but-weak", question: "Which decision would be attractive in the short term, but too weak strategically?" },
   { id: "prioritise-differently", question: "What would a head of department, architect, manager, or consultant have to prioritise differently than a purely operationally minded implementer?" },
 ];
 
@@ -411,36 +341,31 @@ export const TASK2 = {
   kicker: "Task 2",
   heading: "The Prioritization Decision",
   intro:
-    "Work through the seven stages below — nothing is locked. Score the seven dimensions, watch the radar take shape, then make and defend a call under real uncertainty.",
-  orderBanner: "Suggested order: Stage 1 → 7. You can work in any order — the report at the end fills in as you go.",
+    "Work through the five stages below — nothing is locked. Score the four dimensions, watch the radar take shape, then make and defend a call under real uncertainty.",
+  orderBanner: "Suggested order: Stage 1 → 5. You can work in any order — the report at the end fills in as you go.",
   stage1: { heading: "Stage 1 — The Situation", instructions: "Read the three options and five general conditions. Click each card to expand it." },
   stage2: {
-    heading: "Stage 2 — Assess the 7 Dimensions",
+    heading: "Stage 2 — Assess the 4 Dimensions",
     instructions: "For each dimension, pick the one statement under each option that best matches Flexora's situation. Use Show Clue if you're unsure — it points at the reasoning, not the answer. The radar on the right builds live as you answer.",
   },
   stage3: {
-    heading: "Stage 3 — Make the Call",
-    instructions: "Based on the radar you've just built, choose one option as your final priority and justify it in writing.",
+    heading: "Stage 3 — Make the Call & Follow-Up",
+    instructions:
+      "Based on the radar you've just built, choose one option as your final priority and justify it in writing. Then name the most important follow-up decisions that result from it.",
     pickLabel: "Final recommendation",
     pickCaption: "Select the option you'd actually recommend to Flexora's leadership.",
     justifyLabel: "Justification",
     justifyCaption: `Justify your choice — explicitly note what information is still missing and why you're deciding anyway. Aim for at least ${JUSTIFY_MIN_WORDS} words.`,
+    followUpLabel: "Follow-up decisions",
+    followUpCaption: "What must now be decided next, once this measure is approved?",
   },
   stage4: {
-    heading: "Stage 4 — Follow-Up Decisions",
-    instructions: "What are the most important follow-up decisions that result from this prioritisation?",
-  },
-  stage5: {
-    heading: "Stage 5 — Two Risks of the Wrong Shortcut",
+    heading: "Stage 4 — Two Risks of the Wrong Shortcut",
     instructions: "Describe two risks if a line of measures is chosen that is attractive in the short term but structurally weak — even if it isn't the option you recommended.",
   },
-  stage6: {
-    heading: "Stage 6 — Reflection",
-    instructions: "Four questions to answer honestly and personally — these feed the report too, but there's no right answer to check here.",
-  },
-  stage7: {
-    heading: "Stage 7 — Live Report",
-    instructions: "A read-only recap of everything above, and the structured memo it produces — ready to export once every stage is complete.",
+  stage5: {
+    heading: "Stage 5 — Reflection & Live Report",
+    instructions: "Two questions to answer honestly and personally, then a read-only recap of everything above and the structured memo it produces — ready to export once every stage is complete.",
   },
   export: {
     filenameLevel: 2,

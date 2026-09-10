@@ -1,4 +1,5 @@
-import { MATERIAL, CRITERIA } from "@/lib/route2";
+import clsx from "clsx";
+import { MATERIAL, CRITERIA, SEVEN_DIMENSIONS } from "@/lib/route2";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
 import { RadarChart } from "@/components/ui/RadarChart";
@@ -26,14 +27,17 @@ export function Material() {
         <div>
           <RadarChart axes={CRITERIA.map((c) => ({ id: c.id, label: c.label }))} series={[]} maxScore={3} />
           <p className="mt-2 text-micro text-ash">
-            An empty shell on purpose — this is the exact chart, with the exact seven axes, that fills in live with
+            An empty shell on purpose — this is the exact chart, with the exact four axes, that fills in live with
             your own answers in Stage 2 of Task 2.
           </p>
           <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-            {CRITERIA.map((c) => (
-              <div key={c.id} className="rounded-xl border border-line p-3">
-                <p className="text-caption font-semibold text-ink">{c.n}. {c.label}</p>
-                <p className="mt-0.5 text-micro text-ash">{c.definition}</p>
+            {SEVEN_DIMENSIONS.map((d, i) => (
+              <div key={d.id} className={clsx("rounded-xl border p-3", d.scoredInTask ? "border-accent/30 bg-accentSoft/30" : "border-line")}>
+                <p className="text-caption font-semibold text-ink">
+                  {i + 1}. {d.label}
+                  {d.scoredInTask && <span className="ml-1.5 text-micro font-normal text-accent">· scored in Task 2</span>}
+                </p>
+                <p className="mt-0.5 text-micro text-ash">{d.definition}</p>
               </div>
             ))}
           </div>

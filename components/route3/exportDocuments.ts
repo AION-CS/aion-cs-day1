@@ -72,14 +72,14 @@ export function buildReportHtml(report: ManagementReportData): string {
   <h2>3. Decision Logic</h2>
   <p>Future cloud measures should be assessed and prioritized by ${esc(report.prioritizationLogic || "—")}</p>
 
-  <h2>4. Central Trade-offs</h2>
+  <h2>4. Central Trade-off</h2>
   ${report.tradeoffs.length ? list(report.tradeoffs) : "<p>—</p>"}
 
   <h2>5. First Prioritized Measures</h2>
   <p><strong>${esc(report.firstMeasure || "—")}.</strong> ${esc(report.firstMeasureJustify || "")}</p>
 
   <h2>6. Roles, Approval &amp; Review</h2>
-  <ul>${report.roles.map((r) => `<li><strong>${esc(r.label)}:</strong> approves ${esc(r.approves || "—")}; reviews ${esc(r.reviews || "—")}</li>`).join("")}</ul>
+  <ul>${report.roles.map((r) => `<li><strong>${esc(r.label)}:</strong> ${esc(r.mandate || "—")}</li>`).join("")}</ul>
 
   <h2>7. The Decision Now, Despite Incomplete Data</h2>
   <p>Even without complete data, Helix must decide now to ${esc(report.decideNow || "—")}, because waiting would mean ${esc(report.waitingMeans || "—")}.</p>

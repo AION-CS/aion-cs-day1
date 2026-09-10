@@ -55,8 +55,15 @@ export function TaskFlow() {
       <div id="r2-stage3">
         <h3 className="text-h3 text-ink">{TASK2.stage3.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK2.stage3.instructions}</p>
-        <div className="mt-4">
+        <div className="mt-4 space-y-5">
           <MakeTheCall />
+          <div>
+            <p className="text-caption font-semibold text-ink">{TASK2.stage3.followUpLabel}</p>
+            <p className="text-micro text-ash">{TASK2.stage3.followUpCaption}</p>
+            <div className="mt-2">
+              <FollowUpDecisions />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -64,7 +71,7 @@ export function TaskFlow() {
         <h3 className="text-h3 text-ink">{TASK2.stage4.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK2.stage4.instructions}</p>
         <div className="mt-4">
-          <FollowUpDecisions />
+          <TwoRisks />
         </div>
       </div>
 
@@ -72,22 +79,9 @@ export function TaskFlow() {
         <h3 className="text-h3 text-ink">{TASK2.stage5.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK2.stage5.instructions}</p>
         <div className="mt-4">
-          <TwoRisks />
-        </div>
-      </div>
-
-      <div id="r2-stage6">
-        <h3 className="text-h3 text-ink">{TASK2.stage6.heading}</h3>
-        <p className="mt-1 text-caption text-ash">{TASK2.stage6.instructions}</p>
-        <div className="mt-4">
           <ReflectionStage />
         </div>
-      </div>
-
-      <div id="r2-stage7">
-        <h3 className="text-h3 text-ink">{TASK2.stage7.heading}</h3>
-        <p className="mt-1 text-caption text-ash">{TASK2.stage7.instructions}</p>
-        <div className="mt-4 grid gap-5 lg:grid-cols-2">
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">
           <div className="rounded-2xl border border-line bg-canvas p-5">
             <RecapPanel r2={r2} />
           </div>

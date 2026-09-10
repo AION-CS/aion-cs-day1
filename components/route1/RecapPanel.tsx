@@ -51,7 +51,7 @@ export function RecapPanel({ r1 }: { r1: Route1State }) {
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 5 — Technical / Governance</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Technical / Governance Tag (Stage 2)</h3>
         {r1.stage5Items.length === 0 ? (
           <p className="mt-1.5 text-micro text-ash">No Risk-tagged cards yet.</p>
         ) : (

@@ -32,7 +32,7 @@ export const R3 = {
     tradeoff: (i: number) => `r3:s6:tradeoff:${i}`,
     firstMeasure: "r3:s6:firstmeasure",
     firstMeasureJustify: "r3:s6:firstmeasure:justify",
-    role: (roleId: string, field: "approves" | "reviews") => `r3:s6:role:${roleId}:${field}`,
+    role: (roleId: string) => `r3:s6:role:${roleId}`,
     decideNow: "r3:s6:decidenow",
     waitingMeans: "r3:s6:waitingmeans",
   },
@@ -223,8 +223,8 @@ export const PROPOSAL_ROLES: { id: string; label: string }[] = [
   { id: "ops", label: "IT Operations & Finance" },
 ];
 
-export const TRADEOFF_COUNT = 2;
-export const GUIDING_DECISION_COUNT = 3;
+export const TRADEOFF_COUNT = 1;
+export const GUIDING_DECISION_COUNT = 2;
 
 // ---------------------------------------------------------------------------
 // Material — 5 blocks (C1-C5)

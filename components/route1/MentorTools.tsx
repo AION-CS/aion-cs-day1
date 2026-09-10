@@ -9,8 +9,6 @@ const DEMO_STATEMENTS: Record<string, string> = {
     "both the provider's infrastructure is efficient AND the organisation actively manages demand, so a lower per-unit footprint is not cancelled out by ever-growing total usage.",
   "fails-sustainable":
     "over-provisioning, zombie workloads, and unmanaged self-service usage are left unchecked, letting total consumption grow faster than the efficiency gains from moving to a better provider.",
-  "theoretical-vs-real":
-    "what a hyperscale provider's infrastructure makes physically possible, versus what an organisation's own governance and discipline actually causes to happen on top of it.",
 };
 
 /** Mentor-only: fills every field on Route 1's Task 1 with plausible, model-quality demo answers. */

@@ -38,7 +38,7 @@ export function HelixProposalBuilder() {
       </div>
 
       <div className="card p-5">
-        <span className="text-caption font-semibold text-ink">2. Three Guiding Decisions (Next 12 Months)</span>
+        <span className="text-caption font-semibold text-ink">2. Guiding Decisions (Next 12 Months)</span>
         <p className="text-micro text-ash">Each a short, concrete decision statement.</p>
         <div className="mt-2 space-y-2">
           {Array.from({ length: GUIDING_DECISION_COUNT }).map((_, i) => (
@@ -71,8 +71,8 @@ export function HelixProposalBuilder() {
           <p className="mt-1 text-center text-micro text-ash">Anchor: the five components from Block 2</p>
         </div>
         <div>
-          <span className="text-caption font-semibold text-ink">4. Central Trade-offs</span>
-          <p className="text-micro text-ash">Name {TRADEOFF_COUNT} trade-offs Helix must consciously accept (e.g. speed vs. control, flexibility vs. governance).</p>
+          <span className="text-caption font-semibold text-ink">4. Central Trade-off</span>
+          <p className="text-micro text-ash">Name the one trade-off Helix must consciously accept (e.g. speed vs. control, flexibility vs. governance).</p>
           <div className="mt-2 space-y-2">
             {Array.from({ length: TRADEOFF_COUNT }).map((_, i) => (
               <label key={i} id={`r3-stage6-tradeoff-${i}`} className="block">
@@ -106,30 +106,18 @@ export function HelixProposalBuilder() {
 
       <div id="r3-stage6-roles" className="card p-5">
         <span className="text-caption font-semibold text-ink">6. Roles, Responsibilities, Approval &amp; Review</span>
-        <p className="text-micro text-ash">Who approves what, and who reviews when.</p>
-        <div className="mt-2 space-y-3">
+        <p className="text-micro text-ash">One line per role: what it approves, and when it reviews.</p>
+        <div className="mt-2 space-y-2">
           {PROPOSAL_ROLES.map((role) => (
-            <div key={role.id} className="rounded-xl border border-line p-3">
-              <p className="text-caption font-semibold text-ink">{role.label}</p>
-              <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
-                <label className="block">
-                  <span className="text-micro text-ash">Approves</span>
-                  <input
-                    value={r3.roleFields[role.id]?.approves ?? ""}
-                    onChange={(e) => setNote(R3.s6.role(role.id, "approves"), e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-line bg-paper px-2.5 py-1.5 text-caption text-ink"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-micro text-ash">Reviews when</span>
-                  <input
-                    value={r3.roleFields[role.id]?.reviews ?? ""}
-                    onChange={(e) => setNote(R3.s6.role(role.id, "reviews"), e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-line bg-paper px-2.5 py-1.5 text-caption text-ink"
-                  />
-                </label>
-              </div>
-            </div>
+            <label key={role.id} className="block">
+              <span className="text-micro text-ash">{role.label}</span>
+              <input
+                value={r3.roleFields[role.id] ?? ""}
+                onChange={(e) => setNote(R3.s6.role(role.id), e.target.value)}
+                placeholder="Approves … · reviews …"
+                className="mt-1 w-full rounded-lg border border-line bg-paper px-2.5 py-1.5 text-caption text-ink"
+              />
+            </label>
           ))}
         </div>
       </div>

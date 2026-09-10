@@ -45,7 +45,7 @@ export function ManagementProposalDoc({ data, live = false }: { data: Management
 
       {data.tradeoffs.length > 0 && (
         <section className={reveal}>
-          <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">4. Central Trade-offs</h3>
+          <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">4. Central Trade-off</h3>
           <ul className="mt-1 list-disc space-y-0.5 pl-5 text-micro text-ash">
             {data.tradeoffs.map((t, i) => <li key={i}>{t}</li>)}
           </ul>
@@ -75,12 +75,12 @@ export function ManagementProposalDoc({ data, live = false }: { data: Management
         </section>
       )}
 
-      {data.roles.some((r) => r.approves || r.reviews) && (
+      {data.roles.some((r) => r.mandate) && (
         <section className={reveal}>
           <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">6. Roles, Approval &amp; Review</h3>
           <ul className="mt-1 space-y-1 text-micro text-ash">
             {data.roles.map((r) => (
-              <li key={r.label}><span className="font-semibold text-ink">{r.label}:</span> approves {r.approves || "—"}; reviews {r.reviews || "—"}</li>
+              <li key={r.label}><span className="font-semibold text-ink">{r.label}:</span> {r.mandate || "—"}</li>
             ))}
           </ul>
         </section>
