@@ -213,6 +213,56 @@
   border-radius: theme("borderRadius.2xl");
 }
 
+/* --- Day 10 flow diagram -------------------------------------------------
+ * A subtle pulsing dotted line travelling along an active edge, marking data
+ * in motion. Pure CSS keyframes over an inline SVG path — no animation library
+ * (stack rule #9). Drawn as a second path on top of the static edge, so the
+ * edge itself stays visible when motion is reduced.
+ */
+@keyframes flowDash {
+  0% {
+    stroke-dashoffset: 28;
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.25;
+  }
+}
+.anim-flow {
+  stroke-dasharray: 3 11;
+  stroke-linecap: round;
+  animation: flowDash 2.4s linear infinite;
+}
+
+/* An un-inspected hotspot pin breathes until the learner opens it. */
+@keyframes pinPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.18);
+  }
+}
+.anim-pin-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pinPulse 2.2s ease-in-out infinite;
+}
+
+/* A drop bin the learner is currently dragging a symptom card over. */
+.is-drop-target {
+  border-color: theme("colors.accent");
+  background-color: theme("colors.accentSoft");
+  box-shadow: theme("boxShadow.lift");
+}
+
 /* No-op feedback when Undo/Redo is clicked at a stack boundary — still clickable, just nothing to do. */
 @keyframes shakeNoop {
   0%,

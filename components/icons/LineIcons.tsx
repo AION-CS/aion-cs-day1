@@ -122,6 +122,71 @@ function Layers({ className }: P) {
   );
 }
 
+// --- Day 10: one glyph per inefficiency category (Route 1, Section E) -------
+
+function Blueprint({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3.2" y="4.5" width="17.6" height="15" rx="1.6" />
+      <path d="M3.2 9.5h17.6" />
+      <path d="M9 9.5v10" />
+      <path d="M13 14h7.8" />
+    </svg>
+  );
+}
+
+function Database({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <ellipse cx="12" cy="6" rx="7.2" ry="2.6" />
+      <path d="M4.8 6v12c0 1.44 3.22 2.6 7.2 2.6s7.2-1.16 7.2-2.6V6" />
+      <path d="M4.8 12c0 1.44 3.22 2.6 7.2 2.6s7.2-1.16 7.2-2.6" />
+    </svg>
+  );
+}
+
+function Drive({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3.2" y="4.2" width="17.6" height="5.4" rx="1.5" />
+      <rect x="3.2" y="14.4" width="17.6" height="5.4" rx="1.5" />
+      <path d="M6.6 6.9h.01M6.6 17.1h.01" />
+      <path d="M10 6.9h6.4M10 17.1h6.4" />
+    </svg>
+  );
+}
+
+function Network({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="4.8" r="2.3" />
+      <circle cx="5" cy="18.4" r="2.3" />
+      <circle cx="19" cy="18.4" r="2.3" />
+      <path d="M10.6 6.7 6.2 16.3M13.4 6.7l4.4 9.6M7.3 18.4h9.4" />
+    </svg>
+  );
+}
+
+function Cycle({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="8.3" />
+      <path d="M12 7.4V12l3.1 1.9" />
+      <path d="M19.6 8.6h-3.4V5.2" />
+    </svg>
+  );
+}
+
+function Gauge({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3.9 17.5a9 9 0 1 1 16.2 0" />
+      <path d="M12 17.5 16 10.6" />
+      <circle cx="12" cy="17.5" r="1.3" />
+    </svg>
+  );
+}
+
 const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   coins: Coins,
   factory: Factory,
@@ -133,6 +198,12 @@ const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   certificate: CertificateIcon,
   link: LinkIcon,
   layers: Layers,
+  blueprint: Blueprint,
+  database: Database,
+  drive: Drive,
+  network: Network,
+  cycle: Cycle,
+  gauge: Gauge,
 };
 
 export function Icon({ name, className }: { name: IconKey; className?: string }) {
@@ -231,6 +302,35 @@ export function BookOpen({ className }: P) {
       <path d="M12 7.2v11" />
       <path d="M12 7.2C10.6 6 8.8 5.4 6.2 5.4H4v11h2.2c2.6 0 4.4.6 5.8 1.8" />
       <path d="M12 7.2c1.4-1.2 3.2-1.8 5.8-1.8H20v11h-2.2c-2.6 0-4.4.6-5.8 1.8" />
+    </svg>
+  );
+}
+
+/** Undo / redo affordance on placement exercises (CLAUDE.md standard #5). */
+export function Undo({ className }: P) {
+  return (
+    <svg {...base} className={className ?? "h-4 w-4"}>
+      <path d="M4 9h10.5a4.5 4.5 0 0 1 0 9H9" />
+      <path d="M7.5 5.5 4 9l3.5 3.5" />
+    </svg>
+  );
+}
+
+export function Redo({ className }: P) {
+  return (
+    <svg {...base} className={className ?? "h-4 w-4"}>
+      <path d="M20 9H9.5a4.5 4.5 0 0 0 0 9H15" />
+      <path d="M16.5 5.5 20 9l-3.5 3.5" />
+    </svg>
+  );
+}
+
+/** The pin dropped on a flagged component in the AppNexa system trace. */
+export function Pin({ className }: P) {
+  return (
+    <svg {...base} className={className ?? "h-4 w-4"}>
+      <path d="M12 21s6.5-6.1 6.5-10.5a6.5 6.5 0 1 0-13 0C5.5 14.9 12 21 12 21Z" />
+      <circle cx="12" cy="10.4" r="2.4" />
     </svg>
   );
 }

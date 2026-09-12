@@ -20,12 +20,13 @@ const slugify = (v: string) =>
   v.trim().toLowerCase().replace(/\s+/g, "-").replace(/[\\/:*?"<>|]+/g, "-");
 
 /**
- * `{taskNumber}-{name}-day9-l{level}task{taskNumber}` e.g. `1-muchson-day9-l2task1`.
+ * `{taskNumber}-{name}-day10-l{level}task{taskNumber}` e.g. `1-muchson-day10-l1task1`.
  * The leading number is the task's number *within its route*, and every route
  * here has exactly one task — so it reads `1` throughout, while `l{level}`
- * identifies which route the file came from.
+ * identifies which route the file came from. Derived from the task rather than
+ * hardcoded, so a route that later gains a second task numbers it correctly.
  */
 export function exportFilename(name: string, level: number, taskNumber: number): string {
   const who = slugify(name) || "learner";
-  return `${taskNumber}-${who}-day9-l${level}task${taskNumber}`;
+  return `${taskNumber}-${who}-day10-l${level}task${taskNumber}`;
 }

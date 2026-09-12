@@ -7,7 +7,7 @@ import { Footer } from "@/components/chrome/Footer";
 export const metadata: Metadata = {
   title: `AION Green IT — ${CASE.module}`,
   description:
-    "Green workplace and extending device lifetimes — the learner working companion for Day 9.",
+    "Energy-efficient software and green coding principles — the learner working companion for Day 10.",
 };
 
 export default function RootLayout({

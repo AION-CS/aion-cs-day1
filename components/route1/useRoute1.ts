@@ -1,220 +1,146 @@
 "use client";
 
-import { useMemo } from "react";
 import { useProgress, useHydrated } from "@/lib/store";
+import type { MissingItem } from "@/components/ui/MissingList";
 import {
+  CATEGORIES,
+  HOTSPOTS,
   R1,
-  ZONES,
-  FINDINGS,
-  PRIORITY_PICK_COUNT,
-  JUSTIFICATION_MIN_WORDS,
   type CategoryId,
-  type DriverId,
-  type HorizonId,
-  type DirectionId,
+  type FixType,
+  type Hotspot,
 } from "@/lib/route1";
 
-export type MissingItem = { id: string; label: string };
+/** DOM ids the missing-item list scrolls to and flashes. */
+export const domId = {
+  name: "r1-name",
+  trace: "r1-trace",
+  /**
+   * The still-unsorted card in the trace panel. A hotspot's workup card only
+   * exists once it has been sorted, so a "sort this one" missing item has to
+   * point here — pointing at the workup id would be a dead click.
+   */
+  unsorted: (id: string) => `r1-unsorted-${id}`,
+  hotspot: (id: string) => `r1-hotspot-${id}`,
+  lever: (id: string) => `r1-hotspot-${id}-lever`,
+  justification: (id: string) => `r1-hotspot-${id}-why`,
+  fixType: (id: string) => `r1-hotspot-${id}-fix`,
+  reflection: "r1-reflection",
+  export: "r1-export",
+};
 
-const wordCount = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
+export type Placements = Record<string, CategoryId | null>;
 
+export type Finding = {
+  hotspot: Hotspot;
+  category: CategoryId | null;
+  leverId: string | null;
+  leverText: string | null;
+  justification: string;
+  fixType: FixType | null;
+  /** All four answers present — a finished row in the Diagnosis Report. */
+  complete: boolean;
+};
+
+/**
+ * Joins the shared progress store to Route 1's content. Components read this
+ * and stay presentational; nothing else derives "what's missing".
+ */
 export function useRoute1() {
   const hydrated = useHydrated();
-  const seen = useProgress((s) => s.seen);
-  const choices = useProgress((s) => s.choices);
-  const checks = useProgress((s) => s.checks);
   const notes = useProgress((s) => s.notes);
+  const choices = useProgress((s) => s.choices);
+  const seen = useProgress((s) => s.seen);
 
-  const name = hydrated ? notes[R1.name] ?? "" : "";
-  const nameComplete = name.trim().length > 0;
+  const name = notes[R1.name] ?? "";
+  const reflection = notes[R1.reflection] ?? "";
+  const inspected = seen[R1.inspected] ?? [];
+  const placementOrder = seen[R1.order] ?? [];
 
-  // --- Stage 1a — walk the floor --------------------------------------------
-  const zonesSeen = useMemo(() => (hydrated ? seen[R1.zones] ?? [] : []), [hydrated, seen]);
-  const zonesMissing = useMemo(() => ZONES.filter((z) => !zonesSeen.includes(z.id)), [zonesSeen]);
-  const walkComplete = zonesMissing.length === 0;
+  const placements: Placements = {};
+  for (const h of HOTSPOTS) {
+    const raw = choices[R1.category(h.id)];
+    placements[h.id] = raw ? (raw as CategoryId) : null;
+  }
 
-  /** Findings the learner has actually discovered — everything downstream works off this. */
-  const loggedFindings = useMemo(() => FINDINGS.filter((f) => zonesSeen.includes(f.zoneId)), [zonesSeen]);
+  const findingFor = (h: Hotspot): Finding => {
+    const category = placements[h.id];
+    const leverId = choices[R1.lever(h.id)] || null;
+    const justification = (notes[R1.justification(h.id)] ?? "").trim();
+    const rawFix = choices[R1.fixType(h.id)];
+    const fixType = rawFix === "quick" || rawFix === "structural" ? (rawFix as FixType) : null;
+    return {
+      hotspot: h,
+      category,
+      leverId,
+      leverText: leverId ? (h.levers.find((l) => l.id === leverId)?.text ?? null) : null,
+      justification,
+      fixType,
+      complete: !!category && !!leverId && justification.length > 0 && !!fixType,
+    };
+  };
 
-  // --- Stage 1b — sort into the six areas ----------------------------------
-  const category = useMemo(() => {
-    const map: Record<string, CategoryId | undefined> = {};
-    if (!hydrated) return map;
-    for (const f of FINDINGS) {
-      const v = choices[R1.stage1.category(f.id)];
-      if (v) map[f.id] = v as CategoryId;
+  const findings = HOTSPOTS.map(findingFor);
+  const byId = (id: string) => findings.find((f) => f.hotspot.id === id)!;
+
+  /**
+   * Report rows, in the order the learner sorted them — not in hotspot order.
+   * Anything sorted but not yet in the order bucket (e.g. state restored from
+   * an older session) falls back to hotspot order at the end.
+   */
+  const reportRows = [
+    ...placementOrder.filter((id) => placements[id]).map(byId),
+    ...findings.filter((f) => f.category && !placementOrder.includes(f.hotspot.id)),
+  ];
+
+  const placedCount = findings.filter((f) => f.category).length;
+  const completeCount = findings.filter((f) => f.complete).length;
+  const completeHotspotIds = findings.filter((f) => f.complete).map((f) => f.hotspot.id);
+  const structuralCount = findings.filter((f) => f.complete && f.fixType === "structural").length;
+  const quickCount = findings.filter((f) => f.complete && f.fixType === "quick").length;
+
+  /**
+   * Standard #1: one entry per concretely-missing thing, named. Never a step
+   * number, never "complete all fields". Ordered so the list reads top-to-
+   * bottom in the same order the page does.
+   */
+  const missing: MissingItem[] = [];
+  if (!name.trim()) {
+    missing.push({ id: domId.name, label: "Your name — needed to label the export" });
+  }
+  for (const f of findings) {
+    const h = f.hotspot;
+    const who = `Hotspot ${h.n} — ${h.title}`;
+    if (!f.category) {
+      missing.push({ id: domId.unsorted(h.id), label: `Sort ${who} into a category` });
+      continue; // the rest of the workup only exists once it's been sorted
     }
-    return map;
-  }, [hydrated, choices]);
-  const sortedCount = FINDINGS.filter((f) => category[f.id]).length;
-  const sortComplete = sortedCount >= FINDINGS.length;
-
-  // --- Stage 2 — diagnose ---------------------------------------------------
-  const driver = useMemo(() => {
-    const map: Record<string, DriverId | undefined> = {};
-    if (!hydrated) return map;
-    for (const f of FINDINGS) {
-      const v = choices[R1.stage2.driver(f.id)];
-      if (v === "individual" || v === "structural") map[f.id] = v;
-    }
-    return map;
-  }, [hydrated, choices]);
-
-  const horizon = useMemo(() => {
-    const map: Record<string, HorizonId | undefined> = {};
-    if (!hydrated) return map;
-    for (const f of FINDINGS) {
-      const v = choices[R1.stage2.horizon(f.id)];
-      if (v === "shortTerm" || v === "structuralChange") map[f.id] = v;
-    }
-    return map;
-  }, [hydrated, choices]);
-
-  const diagnosedCount = FINDINGS.filter((f) => driver[f.id] && horizon[f.id]).length;
-  const diagnoseComplete = diagnosedCount >= FINDINGS.length;
-
-  const structuralCount = FINDINGS.filter((f) => driver[f.id] === "structural").length;
-  const individualCount = FINDINGS.filter((f) => driver[f.id] === "individual").length;
-  const shortTermCount = FINDINGS.filter((f) => horizon[f.id] === "shortTerm").length;
-  const structuralChangeCount = FINDINGS.filter((f) => horizon[f.id] === "structuralChange").length;
-
-  // --- Stage 3 — decide -----------------------------------------------------
-  const priorities = useMemo(
-    () => (hydrated ? FINDINGS.filter((f) => checks[R1.stage3.priority(f.id)]).map((f) => f.id) : []),
-    [hydrated, checks],
-  );
-
-  const direction = useMemo(() => {
-    const map: Record<string, DirectionId | undefined> = {};
-    if (!hydrated) return map;
-    for (const id of priorities) {
-      const v = choices[R1.stage3.direction(id)];
-      if (v) map[id] = v as DirectionId;
-    }
-    return map;
-  }, [hydrated, choices, priorities]);
-
-  const justification = useMemo(() => {
-    const map: Record<string, string> = {};
-    if (!hydrated) return map;
-    for (const id of priorities) map[id] = notes[R1.stage3.justification(id)] ?? "";
-    return map;
-  }, [hydrated, notes, priorities]);
-
-  const pickCountRight = priorities.length === PRIORITY_PICK_COUNT;
-  const decideComplete =
-    pickCountRight &&
-    priorities.every((id) => direction[id] && wordCount(justification[id] ?? "") >= JUSTIFICATION_MIN_WORDS);
-
-  const allComplete = nameComplete && walkComplete && sortComplete && diagnoseComplete && decideComplete;
-
-  const missing = useMemo<MissingItem[]>(() => {
-    const items: MissingItem[] = [];
-    if (!nameComplete) items.push({ id: "r1-name", label: "Add your name so the export can be labelled correctly" });
-
-    if (!walkComplete) {
-      items.push({
-        id: "r1-walk",
-        label: `Stage 1: ${zonesMissing.length} zone${zonesMissing.length === 1 ? "" : "s"} not yet investigated — ${zonesMissing
-          .map((z) => `${z.letter} (${z.label})`)
-          .join(", ")}`,
-      });
-    }
-
-    if (!sortComplete) {
-      const unsorted = FINDINGS.filter((f) => !category[f.id] && zonesSeen.includes(f.zoneId));
-      if (unsorted.length > 0) {
-        items.push({
-          id: "r1-sort",
-          label: `Stage 1: ${unsorted.length} finding${unsorted.length === 1 ? "" : "s"} not yet sorted into an area (${unsorted
-            .map((f) => ZONES.find((z) => z.id === f.zoneId)?.letter ?? "?")
-            .join(", ")})`,
-        });
-      }
-    }
-
-    if (!diagnoseComplete) {
-      const undiagnosed = FINDINGS.filter((f) => zonesSeen.includes(f.zoneId) && !(driver[f.id] && horizon[f.id]));
-      if (undiagnosed.length > 0) {
-        items.push({
-          id: "r1-diagnose",
-          label: `Stage 2: ${undiagnosed.length} finding${undiagnosed.length === 1 ? "" : "s"} still missing a diagnosis answer (${undiagnosed
-            .map((f) => ZONES.find((z) => z.id === f.zoneId)?.letter ?? "?")
-            .join(", ")})`,
-        });
-      }
-    }
-
-    if (!pickCountRight) {
-      items.push({
-        id: "r1-decide",
-        label:
-          priorities.length < PRIORITY_PICK_COUNT
-            ? `Stage 3: choose ${PRIORITY_PICK_COUNT - priorities.length} more finding${
-                PRIORITY_PICK_COUNT - priorities.length === 1 ? "" : "s"
-              } to act on first`
-            : `Stage 3: you have ${priorities.length} findings selected — narrow it down to ${PRIORITY_PICK_COUNT}`,
-      });
-    } else {
-      for (const id of priorities) {
-        const f = FINDINGS.find((x) => x.id === id);
-        const letter = ZONES.find((z) => z.id === f?.zoneId)?.letter ?? "?";
-        if (!direction[id]) {
-          items.push({ id: "r1-decide", label: `Stage 3: choose a direction for finding ${letter}` });
-        }
-        const words = wordCount(justification[id] ?? "");
-        if (words < JUSTIFICATION_MIN_WORDS) {
-          items.push({
-            id: "r1-decide",
-            label: `Stage 3: justify finding ${letter} — ${JUSTIFICATION_MIN_WORDS - words} more word${
-              JUSTIFICATION_MIN_WORDS - words === 1 ? "" : "s"
-            } needed`,
-          });
-        }
-      }
-    }
-
-    return items;
-  }, [
-    nameComplete,
-    walkComplete,
-    zonesMissing,
-    zonesSeen,
-    sortComplete,
-    category,
-    diagnoseComplete,
-    driver,
-    horizon,
-    pickCountRight,
-    priorities,
-    direction,
-    justification,
-  ]);
+    if (!f.leverId) missing.push({ id: domId.lever(h.id), label: `Choose an improvement lever for ${who}` });
+    if (!f.justification) missing.push({ id: domId.justification(h.id), label: `Justification for ${who}` });
+    if (!f.fixType) missing.push({ id: domId.fixType(h.id), label: `Mark ${who} as Quick Fix or Structural Fix` });
+  }
+  if (!reflection.trim()) {
+    missing.push({ id: domId.reflection, label: "Root-cause reflection — your closing position" });
+  }
 
   return {
     hydrated,
     name,
-    nameComplete,
-    zonesSeen,
-    zonesMissing,
-    walkComplete,
-    loggedFindings,
-    category,
-    sortedCount,
-    sortComplete,
-    driver,
-    horizon,
-    diagnosedCount,
-    diagnoseComplete,
+    reflection,
+    inspected,
+    placements,
+    findings,
+    reportRows,
+    placedCount,
+    completeCount,
+    completeHotspotIds,
     structuralCount,
-    individualCount,
-    shortTermCount,
-    structuralChangeCount,
-    priorities,
-    direction,
-    justification,
-    decideComplete,
-    allComplete,
+    quickCount,
+    totalHotspots: HOTSPOTS.length,
+    totalCategories: CATEGORIES.length,
     missing,
+    allComplete: missing.length === 0,
   };
 }
+
+export type Route1State = ReturnType<typeof useRoute1>;

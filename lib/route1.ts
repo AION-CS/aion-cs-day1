@@ -1,7 +1,10 @@
 /**
- * Route 1 — Knowledge (L1). All learner-facing copy and pure data live here so
- * components stay presentational. Case used throughout Task 1: UrbanByte
- * Consulting (fictional).
+ * Route 1 — Foundations (L1). All learner-facing copy and pure data live here
+ * so components stay presentational. Case used throughout Task 1: AppNexa
+ * Solutions (fictional).
+ *
+ * Curriculum source: Module 7 (Day 1 of 2) — "Achieving Energy Efficiency in
+ * Programming: Energy-Efficient Software and Green Coding Principles."
  */
 
 import type { IconKey } from "@/lib/routes";
@@ -14,30 +17,40 @@ export const LEARNER_NAME_KEY = "learner:name";
 // ---------------------------------------------------------------------------
 export const R1 = {
   name: LEARNER_NAME_KEY,
-  /** markSeen bucket for zones the learner has opened on the floor plan. */
-  zones: "r1:zones",
-  stage1: {
-    category: (findingId: string) => `r1:s1:cat:${findingId}`,
-  },
-  stage2: {
-    driver: (findingId: string) => `r1:s2:driver:${findingId}`,
-    horizon: (findingId: string) => `r1:s2:horizon:${findingId}`,
-  },
-  stage3: {
-    priority: (findingId: string) => `r1:s3:pick:${findingId}`,
-    direction: (findingId: string) => `r1:s3:dir:${findingId}`,
-    justification: (findingId: string) => `r1:s3:why:${findingId}`,
-  },
+  /** markSeen bucket for hotspot pins the learner has opened on the trace. */
+  inspected: "r1:inspected",
+  /**
+   * markSeen bucket recording the order hotspots were first sorted into a bin.
+   * markSeen appends unique ids in insertion order and persists, so the
+   * Diagnosis Report can list findings "in the order completed" without a
+   * second source of truth for ordering.
+   */
+  order: "r1:order",
+  category: (hotspotId: string) => `r1:cat:${hotspotId}`,
+  lever: (hotspotId: string) => `r1:lever:${hotspotId}`,
+  justification: (hotspotId: string) => `r1:why:${hotspotId}`,
+  fixType: (hotspotId: string) => `r1:fix:${hotspotId}`,
+  reflection: "r1:reflection",
 } as const;
 
+/** Prefixes resetSection() must sweep to clear every compound key this route writes. */
+export const R1_KEY_PREFIXES = ["r1:cat:", "r1:lever:", "r1:why:", "r1:fix:", "r1:reflection"];
+
 // ---------------------------------------------------------------------------
-// Material — 4 blocks plus a framework reference grid.
+// Material — six sections (A–F).
 // ---------------------------------------------------------------------------
-export type MaterialSectionId = "workplace" | "carbon" | "servicelife" | "tradeoffs" | "frameworks";
+export type MaterialSectionId =
+  | "footprint"
+  | "correctness"
+  | "sci"
+  | "principles"
+  | "categories"
+  | "profession";
 
 export type MaterialSection = {
-  id: Exclude<MaterialSectionId, "frameworks">;
-  n: 1 | 2 | 3 | 4;
+  id: MaterialSectionId;
+  n: 1 | 2 | 3 | 4 | 5 | 6;
+  letter: "A" | "B" | "C" | "D" | "E" | "F";
   icon: IconKey;
   kicker: string;
   title: string;
@@ -52,7 +65,6 @@ export type MaterialSection = {
    */
   reasoning: string[];
   callout: { label: string; text: string };
-  /** Real external sources, per the curriculum standard: named body, and a link where one is stable. */
   references: { label: string; url?: string }[];
 };
 
@@ -62,11 +74,12 @@ export function materialAnchorId(id: MaterialSectionId): string {
 }
 
 const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  workplace: "Block 1 · The five elements",
-  carbon: "Block 2 · Where the carbon sits",
-  servicelife: "Block 3 · Two service lives",
-  tradeoffs: "Block 4 · Trade-offs & leverage",
-  frameworks: "Reference · Frameworks",
+  footprint: "A · Why software has a footprint",
+  correctness: "B · Correct vs. efficient",
+  sci: "C · Measuring it (SCI)",
+  principles: "D · Three GSF principles",
+  categories: "E · The six categories",
+  profession: "F · Not just a developer's problem",
 };
 
 /** Chips for a task step: which material sections it draws on. */
@@ -74,568 +87,950 @@ export function materialRefs(ids: MaterialSectionId[]) {
   return ids.map((id) => ({ anchorId: materialAnchorId(id), label: MATERIAL_LABELS[id] }));
 }
 
+export const PAGE_INTRO = {
+  tag: "ROUTE 1 — FOUNDATIONS",
+  title: "Reading the System",
+  body: "You are joining AppNexa Solutions as a Software Sustainability Analyst. Before you can fix anything, you need to see it. This route gives you the vocabulary and mental model to recognize where software wastes energy — even without reading a single line of code.",
+} as const;
+
 export const MATERIAL: MaterialSection[] = [
   {
-    id: "workplace",
+    id: "footprint",
     n: 1,
-    icon: "layers",
-    kicker: "1 · What the term actually covers",
-    title: "A Green Workplace Is Five Things, Not One",
+    letter: "A",
+    icon: "factory",
+    kicker: "A · The physical layer under the abstraction",
+    title: "Why Software Has a Carbon Footprint",
     definition:
-      "A green workplace is not a single practice like switching monitors off at night. It is the interplay of five things most organisations manage separately, but which jointly determine both environmental and economic outcomes: device lifecycle decisions (how long hardware stays in service and what happens to it afterwards), individual usage behaviour (power states, printing, personal habits), the IT support model (whether the default response to a problem is repair or replacement), procurement policy (what gets bought, on what contract terms, against which criteria), and how the physical and digital workplace is organised (desk sharing, peripheral pools, remote-work patterns).",
+      "Software feels weightless, and that is an illusion produced by good abstraction. Every instruction your program executes is a state change in a physical transistor. Every byte you store holds a charge on a physical disk or memory cell that must be maintained. Every byte you transmit is driven down a physical cable or radio link through a chain of switches and routers, each drawing current, each generating heat that then has to be removed by cooling equipment drawing more current. \"The cloud\" is not a metaphorical elsewhere — it is a set of buildings on a map, filled with racks, connected to a grid. When an application does more work than it needs to, that surplus does not vanish into an abstraction. It is paid for, in watts, in a specific building, on a specific grid, at a specific moment.",
     insight:
-      "Because those five are usually owned by different people — IT operations, facilities, procurement, finance, HR — it is entirely normal for an organisation to run them against each other without noticing. An energy-saving awareness campaign aimed at employees, running alongside a procurement contract that replaces every notebook on a fixed three-year cycle regardless of condition, produces a great deal of visible activity and very little measurable change. The campaign works on one element; the contract quietly governs a much larger one.",
+      "The scale is now large enough that it registers at national-grid level. According to the International Energy Agency's Energy and AI report, data centres accounted for around 1.5% of global electricity consumption in 2024 — roughly 415 terawatt-hours. More importantly than the level is the slope: that consumption has been growing at approximately 12% per year, several times faster than overall electricity demand. A share that grows faster than the system it sits inside does not stay a rounding error for long. And unlike most industrial loads, a large fraction of this one is discretionary — it is work that software asked for and did not need.",
     takeaway:
-      "When you audit a workplace, the useful diagnostic question is never \"are people behaving well enough?\" but \"which of these five elements is unmanaged, and who owns the decision that would change it?\" That reframing is what turns a list of observations into a case a manager can act on.",
+      "The reason this waste persists is not incompetence, it is a split incentive. The engineer who writes an over-fetching API call or an N+1 query never sees an electricity bill. The consequence surfaces three or four steps removed: as a compute-hours line on a cloud invoice, owned by a different team, in a different budget, aggregated across hundreds of services, with no mechanism to trace the number back to the line of code that caused it. Nobody is hiding the cost — the organisation simply has no wiring that connects cause to effect. That disconnect is precisely why energy-efficient software became a named engineering discipline with its own measurement standard, which the next sections introduce.",
     reasoning: [
-      "When a finding could belong to two of the five elements, ask which one would have to change for the finding to disappear. That is the element it belongs to — not the one where the symptom happens to be visible.",
-      "Hardware that nobody is tracking is a lifecycle and peripherals question, not a behaviour question: no amount of employee goodwill catalogues a storeroom.",
-      "Rules out the tempting wrong answer: visible activity is not evidence that an element is managed. A campaign, a poster, or an informal habit tells you someone cares — it does not tell you anyone owns the decision.",
+      "Treat every behaviour you observe as a question about physical work: how many instructions, how many stored bytes, how many transmitted bytes does this cause? A behaviour that increases any of the three costs energy, whatever it looks like in the code.",
+      "When a cost has no visible owner, expect it to grow. A finding that nobody currently measures is a stronger candidate for a structural fix than one that already shows up on somebody's dashboard.",
+      "Rules out the tempting wrong answer: \"the cloud provider runs on renewables\" does not make surplus work free. It changes the carbon per unit of energy, not the amount of energy your software demanded — and those are two separate variables, as Section C makes explicit.",
     ],
     callout: {
       label: "Why this matters for the case ahead",
-      text: "UrbanByte Consulting advises other companies on sustainable digital transformation. Its own workplace has never been audited against that standard — and what you'll find is not a lack of goodwill, but five elements nobody has ever looked at together.",
+      text: "AppNexa Solutions runs internal and external digital applications that work correctly and have never been reviewed for efficiency. Its infrastructure bill has been climbing for two years and nobody on the team can attribute the increase to anything specific. That is the split incentive, seen from the inside.",
     },
     references: [
-      { label: "Blue Angel (Blauer Engel) — award criteria for computers and workplace IT", url: "https://www.blauer-engel.de/en" },
-      { label: "ESRS E5 (Resource use and circular economy) under the EU CSRD" },
+      { label: "IEA — Energy and AI (2025): data centres ≈415 TWh, ~1.5% of global electricity in 2024", url: "https://www.iea.org/reports/energy-and-ai" },
+      { label: "Green Software Foundation — Green Software Practitioner", url: "https://learn.greensoftware.foundation/" },
     ],
   },
   {
-    id: "carbon",
+    id: "correctness",
     n: 2,
-    icon: "factory",
-    kicker: "2 · The number that reframes everything",
-    title: "Where a Device's Carbon Actually Sits",
-    definition:
-      "For a typical business laptop, manufacturing accounts for roughly 75–85% of the device's total lifetime carbon footprint — not the years of daily use that follow. Independent lifecycle assessments across Dell, HP and Lenovo business notebooks converge on that range; one detailed model of a 14-inch business laptop splits it as 81.4% manufacturing, 13.9% use phase, 4.4% transport and 0.3% end-of-life. The reason manufacturing dominates is physical: building a laptop means mining and refining rare-earth and precious metals, fabricating semiconductors (extremely energy- and water-intensive), producing a lithium battery, and moving components across several countries before final assembly. That footprint is spent the moment the device exists, largely regardless of how efficiently it runs afterwards.",
-    insight:
-      "The consequence is counter-intuitive but well evidenced. A joint analysis by TCO Certified and the Öko-Institut — a German research institute specialising in sustainable consumption policy — examined 15 carbon footprint reports for 14-inch business notebooks from Dell, Lenovo and HP, and found that extending service life from four to six years cuts average annual emissions by roughly 29%: from about 74.7 kg CO₂e per year down to about 53.1 kg CO₂e per year. Nothing about the device changes. The fixed manufacturing footprint is simply spread across more years of useful work. Read the other way round: buying a \"greener\" replacement almost always creates more lifecycle carbon than keeping the current device running longer, because the purchase re-triggers the dominant manufacturing footprint while the use-phase efficiency gain is comparatively small.",
-    takeaway:
-      "One honest caveat, because this argument will be challenged by anyone technical: the pattern is strongest for laptops. For desktop PCs the use-phase share is larger, simply because desktops draw more power — one comparative study put a desktop's total footprint at 679 kg CO₂e over four years against a laptop's 286 kg CO₂e for the same task load. \"Extend, don't replace\" is therefore not a universal law; it is a consequence of where the footprint sits for a given device category. Office fleets are increasingly laptop-dominated, which is precisely why this lever matters so much for workplace IT.",
-    reasoning: [
-      "If a finding is about a working device leaving the organisation, the carbon question is already settled: the replacement's manufacturing footprint is the dominant number. Classify it under replacement cycles, not under cost.",
-      "Use-phase findings — power settings, machines left running overnight — are real, but they move the 13–15% slice. They belong under device use, and they are rarely the biggest lever in the room.",
-      "Rules out the tempting wrong answer: \"we procure energy-efficient models\" is an answer to a use-phase question. It does not address a lifetime-extension question at all, because the efficiency of the replacement never recovers the carbon spent building it.",
-    ],
-    callout: {
-      label: "Source and how to quote it",
-      text: "Figures above come from the TCO Certified / Öko-Institut review of 15 notebook footprint reports. When you quote a lifecycle figure in a real report, always name the device class and the assumed hold period — a laptop number and a desktop number are not interchangeable, and a 4-year and 6-year model produce different annual figures from identical hardware.",
-    },
-    references: [
-      { label: "TCO Certified & Öko-Institut e.V. — service-life extension analysis of 14\" business notebooks", url: "https://tcocertified.com" },
-      { label: "Manufacturer product carbon footprint reports (Dell, HP, Lenovo business notebooks)" },
-    ],
-  },
-  {
-    id: "servicelife",
-    n: 3,
-    icon: "recycleLoop",
-    kicker: "3 · The gap you are auditing",
-    title: "Two Service Lives, and What Closes the Gap",
-    definition:
-      "Two different numbers both get called a device's \"service life\", and keeping them apart is the core analytical skill of this route. Technical service life is how long a device can physically and functionally keep working — CPU, RAM and storage still perform, the battery still holds a usable charge, the chassis is intact. For a well-specified, well-maintained business laptop that is realistically five to seven years, longer where components can be upgraded. Organisationally permitted service life is how long company policy allows a device to stay in service before mandatory replacement — commonly fixed at three years, and almost never because hardware is failing. It is set by leasing contract terms, depreciation schedules, or a support policy that prefers a uniform fleet age for simplicity. The gap between those two numbers is the lifetime-extension opportunity.",
-    insight:
-      "Closing that gap is not a matter of \"letting people keep old laptops\" — it needs five specific things to be true, and each one is decided well above desk level. Repairability, which is no longer merely a design nicety: the EU Right to Repair Directive (Directive (EU) 2024/1799) requires manufacturers of listed product categories to make repair available at a reasonable price and time, including after the warranty expires, with member states transposing it into national law by 31 July 2026; since June 2025 smartphones and tablets already carry a mandatory repairability label graded A to E, covering criteria such as spare-part availability and software-support duration. Laptops are not yet in scope, but they sit in the work plan of the Ecodesign for Sustainable Products Regulation that drives where these requirements go next — so this is a regulatory direction, not a hypothesis. Upgradability and material design, certified today through ecolabels: Blue Angel–certified computers must be repairable and upgradable by design and meet strict recyclable-design and material requirements, which is why a sourcing decision made years earlier is what makes extension feasible now. Fleet standardisation, which is commonly misapplied: standardising device models makes spare-part stocking and a repair-first process easier, whereas standardising the replacement schedule does the opposite. Support process design — whether IT's default is \"repair where possible\" or \"replace where convenient\" — which shapes outcomes more than almost anything else on this list and is a pure management decision nobody on the floor gets to make. And user acceptance: a technically excellent reuse programme still fails if employees read a repaired device as a status downgrade.",
-    takeaway:
-      "So when you find a three-year replacement cycle running on healthy hardware, the finding is not \"people replace things too often\". The finding is that permitted service life was set by a contract, and no documented criteria exist to let a healthy device stay. Name the mechanism, and the recommendation writes itself.",
-    reasoning: [
-      "Standardising models and standardising replacement cycles are two different decisions. A finding about a uniform fixed cycle is a replacement-cycle problem — never evidence of a standardisation benefit.",
-      "If what is missing is a written rule, a criterion or an owner, the driver is management and structural, even when the visible symptom is one technician's habit on one shift.",
-      "A perception problem — status, \"refurbished feels second-class\" — is the one place where individual behaviour is the honest reading of the driver. But the fix still sits with leadership, because only leadership can sanction reuse publicly and make it the normal choice.",
-      "Rules out the tempting wrong answer: \"nobody stops people keeping older devices\" is not a lifetime-extension policy. An absent rule is not a permissive rule; it is an absent one, and it produces whatever the convenient default happens to be.",
-    ],
-    callout: {
-      label: "The procurement link back to Day 5",
-      text: "Buying Blue Angel–certified, repairable, upgradable devices is a Day 5 sourcing decision. Extending their life is a Day 9 operations decision. They are the same lever seen from two ends of the process — which is why a workplace cannot extend its way out of hardware that was never specified to be repairable.",
-    },
-    references: [
-      { label: "Directive (EU) 2024/1799 — common rules promoting the repair of goods", url: "https://eur-lex.europa.eu/eli/dir/2024/1799/oj" },
-      { label: "Regulation (EU) 2024/1781 — Ecodesign for Sustainable Products Regulation (ESPR)", url: "https://eur-lex.europa.eu/eli/reg/2024/1781/oj" },
-      { label: "Blue Angel (Blauer Engel) — basic award criteria for computers", url: "https://www.blauer-engel.de/en" },
-    ],
-  },
-  {
-    id: "tradeoffs",
-    n: 4,
+    letter: "B",
     icon: "target",
-    kicker: "4 · The counter-arguments, and the real lever",
-    title: "Honest Trade-offs — and Why This Is a Leadership Topic",
+    kicker: "B · Two independent questions",
+    title: "Functionally Correct vs. Energy-Efficient",
     definition:
-      "Lifetime extension is not free of cost or risk, and presenting it that way will not survive five minutes with an IT security or service lead. Three trade-offs are genuine. Security: ageing hardware eventually falls outside vendor security-patch support windows, or lacks hardware security modules that newer compliance baselines assume — there is a real point past which extension becomes a liability rather than a saving. Performance and software bloat: hardware and software are entangled, a machine can only be as efficient as the software running on it allows, and the way software is designed influences when otherwise-capable hardware starts to feel obsolete — which means some \"this laptop is too slow\" complaints are software problems wearing a hardware costume. Convenience and standardisation: a fleet with mixed repair and upgrade histories is genuinely harder to support uniformly than a fleet of identical age and spec.",
+      "\"Functionally correct\" answers exactly one question: does this produce the right output for the given input? It is the question tests are written against, the question code review usually settles, and the question a product owner signs off on. \"Energy-efficient\" is a second, entirely independent question: does it produce that same correct output using the least energy, compute, memory and data movement it reasonably can? Nothing about passing the first question tells you anything about the second. A function can be correct, well-named, well-tested, readable, idiomatic — and still perform ten times more work than the result requires.",
     insight:
-      "Now put Block 2's number together with that list. If 75–85% of a device's footprint is already locked in at manufacturing, then desk-level behaviour — screen brightness, sleep settings, printing habits — can only ever influence the remaining 15–25%. Behaviour change is real and worth doing, and it is usually the cheapest thing to start. But it structurally cannot outperform a decision about when and how often devices get replaced, because that decision controls whether the dominant 75–85% is re-triggered at all. A workplace programme made entirely of behavioural nudges is optimising the smaller lever while leaving the larger one on autopilot.",
+      "Because the two properties are orthogonal, they form a 2×2 rather than a spectrum. Correct and efficient is the goal. Correct and inefficient is the default state of nearly every system that has never been audited for efficiency — it is not a failure state, it is simply what you get when only one of the two questions was ever asked. This is AppNexa today. Incorrect and efficient is fast, cheap and useless; efficiency never buys you a pass on correctness. Incorrect and inefficient is the worst case, and rarest, because incorrectness gets caught and inefficiency does not. Notice which quadrant is dangerous: the quiet one, where everything works, nobody complains, and the bill goes up every quarter.",
     takeaway:
-      "That is why lifetime extension has to be designed as governance — leasing terms, documented repair/upgrade/retire criteria, support defaults, and a visible signal that reuse is sanctioned — rather than delegated to individual goodwill. It also now has a reporting counterpart: under the CSRD, ESRS E5 asks companies to disclose resource inflows and outflows and circular-economy performance, which makes \"how long do our devices stay in service\" a number an organisation may have to state publicly rather than merely intend.",
+      "Efficiency is a deliberate design dimension, in the same family as security and accessibility. Those two are instructive precedents: neither appears on its own because code is \"clean\", both require someone to ask the question explicitly, and both degrade silently the moment nobody does. Efficiency behaves identically. It does not emerge from fast code, tidy code, or a good test suite — it emerges from a system where somebody is responsible for asking the second question, and has a number to answer it with.",
     reasoning: [
-      "Diagnosing the horizon: a fix is short-term only if it can be done under current policy and current contracts. If a lease, a written criterion or an approval path has to change first, it is a structural change — however technically easy it sounds.",
-      "Security is the one legitimate reason to replace a working device, but it has to be named specifically — out of patch support, missing a required hardware security module — not used as a blanket justification for a fixed cycle.",
-      "Rules out the tempting wrong answer: \"the device feels slow\" is not evidence of hardware end-of-life until a software cause has been ruled out. Treat a perceived-performance finding as a diagnosis gap, not a hardware fact.",
-      "When you choose what to act on first, prefer the finding whose fix is cheap and reversible over the one with the biggest theoretical impact — then say in your justification which larger lever it unlocks.",
+      "Never let \"it works\" or \"users aren't complaining\" close the question. Every behaviour in the task is functionally correct — that is the premise, not a defence.",
+      "Ask what the output actually requires, then compare it to what the system does. The gap between those two is the finding, and it is where the lever belongs.",
+      "Rules out the tempting wrong answer: a lever that improves how fast or how smoothly the same surplus work is delivered leaves the system in the correct-but-inefficient quadrant. Only a lever that reduces the work moves it.",
     ],
     callout: {
-      label: "How this plays in a German/EU corporate setting",
-      text: "In a CSRD-reporting organisation, \"we extended average device service life from three to five years\" is both an emissions story and a disclosure line. That dual framing is usually what moves a finance stakeholder who was unmoved by the environmental argument alone.",
+      label: "Where AppNexa sits",
+      text: "Every one of the six behaviours you will inspect in Task 1 is functionally correct. Nothing is broken, no user is blocked, no test is failing. That is exactly what makes them hard to see — and why a classification framework beats an incident report.",
     },
     references: [
-      { label: "ESRS E5 — Resource use and circular economy (EU CSRD reporting standards)" },
-      { label: "Regulation (EU) 2024/1781 — ESPR, on software support and premature obsolescence", url: "https://eur-lex.europa.eu/eli/reg/2024/1781/oj" },
+      { label: "ISO/IEC 25010 — Systems and software quality models: functional suitability and performance efficiency are separate characteristics" },
+      { label: "Green Software Foundation — Green Software Practitioner", url: "https://learn.greensoftware.foundation/" },
+    ],
+  },
+  {
+    id: "sci",
+    n: 3,
+    letter: "C",
+    icon: "gauge",
+    kicker: "C · The measurement standard",
+    title: "Measuring It: Software Carbon Intensity (SCI)",
+    definition:
+      "You cannot manage what you do not measure, and until recently there was no agreed way to measure the carbon cost of a piece of software. The Green Software Foundation's Software Carbon Intensity specification closed that gap, and in March 2024 it was published as the international standard ISO/IEC 21031:2024 — the first ISO standard written specifically for software carbon emissions. Its formula is deliberately small enough to hold in your head: C = ((E × I) + M) per R. Four variables, and every one of them is a place a design decision can land.",
+    insight:
+      "E is the energy the software system consumes to do its work — the variable an engineering team moves by making the code do less. I is the carbon intensity of the electricity at the location where that energy is consumed; grids are not uniformly clean, and the same E drawn on a coal-heavy grid versus a wind- or hydro-heavy one can differ by a factor of ten or more. M is the embodied emissions of the hardware the system requires, amortised over that hardware's useful life — the carbon spent manufacturing the servers, not running them. R is a functional unit: per API call, per user, per transaction. R is the \"per what\", and it is the variable that makes the number mean anything, because it is what lets you compare one release to the next.",
+    takeaway:
+      "The key structural insight is that SCI is a rate, not a total. A yearly total tells a CFO what already happened and is useless for engineering: ship a much more wasteful release during a quiet quarter and the total may still fall. A rate tells an engineer whether last week's deploy made things better or worse per transaction, independent of how much traffic the application happened to handle. You will not hand-calculate a full SCI score in this task — doing that properly needs infrastructure telemetry most teams take months to build. What matters here is the model as a lens: every design decision in Task 1 moves E, M or R in some direction, and naming which one is what turns an opinion into an argument.",
+    reasoning: [
+      "For each finding, name which SCI variable the lever actually moves. A lever that reduces work done per request lowers E. A lever that reduces how much hardware must exist lowers M. A lever that increases useful output for the same work raises R. A lever that moves none of the three is not an efficiency lever.",
+      "Adding capacity — more replicas, more CPU, more provisioned throughput — absorbs a symptom by raising M, while leaving E per transaction untouched. That is the opposite direction of travel, and it is why those options appear as distractors in the task.",
+      "Rules out the tempting wrong answer: caching or compressing an unnecessary response makes the waste cheaper to move, not smaller. E falls a little, the underlying work does not change, and the finding survives the fix.",
+    ],
+    callout: {
+      label: "Read the formula as a diagnostic",
+      text: "When a proposed fix sounds plausible but you cannot say which of E, I, M or R it moves, that is usually the signal that it addresses how the waste is experienced rather than whether the waste exists.",
+    },
+    references: [
+      { label: "ISO/IEC 21031:2024 — Software Carbon Intensity (SCI) specification", url: "https://sci.greensoftware.foundation/" },
+      { label: "Green Software Foundation — SCI specification project", url: "https://sci.greensoftware.foundation/" },
+    ],
+  },
+  {
+    id: "principles",
+    n: 4,
+    letter: "D",
+    icon: "recycleLoop",
+    kicker: "D · The working vocabulary",
+    title: "Three Working Principles",
+    definition:
+      "The Green Software Foundation's Green Software Practitioner curriculum reduces the field to a handful of principles. Three of them carry almost all of the practical weight. Carbon Efficiency: emit the least carbon possible for the value delivered — the outcome all of the others serve. Energy Efficiency: use the least energy possible to do the same work, regardless of where that energy comes from — in practice, make the code do less. Carbon Awareness: react to the fact that the same amount of energy causes different amounts of carbon depending on when and where it is drawn, because grids are not uniformly clean at all hours; the practical move is to shift non-urgent work, such as nightly batch jobs, into cleaner grid-mix windows.",
+    insight:
+      "Map them onto Section C's formula and they stop being slogans. Energy Efficiency targets E — it reduces the energy demanded in the first place. Carbon Awareness targets I — it leaves the energy unchanged and moves it to a moment or a region where each kilowatt-hour carries less carbon. Carbon Efficiency is the composite these two serve. A fourth GSF area, Hardware Efficiency, targets M by extending hardware life and raising utilisation; it is out of scope for this route, which stays inside decisions a software team makes about its own code.",
+    takeaway:
+      "Task 1 trains almost entirely on Energy Efficiency, and that is a deliberate choice rather than an oversight. A software team can act on E this sprint: it needs no renegotiated cloud contract, no new region, no hardware refresh cycle, and no permission from procurement. Carbon Awareness is real and often significant, but acting on it means scheduling and placement decisions that usually sit with platform or infrastructure owners. Start where your own hands are on the controls.",
+    reasoning: [
+      "Default to Energy Efficiency when reading a finding: ask what work could stop happening. Reach for Carbon Awareness only when the work genuinely must happen and only its timing or location is in question.",
+      "\"Make the code do less\" is the test to apply to every candidate lever. If the lever leaves the same work happening at the same frequency, it is not an Energy Efficiency lever, however sensible it sounds.",
+      "Rules out the tempting wrong answer: rescheduling a job to a different hour is a Carbon Awareness move. It does nothing for a job whose real problem is that nobody can name a consumer of its output — there, the work itself is the question, not its timing.",
+    ],
+    callout: {
+      label: "One principle, one variable",
+      text: "Energy Efficiency → E. Carbon Awareness → I. Hardware Efficiency → M (out of scope here). If you can name the variable, you can defend the lever to someone who owns the budget.",
+    },
+    references: [
+      { label: "Green Software Foundation — Green Software Practitioner: principles of green software", url: "https://learn.greensoftware.foundation/" },
+      { label: "ISO/IEC 21031:2024 — Software Carbon Intensity (SCI) specification", url: "https://sci.greensoftware.foundation/" },
+    ],
+  },
+  {
+    id: "categories",
+    n: 5,
+    letter: "E",
+    icon: "layers",
+    kicker: "E · The classification framework",
+    title: "Where Inefficiency Hides: Six Categories",
+    definition:
+      "Inefficiency is not randomly distributed. In practice it collects in six recognisable places, and naming which one a finding belongs to is what turns a list of complaints into a diagnosis. The six are Architecture, Data Processing, Storage, Network Load, Background Processes and Management Logic. Five of them are technical; the sixth is not, and is the one most often missed. Read each definition below with its example — in Task 1 these same six are the bins you will sort AppNexa's behaviours into, under exactly these names.",
+    insight:
+      "The reason to classify rather than simply list is that the category determines the lever. Two findings can look identical from a monitoring dashboard — both show as elevated database load — while one is a Data Processing problem solved by batching queries and the other is a Storage problem solved by not writing the data twice. Get the category wrong and you will reach for a plausible, expensive, ineffective fix. The discipline is to ask what would have to change for the finding to disappear, not where the symptom happened to become visible.",
+    takeaway:
+      "These six map onto the Green Software Foundation's Green Software Patterns catalog, an open, peer-reviewed collection of vendor-neutral engineering patterns organised by lifecycle stage: Requirements, Architecture, Development and Operations. Categories 1–2 correspond to Architecture- and Development-stage patterns; 3–4 to Development and Operations; 5 to Operations. Category 6 sits above the catalog entirely, at the governance layer — which is precisely why no pattern will fix it, and why it is the one most likely to regenerate the other five after they have been cleaned up.",
+    reasoning: [
+      "Ask what would have to change for the finding to disappear. That names the category — not the component where the symptom showed up on a graph.",
+      "Separate the three that are easily confused. Data Processing is about how many times work is requested. Network Load is about how much data moves and how often. Storage is about what gets written and kept. The same elevated-load symptom can come from any of the three.",
+      "Architecture is upstream of Network Load: if the waste was decided when someone specified what an endpoint returns, it is Architecture, even though you observe it as traffic on a wire.",
+      "Rules out the tempting wrong answer: Management Logic is never the category for something currently executing and consuming compute. A running job is a Background Process, however badly it was governed into existence. Management Logic covers what the organisation measures and rewards — not code.",
+    ],
+    callout: {
+      label: "Use the names exactly",
+      text: "These six category names are used verbatim as Task 1's drop-bins, in this order. The grid below is the legend you will see again on the bins themselves.",
+    },
+    references: [
+      { label: "Green Software Foundation — Green Software Patterns catalog", url: "https://patterns.greensoftware.foundation/" },
+      { label: "Green Software Foundation — Green Software Practitioner", url: "https://learn.greensoftware.foundation/" },
+    ],
+  },
+  {
+    id: "profession",
+    n: 6,
+    letter: "F",
+    icon: "certificate",
+    kicker: "F · Where this sits professionally",
+    title: "Why This Is Not Just a Developer's Problem",
+    definition:
+      "Categories 1 to 5 look like engineering problems and are not, at least not only. An N+1 query pattern survives because the team has no data-loading convention and no review step that would catch one. An endpoint that over-fetches survives because no standard says who decides what a response contains. A nightly job nobody can justify survives because nothing owns the question of retirement. These are conventions, review standards and ownership structures, and they outlive any individual engineer. That is why asking people to \"be more careful\" reliably fails: careful people working inside a structure that never asks the efficiency question produce the same result as careless ones, just more politely.",
+    insight:
+      "Green coding is not a fringe concern in European professional practice — it has a formal place in architecture certification. The iSAQB (International Software Architecture Qualification Board), the body behind the CPSA (Certified Professional for Software Architecture) credential, offers an Advanced Level module titled \"GREEN — Development of Resource-Efficient Applications\". Its scope is exactly the territory of this route: applying Green Software Foundation patterns, quantifying the energy efficiency of data centres and hardware, and evaluating cloud providers against ecological criteria. A competency that appears at Advanced Level in a professional architecture certification is, by construction, not a soft topic.",
+    takeaway:
+      "Read that as a statement about where the responsibility sits. If the lever for most of these findings is a standard, a review criterion or an owner, then the person who can pull it is whoever sets standards — an architect, a lead, a head of engineering — not the developer who happened to write the query. This module is not a soft-skills detour from \"real\" engineering: it trains a competency European software architecture already treats as core at its most rigorous professional level.",
+    reasoning: [
+      "Ask who could actually pull the lever. If the answer is \"whoever sets the standard\", the finding needs a structural fix, regardless of how small the code change itself would be.",
+      "A fix is a Quick Fix when one team can make it inside its own code this sprint without a new rule, a new owner or a new contract. It is Structural when it needs a rule, a review criterion or an owner that outlives the change.",
+      "Rules out the tempting wrong answer: a cheap first step does not make a finding a Quick Fix if the cheap step only tells you what to do next — but measuring before deciding is genuinely quick, and should be classified on what the first move costs, not on what it might eventually trigger.",
+    ],
+    callout: {
+      label: "The organisational read",
+      text: "If five of your six findings need a standard rather than a patch, that is not a pessimistic conclusion. It is the finding — and it is the one a manager can actually act on.",
+    },
+    references: [
+      { label: "iSAQB — CPSA Advanced Level, Module GREEN: Development of Resource-Efficient Applications", url: "https://www.isaqb.org/" },
+      { label: "Green Software Foundation — Green Software Patterns catalog", url: "https://patterns.greensoftware.foundation/" },
     ],
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Framework reference grid (material summary block).
+// Section B — the correctness × efficiency 2×2.
 // ---------------------------------------------------------------------------
-export type Framework = {
+export type QuadrantCell = {
   id: string;
-  name: string;
-  governs: string;
+  correct: boolean;
+  efficient: boolean;
+  label: string;
+  verdict: string;
+  detail: string;
+  tone: "goal" | "focus" | "reject" | "worst";
 };
 
-export const FRAMEWORKS: Framework[] = [
+export const CORRECTNESS_GRID: QuadrantCell[] = [
   {
-    id: "r2r",
-    name: "EU Right to Repair Directive (2024/1799)",
-    governs: "A legal right to repair for covered product categories — available at reasonable price and time, including after warranty. Member-state transposition deadline: 31 July 2026.",
+    id: "ce",
+    correct: true,
+    efficient: true,
+    label: "Correct + Efficient",
+    verdict: "The goal",
+    detail:
+      "Right output, least work. Reached deliberately — someone asked the efficiency question and had a number to answer it with.",
+    tone: "goal",
   },
   {
-    id: "espr",
-    name: "ESPR (Regulation (EU) 2024/1781)",
-    governs: "The ecodesign framework that decides which product categories get repairability, durability and software-support requirements next. Laptops sit in its work plan.",
+    id: "ci",
+    correct: true,
+    efficient: false,
+    label: "Correct + Inefficient",
+    verdict: "AppNexa today",
+    detail:
+      "The default state of almost every unaudited legacy system. Nothing is broken, nobody complains, and the bill rises every quarter. The quiet, dangerous quadrant.",
+    tone: "focus",
   },
   {
-    id: "blauer-engel",
-    name: "Blue Angel (Blauer Engel)",
-    governs: "German ecolabel certifying computers that are repairable and upgradable by design, with recyclable-design and material requirements — the sourcing decision that makes later extension possible.",
+    id: "ie",
+    correct: false,
+    efficient: true,
+    label: "Incorrect + Efficient",
+    verdict: "Not acceptable",
+    detail:
+      "Fast and cheap, but wrong. Efficiency never buys a pass on correctness — this quadrant is a failure regardless of its energy profile.",
+    tone: "reject",
   },
   {
-    id: "esrs-e5",
-    name: "ESRS E5 (under CSRD)",
-    governs: "Corporate disclosure of resource inflows/outflows and circular-economy performance — the reporting-side counterpart to a lifetime-extension decision.",
-  },
-];
-
-export const FRAMEWORK_REASONING: string[] = [
-  "Regulation tells you which way the ground is moving, not what to do this quarter. Cite it to justify why a policy change is worth doing now rather than in three years.",
-  "Use Blue Angel at procurement and the Right to Repair Directive at operations. If a finding is about hardware that simply cannot be repaired, no operations policy will fix it — that is a sourcing failure.",
-  "ESRS E5 is the argument that reaches finance: service life stops being a preference and becomes a figure the organisation may have to disclose.",
-];
-
-// ---------------------------------------------------------------------------
-// Case brief — UrbanByte Consulting (Task 1)
-// ---------------------------------------------------------------------------
-export const CASE_BRIEF = {
-  company: "UrbanByte Consulting",
-  setup:
-    "UrbanByte Consulting is a boutique digital transformation consultancy founded in 2014, with roughly 180 employees split between its Frankfurt headquarters and a smaller Amsterdam office. It has grown fast — headcount is up about 40% in three years — and IT has scaled reactively to keep pace rather than by design. Externally, UrbanByte markets itself heavily on sustainable digital transformation; several of its own consultants advise other companies on exactly this topic. Internally, its workplace IT has never been audited against that standard.",
-  fleet:
-    "The fleet: roughly 210 business notebooks (13\" and 14\" class), 90 external monitors and 140 docking stations across both offices, plus a shared printer fleet on each floor. Notebooks are leased on a company-wide contract that Finance negotiated for a flat three-year replacement cycle, applied uniformly regardless of a device's actual condition.",
-  role:
-    "Your role: you have been asked to do a quiet, evidence-based walkthrough — not to fix anything yet, just to observe. Walk the floor, collect what you find, and build the case.",
-} as const;
-
-// ---------------------------------------------------------------------------
-// Case story — the same brief, delivered as a narrated sequence instead of a
-// wall of text (CURRICULUM-GUIDE §5.1, format C's linear cousin). Art drops
-// into /public/story/ under the filenames below; until a file exists the
-// player shows a labelled placeholder, so this ships and works without it.
-// ---------------------------------------------------------------------------
-export const NARRATOR = {
-  name: "Nadine Keller",
-  role: "Managing Partner, UrbanByte Consulting",
-  /** Transparent-background cut-out, roughly waist-up. Optional. */
-  portraitSrc: "/story/r1-narrator.png",
-} as const;
-
-export type StoryBeat = {
-  id: string;
-  /** Scene art, 16:9. Missing files degrade to a labelled placeholder. */
-  imageSrc: string;
-  imageAlt: string;
-  /** Short label shown on the progress rail. */
-  chapter: string;
-  /** Set when the narrator says it; omitted for third-person scene text. */
-  speaker?: string;
-  text: string;
-};
-
-export const CASE_STORY: StoryBeat[] = [
-  {
-    id: "pitch",
-    imageSrc: "/story/r1-01-the-pitch.jpg",
-    imageAlt: "A UrbanByte consultant presenting a sustainability roadmap to a client in a bright meeting room",
-    chapter: "The pitch",
-    speaker: NARRATOR.name,
-    text: "We sell sustainable digital transformation. Last month I stood in a client's boardroom and told them to stop replacing laptops every three years. Then their CIO asked what we do ourselves — and I realised I had no idea.",
-  },
-  {
-    id: "growth",
-    imageSrc: "/story/r1-02-the-growth.jpg",
-    imageAlt: "A busy open-plan consulting office, more desks than the room was designed for",
-    chapter: "The growth",
-    text: "UrbanByte was founded in 2014. Today it is roughly 180 people, split between a Frankfurt headquarters and a smaller Amsterdam office, and headcount is up about 40% in three years. IT scaled to keep pace — reactively, one purchase order at a time, never by design.",
-  },
-  {
-    id: "fleet",
-    imageSrc: "/story/r1-03-the-fleet.jpg",
-    imageAlt: "Rows of identical business notebooks, monitors and docking stations laid out like an inventory",
-    chapter: "The fleet",
-    text: "On paper it looks unremarkable: about 210 business notebooks, 90 external monitors, 140 docking stations, and a shared printer on each floor. Ordinary numbers for a company this size — which is exactly why nobody has ever looked at them closely.",
-  },
-  {
-    id: "contract",
-    imageSrc: "/story/r1-04-the-contract.jpg",
-    imageAlt: "A leasing contract on a finance desk beside a calendar marked with repeating three-year intervals",
-    chapter: "The contract",
-    speaker: NARRATOR.name,
-    text: "Finance negotiated one leasing contract for the whole fleet: every notebook goes back after three years, whatever condition it is in. At the time it was the simplest option on the table. Nobody asked what it would mean four years later.",
-  },
-  {
-    id: "blindspot",
-    imageSrc: "/story/r1-05-the-blind-spot.jpg",
-    imageAlt: "Five separate corners of the same office — storage, finance, desks, print station, helpdesk — seen at once",
-    chapter: "The blind spot",
-    text: "There is no villain in this story. Procurement owns the contract, IT owns the support process, Facilities owns the building, HR owns onboarding — and each of them is doing their job. What nobody owns is the picture all five make together.",
-  },
-  {
-    id: "brief",
-    imageSrc: "/story/r1-06-your-brief.jpg",
-    imageAlt: "An early-morning office corridor seen from the visitor's point of view, notebook in hand",
-    chapter: "Your brief",
-    speaker: NARRATOR.name,
-    text: "So here is what I need from you. Walk the floor — quietly, before the place fills up. Six areas. Don't fix anything yet, don't tell anyone what to do. Just look, and bring me what you actually find.",
+    id: "ii",
+    correct: false,
+    efficient: false,
+    label: "Incorrect + Inefficient",
+    verdict: "Worst case",
+    detail:
+      "Wrong and wasteful. Rarest of the four, because incorrectness gets caught quickly and inefficiency does not get caught at all.",
+    tone: "worst",
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Six categories — the Stage 1 sorting bins.
+// Section C — the SCI variables, as rendered by the formula visual.
 // ---------------------------------------------------------------------------
-export type CategoryId = "deviceUse" | "replacement" | "peripherals" | "printing" | "userBehaviour" | "support";
+export const SCI_VARIABLES = [
+  {
+    symbol: "E",
+    name: "Energy",
+    caption: "How much electricity the software draws to do its work.",
+    lever: "Lowered by making the code do less.",
+  },
+  {
+    symbol: "I",
+    name: "Carbon intensity",
+    caption: "How much carbon each unit of that electricity carries, where and when it is drawn.",
+    lever: "Lowered by shifting work to a cleaner grid or hour.",
+  },
+  {
+    symbol: "M",
+    name: "Embodied emissions",
+    caption: "The carbon spent manufacturing the hardware, amortised over its useful life.",
+    lever: "Raised by provisioning more machines to absorb a symptom.",
+  },
+  {
+    symbol: "R",
+    name: "Functional unit",
+    caption: "The \"per what\" — per API call, per user, per transaction.",
+    lever: "Makes the number comparable release over release.",
+  },
+] as const;
+
+// ---------------------------------------------------------------------------
+// Section D — the three principles triad.
+// ---------------------------------------------------------------------------
+export const PRINCIPLES = [
+  {
+    id: "carbon-efficiency",
+    n: 1,
+    name: "Carbon Efficiency",
+    variable: "the composite",
+    summary: "Emit the least carbon possible for the value delivered.",
+    detail:
+      "The outcome the other principles serve. Stated alone it is a goal, not a method — it becomes actionable only once you say which variable you intend to move.",
+  },
+  {
+    id: "energy-efficiency",
+    n: 2,
+    name: "Energy Efficiency",
+    variable: "E",
+    summary: "Use the least energy possible to do the same work — make the code do less.",
+    detail:
+      "Independent of where the energy comes from. This is the principle Task 1 trains on, because a software team can act on it this sprint without renegotiating anything.",
+  },
+  {
+    id: "carbon-awareness",
+    n: 3,
+    name: "Carbon Awareness",
+    variable: "I",
+    summary: "The same energy causes different carbon depending on when and where it is drawn.",
+    detail:
+      "Grids are not uniformly clean at all hours. The practical move is to shift non-urgent work — nightly batch jobs, bulk re-indexing — into cleaner grid-mix windows.",
+  },
+] as const;
+
+// ---------------------------------------------------------------------------
+// Section E — the six categories. Also Task 1's six drop-bins, verbatim.
+// ---------------------------------------------------------------------------
+export type CategoryId =
+  | "architecture"
+  | "dataProcessing"
+  | "storage"
+  | "networkLoad"
+  | "backgroundProcesses"
+  | "managementLogic";
 
 export type Category = {
   id: CategoryId;
-  label: string;
-  /** Permanent caption under the bin label — what belongs here. */
-  hint: string;
+  n: 1 | 2 | 3 | 4 | 5 | 6;
+  name: string;
+  icon: IconKey;
+  /** One-line bin label — short enough to sit under an icon on a drop target. */
+  short: string;
+  /** The full Section E paragraph: definition plus one concrete example. */
+  body: string;
+  /** Where this category sits in the GSF Green Software Patterns lifecycle stages. */
+  stage: string;
 };
 
 export const CATEGORIES: Category[] = [
-  { id: "deviceUse", label: "Device Use", hint: "How devices are actually run day to day: power state, idle time, settings." },
-  { id: "replacement", label: "Replacement Cycles", hint: "When and why a device leaves the organisation." },
-  { id: "peripherals", label: "Peripherals", hint: "Monitors, docks, keyboards — the hardware around the device." },
-  { id: "printing", label: "Printing Behaviour", hint: "Paper use, print defaults, and what the print system permits." },
-  { id: "userBehaviour", label: "User Behaviour", hint: "What employees are willing to ask for, accept, or avoid." },
-  { id: "support", label: "Support Model", hint: "How IT decides between repair, upgrade and replace." },
+  {
+    id: "architecture",
+    n: 1,
+    name: "Architecture",
+    icon: "blueprint",
+    short: "What components return and how they talk",
+    body: "Architecture covers the shape decisions — what each component returns, what it asks for, and how components communicate with one another. These choices are made early, written down rarely, and then inherited by everyone who touches the system afterwards. Their cost is structural rather than incidental: an endpoint that returns a full customer record when the screen displays three fields from it will over-fetch on every single call, forever, no matter how efficiently the surrounding code is written. The defining characteristic of an architecture finding is that the waste was decided before any data moved — someone specified a contract that asks for more than the use case needs, and every consumer of that contract now pays for the decision.",
+    stage: "GSF patterns: Architecture / Development stage",
+  },
+  {
+    id: "dataProcessing",
+    n: 2,
+    name: "Data Processing",
+    icon: "database",
+    short: "How much computation one user action triggers",
+    body: "Data Processing is about how much computation a single user action sets off. The canonical failure here is the N+1 query problem: the application fetches a list, then issues one additional query per item in that list to fill in its details, instead of one combined query that retrieves everything at once. A fifty-row screen silently becomes fifty-one round-trips to the database. It is a particularly treacherous category because it is invisible at small scale — with three rows in a development database, nobody notices — and grows linearly with real data, so the system degrades exactly as it becomes successful. The signature of a Data Processing finding is repetition: the same kind of work, performed many more times than the result requires.",
+    stage: "GSF patterns: Architecture / Development stage",
+  },
+  {
+    id: "storage",
+    n: 3,
+    name: "Storage",
+    icon: "drive",
+    short: "What gets written, how often, and in how many places",
+    body: "Storage concerns what gets written, how frequently, and whether it genuinely needs to exist in more than one place. Three patterns dominate: redundant copies of the same data maintained in parallel systems, unbounded retention where nothing is ever deleted because nobody decided it should be, and over-frequent writes that persist state far more often than anyone reads it. A typical example is customer data written to a primary database and simultaneously copied in full to a separate analytics store on every update, when the analytics store is queried once a month. Storage costs are continuous rather than per-request — the data sits on powered hardware whether anyone touches it or not — which is what makes unbounded retention so expensive and so easy to overlook.",
+    stage: "GSF patterns: Development / Operations stage",
+  },
+  {
+    id: "networkLoad",
+    n: 4,
+    name: "Network Load",
+    icon: "network",
+    short: "How much data moves, and how many times",
+    body: "Network Load is about data in motion: how much of it moves, and how many times the same information crosses the wire. Redundant transmission is the clearest case — the same event pushed to a client through several channels at once because each was added by a different team at a different time and none was ever removed. Oversized or unpaginated payloads belong here too, as do chatty protocols that exchange many small messages where one would do. Transmission is expensive out of proportion to its visibility, because each byte traverses a chain of switches, routers and radio links, each drawing power. A Network Load finding is identified by following one piece of information and counting how many times it travels.",
+    stage: "GSF patterns: Development / Operations stage",
+  },
+  {
+    id: "backgroundProcesses",
+    n: 5,
+    name: "Background Processes",
+    icon: "cycle",
+    short: "Work that runs whether or not anyone benefits",
+    body: "Background Processes are scheduled jobs, polling loops and synchronisation tasks that run independently of any user action — nightly batch jobs, five-second polls, hourly re-indexing. They are uniquely dangerous for one reason: they run at their full configured frequency whether or not anyone benefits that day. A user-triggered inefficiency at least scales down when usage does; a background job consumes identically on a public holiday. They also accumulate, because adding one is easy, and retiring one requires somebody to prove a negative — that nothing downstream depends on its output. The classic example is the nightly job whose original consumer was decommissioned years ago, still processing the full user base every night because nobody could confirm it was safe to switch off.",
+    stage: "GSF patterns: Operations stage",
+  },
+  {
+    id: "managementLogic",
+    n: 6,
+    name: "Management Logic",
+    icon: "gauge",
+    short: "What the organisation measures and rewards",
+    body: "Management Logic is not a technical pattern at all. It is what an organisation chooses to measure, report and reward — and it is the category most often missed, because it never appears in a codebase. A team assessed purely on features shipped and release velocity has no structural reason to notice categories 1 to 5, however capable its engineers are: the work of finding and fixing inefficiency is invisible to every number the team is judged on. This category explains persistence. It is why technical cleanups regenerate within a year, why an efficiency initiative fades once its champion moves on, and why the lever is never a code change but a change to what leadership counts as success.",
+    stage: "Above the GSF catalog entirely — the governance layer",
+  },
 ];
 
-// ---------------------------------------------------------------------------
-// Diagnosis axes — two forced choices per finding, which together place it on
-// the 2×2. Deliberately answered as questions first: the quadrant position is
-// a consequence of the two answers, never something the learner drags directly.
-// ---------------------------------------------------------------------------
-export type DriverId = "individual" | "structural";
-export type HorizonId = "shortTerm" | "structuralChange";
-
-export const DRIVER_QUESTION = "Is this primarily driven by individual behaviour, or by a management/structural gap?";
-export const HORIZON_QUESTION = "Can this be resolved short-term under current policy, or does it need a structural change?";
-
-export const DRIVER_OPTIONS: { id: DriverId; label: string }[] = [
-  { id: "individual", label: "Individual behaviour" },
-  { id: "structural", label: "Management & structural" },
-];
-
-export const HORIZON_OPTIONS: { id: HorizonId; label: string }[] = [
-  { id: "shortTerm", label: "Short-term fix" },
-  { id: "structuralChange", label: "Structural change needed" },
-];
+export const categoryById = (id: CategoryId): Category =>
+  CATEGORIES.find((c) => c.id === id)!;
 
 // ---------------------------------------------------------------------------
-// Six zones, one finding each. Zone → finding → category is 1:1, so Stage 1's
-// sort is a real matching exercise rather than a pile-sorting chore.
+// Further reading — rendered as a card, not inline links.
 // ---------------------------------------------------------------------------
-export type ZoneId = "storage" | "finance" | "workspace" | "print" | "helpdesk" | "onboarding";
+export const FURTHER_READING = {
+  heading: "Further reading",
+  intro: "The three primary sources behind this route, in the order you would consult them.",
+  items: [
+    {
+      body: "Green Software Foundation",
+      title: "Software Carbon Intensity specification (ISO/IEC 21031:2024)",
+      host: "sci.greensoftware.foundation",
+      url: "https://sci.greensoftware.foundation/",
+    },
+    {
+      body: "Green Software Foundation",
+      title: "Green Software Patterns catalog",
+      host: "patterns.greensoftware.foundation",
+      url: "https://patterns.greensoftware.foundation/",
+    },
+    {
+      body: "iSAQB",
+      title: "CPSA Advanced Level, Module GREEN",
+      host: "isaqb.org",
+      url: "https://www.isaqb.org/",
+    },
+  ],
+} as const;
 
-export type Zone = {
-  id: ZoneId;
-  letter: string;
-  label: string;
-  /** One line of scene-setting shown above the finding when the zone opens. */
-  scene: string;
-};
+// ---------------------------------------------------------------------------
+// Flow diagrams — one reusable component, two graphs.
+// `FlowDiagram` renders any of these; Section A passes ENERGY_CHAIN with no
+// pins, Task 1 passes APPNEXA_TRACE with six.
+// ---------------------------------------------------------------------------
+export type FlowNodeTone = "solid" | "outline" | "aside";
 
-export const ZONES: Zone[] = [
-  { id: "storage", letter: "A", label: "IT Storage Room", scene: "A narrow room behind the server cupboard. Shelves, boxes, and three replacement rounds' worth of hardware nobody has logged." },
-  { id: "finance", letter: "B", label: "Finance & Procurement", scene: "Tidy desk, neat folders. The leasing contract and the replacement schedule both live here." },
-  { id: "workspace", letter: "C", label: "Open Workspace", scene: "Two floors of consultant desks. You come back at 21:40 on a Thursday to see what is still awake." },
-  { id: "print", letter: "D", label: "Print Station", scene: "The shared multifunction printer on each floor, a paper cupboard, and a recycling bin that is fuller than it should be." },
-  { id: "helpdesk", letter: "E", label: "IT Helpdesk", scene: "A two-person counter with a shelf of spare notebooks behind it, and a ticket queue on the wall monitor." },
-  { id: "onboarding", letter: "F", label: "Onboarding Desk", scene: "Where every new hire meets their equipment for the first time — and learns what \"normal\" looks like here." },
-];
-
-export type Finding = {
+export type FlowNode = {
   id: string;
-  zoneId: ZoneId;
-  /** The observation as logged in the evidence log. */
-  text: string;
-  /** Chip-length version of the same finding, for the sort board and the matrix legend. */
-  short: string;
-  /** Extra colour shown in the scene card only — context, not a classifiable item. */
-  context?: string;
+  label: string;
+  sub?: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  tone: FlowNodeTone;
+};
+
+export type FlowEdge = {
+  id: string;
+  d: string;
+  /** 3 for the triple-send: the same path drawn as parallel lanes. */
+  lanes?: number;
+  laneGap?: number;
+  /** Pulsing dotted overlay marking an active data path. */
+  flow?: boolean;
+};
+
+export type FlowPin = {
+  id: string;
+  x: number;
+  y: number;
+  n: number;
+  label: string;
+};
+
+export type FlowGraph = {
+  id: string;
+  title: string;
+  caption: string;
+  viewBox: string;
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+};
+
+/** Section A — `energy-flow-diagram`. Code → compute → facility → grid → CO2e, plus the network branch. */
+export const ENERGY_CHAIN: FlowGraph = {
+  id: "energy-flow-diagram",
+  title: "From an executed instruction to emitted CO₂e",
+  caption:
+    "The main chain is compute. The lower branch is everything that moves: transmitted bytes draw their own power across the network path before rejoining the same grid.",
+  viewBox: "0 0 900 300",
+  nodes: [
+    { id: "code", label: "Code executes", sub: "instructions", x: 16, y: 60, w: 152, h: 68, tone: "solid" },
+    { id: "compute", label: "Compute", sub: "CPU / GPU", x: 196, y: 60, w: 152, h: 68, tone: "solid" },
+    { id: "facility", label: "Data centre", sub: "servers + cooling", x: 376, y: 60, w: 152, h: 68, tone: "solid" },
+    { id: "grid", label: "Electricity grid", sub: "generation mix", x: 556, y: 60, w: 152, h: 68, tone: "solid" },
+    { id: "co2", label: "CO₂e emitted", sub: "the measured output", x: 736, y: 60, w: 152, h: 68, tone: "outline" },
+    { id: "tx", label: "Data transmitted", sub: "bytes on the wire", x: 196, y: 200, w: 152, h: 60, tone: "outline" },
+    { id: "net", label: "Network path", sub: "switches + links", x: 376, y: 200, w: 152, h: 60, tone: "outline" },
+    { id: "draw", label: "Additional draw", sub: "power, again", x: 556, y: 200, w: 152, h: 60, tone: "outline" },
+  ],
+  edges: [
+    { id: "e1", d: "M168 94 H196", flow: true },
+    { id: "e2", d: "M348 94 H376", flow: true },
+    { id: "e3", d: "M528 94 H556", flow: true },
+    { id: "e4", d: "M708 94 H736", flow: true },
+    { id: "b1", d: "M272 128 V200", flow: true },
+    { id: "b2", d: "M348 230 H376", flow: true },
+    { id: "b3", d: "M528 230 H556", flow: true },
+    { id: "b4", d: "M632 200 V128", flow: true },
+  ],
+};
+
+/** Task 1 — the same component, AppNexa's simplified system trace. */
+export const APPNEXA_TRACE: FlowGraph = {
+  id: "appnexa-system-trace",
+  title: "AppNexa Solutions — live system trace",
+  caption:
+    "Six components are flagged. The Engineering KPIs panel sits deliberately outside the system boundary — it is not part of the running platform.",
+  viewBox: "0 0 920 470",
+  nodes: [
+    { id: "frontend", label: "Front-end", sub: "browser dashboard", x: 24, y: 190, w: 170, h: 68, tone: "solid" },
+    { id: "gateway", label: "API Gateway", sub: "public entry point", x: 300, y: 190, w: 160, h: 68, tone: "solid" },
+    { id: "appserver", label: "App Server", sub: "business logic", x: 540, y: 190, w: 160, h: 68, tone: "solid" },
+    { id: "cache", label: "Cache", sub: "in-memory", x: 760, y: 26, w: 150, h: 56, tone: "outline" },
+    { id: "worker", label: "Background Worker", sub: "scheduled jobs", x: 760, y: 116, w: 150, h: 56, tone: "outline" },
+    { id: "database", label: "Database", sub: "primary store", x: 760, y: 225, w: 150, h: 56, tone: "outline" },
+    { id: "reporting", label: "Reporting Store", sub: "monthly export", x: 760, y: 345, w: 150, h: 56, tone: "outline" },
+    {
+      id: "kpis",
+      label: "Engineering KPIs",
+      sub: "features shipped · release velocity",
+      x: 24,
+      y: 330,
+      w: 250,
+      h: 96,
+      tone: "aside",
+    },
+  ],
+  edges: [
+    // Front-end ↔ API Gateway, drawn as three parallel lanes (the triple send).
+    { id: "t-fe-gw", d: "M194 224 H300", lanes: 3, laneGap: 14, flow: true },
+    { id: "t-gw-app", d: "M460 224 H540", flow: true },
+    { id: "t-app-cache", d: "M700 208 C 730 208, 730 54, 760 54", flow: true },
+    { id: "t-app-worker", d: "M700 216 C 730 216, 730 144, 760 144", flow: true },
+    { id: "t-app-db", d: "M700 232 C 730 232, 730 253, 760 253", flow: true },
+    { id: "t-app-report", d: "M700 244 C 726 244, 726 373, 760 373", flow: true },
+    // The duplicate write: primary database to reporting store, on every update.
+    { id: "t-db-report", d: "M835 281 V345", flow: true },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Task 1 — the six hotspots. Graded content: categories, levers and fix types
+// are fixed by the curriculum spec.
+// ---------------------------------------------------------------------------
+export type FixType = "quick" | "structural";
+
+export const FIX_TYPES: { id: FixType; label: string; hint: string }[] = [
+  {
+    id: "quick",
+    label: "Quick Fix",
+    hint: "One team can do it inside its own code this sprint — no new rule, owner or contract needed.",
+  },
+  {
+    id: "structural",
+    label: "Structural Fix",
+    hint: "Needs a standard, a review criterion or an owner that outlives the change itself.",
+  },
+];
+
+export type Lever = { id: string; text: string };
+
+export type Hotspot = {
+  id: string;
+  n: 1 | 2 | 3 | 4 | 5 | 6;
+  title: string;
+  /** Where the pin sits on the trace, in plain words — shown on the symptom card. */
+  location: string;
+  symptom: string;
   correctCategory: CategoryId;
-  categoryClue: string;
-  correctDriver: DriverId;
-  driverClue: string;
-  correctHorizon: HorizonId;
-  horizonClue: string;
+  levers: Lever[];
+  correctLever: string;
+  /** Directional clue on a wrong category placement — never names the right bin. */
+  clue: string;
+  correctFixType: FixType;
+  material: MaterialSectionId[];
+  /** Mentor-only demo justification, used by the auto-fill tool. */
+  sampleJustification: string;
+  answerKeys: {
+    category: AnswerKeyBlock;
+    lever: AnswerKeyBlock;
+    fixType: AnswerKeyBlock;
+  };
 };
 
-export const FINDINGS: Finding[] = [
+export const HOTSPOTS: Hotspot[] = [
   {
-    id: "f-peripherals",
-    zoneId: "storage",
-    text: "31 disconnected docking stations, 14 external monitors and an uncatalogued box of cables from the last three replacement rounds sit in storage. None of it is logged or flagged for reassignment.",
-    short: "31 docks + 14 monitors in storage, unlogged",
-    context: "Nobody could tell you how long any of it has been there, because nothing records when it arrived.",
-    correctCategory: "peripherals",
-    categoryClue: "What kind of hardware is this actually about — the notebooks themselves, or everything that plugs into them?",
-    correctDriver: "structural",
-    driverClue: "Ask who is responsible for tracking what is in that room. Is there such a role at all?",
-    correctHorizon: "shortTerm",
-    horizonClue: "Could this be changed under existing policy — an inventory and a check before new stock is ordered — or does a contract have to be renegotiated first?",
+    id: "h1",
+    n: 1,
+    title: "Checkout & Dashboard Query Storm",
+    location: "App Server ↔ Database",
+    symptom:
+      "Every time a user opens their dashboard, the application independently queries the database once per item shown — once for the list, then once more per row for its details, status, and owner. A dashboard with 40 items can trigger over 120 separate queries for a single page load.",
+    correctCategory: "dataProcessing",
+    levers: [
+      { id: "h1-a", text: "Batch related lookups into a single query (or a small fixed number of queries) using joins or a data-loader pattern" },
+      { id: "h1-b", text: "Add more database read replicas to absorb the load" },
+      { id: "h1-c", text: "Cache the dashboard page at the CDN for 24 hours" },
+      { id: "h1-d", text: "Move background processing to a queue" },
+    ],
+    correctLever: "h1-a",
+    clue: "This is about how many times the database gets asked, not what's kept in it — look at request pattern, not data at rest.",
+    correctFixType: "structural",
+    material: ["categories", "sci", "principles"],
+    sampleJustification:
+      "Collapsing the per-row lookups into one joined query removes roughly 120 round-trips from a single dashboard load, which is the behaviour flagged on the App Server ↔ Database edge.",
+    answerKeys: {
+      category: {
+        prompt: "Hotspot 1 — which category?",
+        items: [
+          { option: "Data Processing", verdict: "pick", why: "The signature is repetition: the same kind of work performed many more times than the result requires. This is the textbook N+1 pattern named in Section E." },
+          { option: "Storage", verdict: "avoid", why: "Nothing here is about what is written or kept. The data already exists and is correct; only the number of requests for it is wrong." },
+          { option: "Network Load", verdict: "avoid", why: "Traffic does rise, but between app server and database, as a consequence of the query count. Fix the query pattern and the traffic disappears — so the request pattern is the finding." },
+          { option: "Architecture", verdict: "avoid", why: "Defensible if a participant argues the ORM contract caused it — see the teaching note — but nothing here specifies an over-broad response shape. The rows fetched are the right rows, fetched too many times." },
+        ],
+        teachingNote:
+          "A participant may argue Architecture, on the grounds that a data-access convention is an architectural decision. Accept the reasoning but redirect: Section E's test is what would have to change for the finding to disappear. Here it is the loading strategy for an existing, correctly-shaped query — Data Processing. Hotspot 5 is the case where the contract itself is the defect.",
+      },
+      lever: {
+        prompt: "Hotspot 1 — which lever?",
+        items: [
+          { option: "Batch related lookups into a single query using joins or a data-loader", verdict: "pick", why: "The only option that reduces the work. 121 queries become one or a handful: E falls per transaction, R is unchanged." },
+          { option: "Add more database read replicas", verdict: "avoid", why: "Absorbs the symptom by adding hardware — raises M, leaves E per transaction identical. Section C's direction-of-travel rule rules this out." },
+          { option: "Cache the dashboard page at the CDN for 24 hours", verdict: "avoid", why: "A per-user, live dashboard is not cacheable at a shared CDN edge, and a 24-hour cache would serve stale data. It also hides the query storm rather than removing it." },
+          { option: "Move background processing to a queue", verdict: "avoid", why: "Addresses a different category entirely. Nothing in this finding is a background process — this is synchronous work on a user's page load." },
+        ],
+      },
+      fixType: {
+        prompt: "Hotspot 1 — Quick Fix or Structural?",
+        items: [
+          { option: "Structural Fix", verdict: "pick", why: "Patching this one dashboard leaves every other screen free to repeat the pattern. What is missing is a data-loading standard plus a review criterion that catches N+1 before merge — a rule and an owner, per Section F." },
+          { option: "Quick Fix", verdict: "avoid", why: "The single query is genuinely quick to write, which is why participants pick this. But the finding is the pattern, not the one screen: with no standard, it regenerates on the next feature." },
+        ],
+        teachingNote:
+          "This is the most contested fix-type call in the task. The honest answer to \"but I could fix it Friday\" is: yes, for this screen. Ask what stops the same pattern appearing in next quarter's screen — the absence of an answer is what makes it structural.",
+      },
+    },
   },
   {
-    id: "f-returns",
-    zoneId: "finance",
-    text: "The most recent replacement round returned 68 notebooks to the leasing company as \"still fully functional\". Only 4 devices in that same round were flagged for genuine hardware failure.",
-    short: "68 working notebooks returned, only 4 failed",
-    context: "The lease Finance negotiated sets a flat three-year cycle for the whole fleet, regardless of a device's condition.",
-    correctCategory: "replacement",
-    categoryClue: "68 working machines left the building. Which of the six areas is about when and why a device leaves at all?",
-    correctDriver: "structural",
-    driverClue: "Whose decision sent those 68 devices back — and could any individual employee have changed it by behaving differently?",
-    correctHorizon: "structuralChange",
-    horizonClue: "If the hardware worked, what would have to change for it to be allowed to stay? Check what the answer depends on.",
+    id: "h2",
+    n: 2,
+    title: "The Nightly Job Nobody Remembers",
+    location: "Background Worker",
+    symptom:
+      "A background job runs across the full user base every night. Nobody currently on the team can say which downstream feature consumes its output, and disabling it in a staging test caused no visible failures.",
+    correctCategory: "backgroundProcesses",
+    levers: [
+      { id: "h2-a", text: "Instrument the job's output consumers before deciding whether to keep, reduce scope, or retire it" },
+      { id: "h2-b", text: "Increase the server's CPU allocation so the job finishes faster" },
+      { id: "h2-c", text: "Run it twice daily instead of nightly" },
+      { id: "h2-d", text: "Rewrite it in a faster language" },
+    ],
+    correctLever: "h2-a",
+    clue: "This is a process actually executing right now, consuming compute — not a policy question. Look at what's running.",
+    correctFixType: "quick",
+    material: ["categories", "principles", "profession"],
+    sampleJustification:
+      "Instrumenting who reads the job's output answers the actual open question — whether the nightly full-user-base run has any consumer at all — before any compute is spent on making it faster.",
+    answerKeys: {
+      category: {
+        prompt: "Hotspot 2 — which category?",
+        items: [
+          { option: "Background Processes", verdict: "pick", why: "A scheduled job running independently of user action, at full frequency whether or not anyone benefits — Section E's definition, exactly." },
+          { option: "Management Logic", verdict: "avoid", why: "The most common wrong answer, and a tempting one: poor governance is why it still exists. But Section E's rule is explicit — Management Logic is never the category for something currently executing and consuming compute." },
+          { option: "Data Processing", verdict: "avoid", why: "The job's internal efficiency is not the finding. Even a perfectly optimised job is pure waste if nothing consumes its output." },
+          { option: "Storage", verdict: "avoid", why: "Nothing in the symptom describes what is written or retained — only that a process runs and nobody can name its consumer." },
+        ],
+        teachingNote:
+          "Use this hotspot to draw the Background Processes / Management Logic line sharply, because Hotspot 6 is the mirror case. Here: something is running. There: nothing is running, a measurement is missing. Both are governance failures in origin; only one is code executing tonight.",
+      },
+      lever: {
+        prompt: "Hotspot 2 — which lever?",
+        items: [
+          { option: "Instrument the job's output consumers before deciding", verdict: "pick", why: "The open question is whether the work should happen at all. Every other option optimises a job that may not need to exist — you cannot choose between keep, reduce and retire without this evidence." },
+          { option: "Increase the server's CPU allocation so it finishes faster", verdict: "avoid", why: "Raises M to make possibly-useless work complete sooner. Faster is not less." },
+          { option: "Run it twice daily instead of nightly", verdict: "avoid", why: "Doubles the frequency of work whose value is unproven. If a participant read this as Carbon Awareness scheduling, note that shifting the hour does nothing when the work itself is in question (Section D)." },
+          { option: "Rewrite it in a faster language", verdict: "avoid", why: "Large effort, optimises the runtime of a job that may be retired. Classic Section B error: making the same surplus work cheaper rather than removing it." },
+        ],
+      },
+      fixType: {
+        prompt: "Hotspot 2 — Quick Fix or Structural?",
+        items: [
+          { option: "Quick Fix", verdict: "pick", why: "Instrumentation is fast and cheap — logging or tracing who reads the output is days, not quarters. Section F's rule says classify on what the first move costs, and full resolution follows from what the evidence reveals." },
+          { option: "Structural Fix", verdict: "avoid", why: "Defensible if you argue the real gap is a job-retirement policy. But the lever chosen here is measurement, and measurement is genuinely quick — which is why it is the right first move." },
+        ],
+        teachingNote:
+          "This is the one hotspot where a cheap first step is the whole recommendation. Contrast it explicitly with Hotspot 1, where the cheap step fixes one instance and leaves the pattern intact. The distinction: here the cheap step produces the decision; there it substitutes for one.",
+      },
+    },
   },
   {
-    id: "f-overnight",
-    zoneId: "workspace",
-    text: "A facilities audit of badge-out times against overnight network activity found 22% of Frankfurt notebooks stay powered on and undocked through the night and across weekends.",
-    short: "22% of notebooks stay awake overnight",
-    context: "No fleet-wide power-management profile has ever been configured; each device keeps whatever settings it shipped with.",
-    correctCategory: "deviceUse",
-    categoryClue: "Nothing here is being bought, retired or repaired — it is about the state a device is left in. Which area covers that?",
-    correctDriver: "structural",
-    driverClue: "Would this stop happening if every employee simply tried harder — or is there a setting nobody has configured at fleet level?",
-    correctHorizon: "shortTerm",
-    horizonClue: "Think about what a single device-management policy push could change, without touching any contract.",
+    id: "h3",
+    n: 3,
+    title: "The Triple-Send Notification",
+    location: "API Gateway ↔ Front-end",
+    symptom:
+      "When a user completes an action, the same confirmation payload is sent to the client three times through three different channels — a REST response, a WebSocket push, and a polling endpoint the front-end still calls every 5 seconds — all carrying the same information.",
+    correctCategory: "networkLoad",
+    levers: [
+      { id: "h3-a", text: "Pick one channel as the source of truth for this event and remove the redundant paths" },
+      { id: "h3-b", text: "Compress the payload before sending" },
+      { id: "h3-c", text: "Increase the polling interval to 30 seconds" },
+      { id: "h3-d", text: "Add a CDN in front of the API" },
+    ],
+    correctLever: "h3-a",
+    clue: "Nothing here is about what's saved to disk — follow the data as it moves between server and client.",
+    correctFixType: "quick",
+    material: ["categories", "correctness", "sci"],
+    sampleJustification:
+      "Keeping the WebSocket push and removing the REST duplicate and the 5-second poll cuts the confirmation payload from three deliveries to one, which is the redundancy flagged on the API Gateway ↔ Front-end edge.",
+    answerKeys: {
+      category: {
+        prompt: "Hotspot 3 — which category?",
+        items: [
+          { option: "Network Load", verdict: "pick", why: "Follow one piece of information and count how many times it travels — Section E's identification test. The answer here is three." },
+          { option: "Storage", verdict: "avoid", why: "Nothing is written to disk. The payload is transient; the redundancy is entirely in transit." },
+          { option: "Background Processes", verdict: "avoid", why: "The 5-second poll tempts this read. But the poll is client-initiated in response to user activity and carries the same user-facing event — it is a transport channel, not an independent scheduled job." },
+          { option: "Architecture", verdict: "avoid", why: "Arguable, since three channels accreted through unmanaged decisions. But no response shape is over-broad here — the payload itself is correct, it is simply delivered three times." },
+        ],
+        teachingNote:
+          "If a participant argues Background Processes because of the polling endpoint, distinguish frequency from independence: Section E's Background Processes run whether or not anyone benefits. This poll exists to deliver a user's own confirmation — it is the wrong channel, not an orphaned job.",
+      },
+      lever: {
+        prompt: "Hotspot 3 — which lever?",
+        items: [
+          { option: "Pick one channel as the source of truth and remove the redundant paths", verdict: "pick", why: "The only option that reduces the number of transmissions — three deliveries become one. Everything else leaves all three running." },
+          { option: "Compress the payload before sending", verdict: "avoid", why: "Section C's explicit counter-example: compressing an unnecessary response makes the waste cheaper to move, not smaller. Three compressed copies are still three copies." },
+          { option: "Increase the polling interval to 30 seconds", verdict: "avoid", why: "Reduces one redundant channel's frequency by a factor of six while leaving the redundancy itself in place. A partial mitigation of a path that should not exist." },
+          { option: "Add a CDN in front of the API", verdict: "avoid", why: "A per-user confirmation event is not cacheable at a shared edge. Adds infrastructure — and M — without removing a single duplicate send." },
+        ],
+      },
+      fixType: {
+        prompt: "Hotspot 3 — Quick Fix or Structural?",
+        items: [
+          { option: "Quick Fix", verdict: "pick", why: "Choosing one channel and deleting two code paths is contained work inside one team's codebase, needing no new standard or owner — Section F's Quick Fix test." },
+          { option: "Structural Fix", verdict: "avoid", why: "The accretion of three channels does suggest a missing convention. But unlike Hotspot 1's pattern, this is a single identified duplication with a bounded, one-off removal." },
+        ],
+      },
+    },
   },
   {
-    id: "f-duplex",
-    zoneId: "print",
-    text: "There is no default duplex setting and no print-release authentication. The two floors together print an estimated 40,000 pages a month, with no tracking of paper source.",
-    short: "No duplex default · 40,000 pages/month",
-    context: "Individual usage on one floor ranges from near-zero to 1,200 pages a month, with no policy explaining the spread.",
-    correctCategory: "printing",
-    categoryClue: "This one names its own area almost directly — resist reading it as general user behaviour.",
-    correctDriver: "structural",
-    driverClue: "Is the default setting something each person at the printer controls, or something set once by whoever configured the print system?",
-    correctHorizon: "shortTerm",
-    horizonClue: "How much would have to change for duplex to become the enforced default tomorrow?",
+    id: "h4",
+    n: 4,
+    title: "The Data That Lives Twice",
+    location: "Database ↔ Reporting Store",
+    symptom:
+      "Customer profile data is written to the primary database and, independently, a full copy is written to a separate reporting store on every update — even though the reporting store is read only once a month for a summary export.",
+    correctCategory: "storage",
+    levers: [
+      { id: "h4-a", text: "Replace the continuous full-copy write with a scheduled, on-demand extract that runs before the monthly export" },
+      { id: "h4-b", text: "Add compression to the reporting store" },
+      { id: "h4-c", text: "Shard the reporting database" },
+      { id: "h4-d", text: "Increase write throughput provisioning" },
+    ],
+    correctLever: "h4-a",
+    clue: "The redundancy here isn't in transit, it's in what gets written and kept — look at persistence, not the pipe.",
+    correctFixType: "structural",
+    material: ["categories", "sci", "profession"],
+    sampleJustification:
+      "Replacing the write-on-every-update copy with one extract before the monthly export removes a continuous duplicate write serving a store that is read twelve times a year, which is the behaviour flagged on the Database ↔ Reporting Store edge.",
+    answerKeys: {
+      category: {
+        prompt: "Hotspot 4 — which category?",
+        items: [
+          { option: "Storage", verdict: "pick", why: "Redundant copies of the same data maintained in parallel systems — the first of Section E's three Storage patterns, with a write frequency wildly out of proportion to read frequency." },
+          { option: "Network Load", verdict: "avoid", why: "The strongest wrong answer: the copy does travel between two stores. But the finding is that a second persisted copy exists and is maintained continuously — the transit is a consequence." },
+          { option: "Data Processing", verdict: "avoid", why: "No user action triggers disproportionate computation here. The write is a single correct write, simply duplicated into a second system." },
+          { option: "Background Processes", verdict: "avoid", why: "The duplicate write is triggered by an update, not by a schedule. Note the irony: the correct fix converts it into a scheduled job — the fix is a background process, the finding is not." },
+        ],
+        teachingNote:
+          "The Storage / Network Load boundary is the one participants most often get wrong across the whole task. The test that settles it: if you stopped the transfer but still kept both copies current some other way, would the finding persist? Yes — so it is what is written and kept, not the pipe.",
+      },
+      lever: {
+        prompt: "Hotspot 4 — which lever?",
+        items: [
+          { option: "Replace the continuous full-copy write with a scheduled on-demand extract", verdict: "pick", why: "Matches write frequency to read frequency: twelve extracts a year instead of one write per update. Lowers E and reduces storage churn." },
+          { option: "Add compression to the reporting store", verdict: "avoid", why: "Makes the unnecessary copy smaller. The copy is still written on every update and still read once a month." },
+          { option: "Shard the reporting database", verdict: "avoid", why: "Scales capacity for data that should not be continuously written. Raises M, adds operational complexity, removes nothing." },
+          { option: "Increase write throughput provisioning", verdict: "avoid", why: "Pays more to sustain the exact behaviour identified as waste — the clearest instance in the task of absorbing a symptom." },
+        ],
+      },
+      fixType: {
+        prompt: "Hotspot 4 — Quick Fix or Structural?",
+        items: [
+          { option: "Structural Fix", verdict: "pick", why: "Changing when reporting data is materialised alters a data contract other consumers may quietly depend on. It needs an owner for the reporting pipeline and a retention rule — not a one-line change." },
+          { option: "Quick Fix", verdict: "avoid", why: "The code change looks small, but anything reading the reporting store between extracts now sees stale data. Identifying and renegotiating those consumers is the actual work." },
+        ],
+      },
+    },
   },
   {
-    id: "f-repairdefault",
-    zoneId: "helpdesk",
-    text: "IT's informal default is replace-over-repair for any device older than 18 months, because routing a repair ticket takes longer than swapping in a spare — and no documented criteria exist for when a device should be repaired, upgraded or retired.",
-    short: "Replace-over-repair default, no written criteria",
-    context: "The top ticket type is \"laptop feels slow\" — roughly 60% of those are resolved by clearing browser cache and disabling startup apps, not by replacing hardware.",
-    correctCategory: "support",
-    categoryClue: "Which area is specifically about how IT chooses between repairing, upgrading and replacing?",
-    correctDriver: "structural",
-    driverClue: "This is a stated internal default with no written criteria. Can a single technician on shift override it on their own?",
-    correctHorizon: "structuralChange",
-    horizonClue: "If the rule depends on who is on shift, is there a rule at all — and what has to exist before the default can change?",
+    id: "h5",
+    n: 5,
+    title: "The Dashboard That Downloads Everything",
+    location: "Front-end dashboard",
+    symptom:
+      "The main dashboard's initial load fetches the full customer record — including fields shown nowhere on that screen — for every customer in the account, before the user has scrolled or filtered anything.",
+    correctCategory: "architecture",
+    levers: [
+      { id: "h5-a", text: "Redesign the API contract to return only the fields the dashboard view actually renders, and paginate/lazy-load the rest" },
+      { id: "h5-b", text: "Minify and gzip the JSON response" },
+      { id: "h5-c", text: "Increase the front-end's client-side cache duration" },
+      { id: "h5-d", text: "Move the dashboard to server-side rendering" },
+    ],
+    correctLever: "h5-a",
+    clue: "The waste starts before the data even leaves the server — look at what was asked for, not how it travels.",
+    correctFixType: "structural",
+    material: ["categories", "correctness", "sci"],
+    sampleJustification:
+      "Narrowing the endpoint to the fields the dashboard renders and paginating the rest stops the initial load from fetching every customer's full record before the user has filtered anything.",
+    answerKeys: {
+      category: {
+        prompt: "Hotspot 5 — which category?",
+        items: [
+          { option: "Architecture", verdict: "pick", why: "The waste was decided before any data moved: someone specified a contract returning more than the use case needs. Section E's exact example — an endpoint returning a full record when the screen shows three fields." },
+          { option: "Network Load", verdict: "avoid", why: "The most tempting wrong answer, and where the symptom is visible. But Section E states Architecture is upstream of Network Load: fix the contract and the traffic problem disappears; compress the traffic and the contract still over-fetches." },
+          { option: "Data Processing", verdict: "avoid", why: "Closer than it looks — the server does assemble records nobody reads. But the cause is the specified response shape, not a repeated query pattern. Contrast Hotspot 1, where the shape is right and the repetition is wrong." },
+          { option: "Storage", verdict: "avoid", why: "Nothing is written or retained. This is a read path only." },
+        ],
+        teachingNote:
+          "Hotspots 1, 3 and 5 together are the whole discrimination exercise: Data Processing (right data, too many times), Network Load (right payload, too many sends), Architecture (wrong payload specified in the first place). If a cohort is struggling, teach these three as a set.",
+      },
+      lever: {
+        prompt: "Hotspot 5 — which lever?",
+        items: [
+          { option: "Redesign the API contract to return only rendered fields, and paginate the rest", verdict: "pick", why: "Attacks what was asked for. Both halves matter: narrowing fields and bounding the row count. Lowers E on server, network and client at once." },
+          { option: "Minify and gzip the JSON response", verdict: "avoid", why: "Section C's counter-example in its purest form: the server still assembles every record, the client still parses them. Transfer size falls, the work does not." },
+          { option: "Increase the front-end's client-side cache duration", verdict: "avoid", why: "Caches an over-fetched payload. Cheaper on repeat visits, identical on first load, and now serving stale customer data." },
+          { option: "Move the dashboard to server-side rendering", verdict: "avoid", why: "Relocates where the over-fetch happens. Perceived load time may improve while the same surplus records are still assembled — a Section B correct-but-inefficient move." },
+        ],
+      },
+      fixType: {
+        prompt: "Hotspot 5 — Quick Fix or Structural?",
+        items: [
+          { option: "Structural Fix", verdict: "pick", why: "Changing a public API contract affects every consumer and needs a versioning path. More importantly, the missing thing is a standard for who decides what a response contains — without it the next endpoint repeats the pattern." },
+          { option: "Quick Fix", verdict: "avoid", why: "Trimming fields on one endpoint is small work, but leaves the contract convention unwritten and any other consumer of that endpoint unconsidered." },
+        ],
+      },
+    },
   },
   {
-    id: "f-refurb",
-    zoneId: "onboarding",
-    text: "An internal pulse survey found 71% of employees would feel uncomfortable asking for a repaired or refurbished laptop instead of a new one, citing status and perceived performance. New hires are issued a complete new peripheral set by default.",
-    short: "71% won't ask for a refurbished device",
-    context: "Several employees quietly keep a second monitor taken from the unused peripheral stock — an unofficial reuse workaround that IT neither tracks nor supports.",
-    correctCategory: "userBehaviour",
-    categoryClue: "Nothing here is a setting or a contract. It is about what people are willing to ask for — which area is that?",
-    correctDriver: "individual",
-    driverClue: "This one looks purely personal — and for the driver, that reading is defensible. But ask why nobody has ever told employees that refurbished is a sanctioned choice.",
-    correctHorizon: "structuralChange",
-    horizonClue: "Could a single reminder email change how 71% of people feel about status — or does something more visible have to change first?",
+    id: "h6",
+    n: 6,
+    title: "How the Team Is Actually Measured",
+    location: "Engineering KPIs panel (outside the system)",
+    symptom:
+      "Sprint reviews at AppNexa track two numbers: features shipped and release velocity. No dashboard, retro template, or performance review currently asks about resource consumption, query counts, or infrastructure cost per feature.",
+    correctCategory: "managementLogic",
+    levers: [
+      { id: "h6-a", text: "Add resource/efficiency indicators (e.g. a lightweight per-release SCI or cost-per-transaction number) as a visible metric alongside velocity — not a replacement for it" },
+      { id: "h6-b", text: "Ask developers to informally 'keep efficiency in mind' during code review" },
+      { id: "h6-c", text: "Hire a dedicated performance engineer" },
+      { id: "h6-d", text: "Add an efficiency chapter to the onboarding handbook" },
+    ],
+    correctLever: "h6-a",
+    clue: "This isn't about a specific query — it's about what leadership chooses to count as success. Look at incentives, not code.",
+    correctFixType: "structural",
+    material: ["categories", "profession", "sci"],
+    sampleJustification:
+      "Publishing a per-release cost-per-transaction number next to velocity gives sprint reviews a reason to notice the other five findings, none of which any current AppNexa metric would have surfaced.",
+    answerKeys: {
+      category: {
+        prompt: "Hotspot 6 — which category?",
+        items: [
+          { option: "Management Logic", verdict: "pick", why: "What the organisation chooses to measure and reward. Nothing is executing — the finding is an absence, and it is why the other five persisted unnoticed." },
+          { option: "Data Processing", verdict: "avoid", why: "No query, no computation, no user action. The pin sits deliberately outside the system boundary for this reason." },
+          { option: "Architecture", verdict: "avoid", why: "Nothing about component shape or communication. Tempting only if \"architecture\" is stretched to mean organisational design — worth naming as a different discipline, not this category." },
+          { option: "Background Processes", verdict: "avoid", why: "The exact inverse of Hotspot 2. There, something runs nightly with no owner. Here, nothing runs at all and no measurement exists." },
+        ],
+        teachingNote:
+          "Ask the cohort which of the six findings would have been caught by AppNexa's existing metrics. The answer is none — that is the point of this hotspot, and the strongest argument for the Root-Cause Reflection that follows.",
+      },
+      lever: {
+        prompt: "Hotspot 6 — which lever?",
+        items: [
+          { option: "Add efficiency indicators as a visible metric alongside velocity", verdict: "pick", why: "The only option that changes what is counted. Note the deliberate wording — alongside, not instead of: replacing velocity trades one blind spot for another." },
+          { option: "Ask developers to informally 'keep efficiency in mind'", verdict: "avoid", why: "Section F's named failure mode: asking people to be more careful inside a structure that never asks the question. Nothing is measured, so nothing changes after the meeting." },
+          { option: "Hire a dedicated performance engineer", verdict: "avoid", why: "Makes efficiency one person's job, which removes the incentive for everyone else. Expensive, and it leaves the team's own metrics untouched." },
+          { option: "Add an efficiency chapter to the onboarding handbook", verdict: "avoid", why: "Documentation without measurement. Reaches only new joiners, and changes nothing a sprint review looks at." },
+        ],
+        teachingNote:
+          "\"Alongside, not a replacement\" is worth dwelling on. A team measured only on efficiency ships nothing. The recommendation is a second number, not a substituted one — this usually settles the objection that this lever would slow delivery.",
+      },
+      fixType: {
+        prompt: "Hotspot 6 — Quick Fix or Structural?",
+        items: [
+          { option: "Structural Fix", verdict: "pick", why: "By definition. Changing what a sprint review reports and what a performance conversation asks about requires an owner and a standing agreement — the governance layer, above the GSF catalog entirely." },
+          { option: "Quick Fix", verdict: "avoid", why: "Adding a chart to a dashboard is quick; making a number count in a review is not. If nobody is accountable for the number, it is decoration." },
+        ],
+      },
+    },
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Stage 3 — pick the two findings to act on first, with a direction each.
-// ---------------------------------------------------------------------------
-export type DirectionId = "policy" | "process" | "culture";
-
-export const DIRECTIONS: { id: DirectionId; label: string; hint: string }[] = [
-  { id: "policy", label: "Policy change", hint: "A written rule, criterion or contract term changes." },
-  { id: "process", label: "Process / tooling change", hint: "A workflow or a tool changes; the rules stay as they are." },
-  { id: "culture", label: "Communication / culture change", hint: "What people are told, shown, or see leadership do changes." },
-];
-
-export const PRIORITY_PICK_COUNT = 2;
-export const JUSTIFICATION_MIN_WORDS = 8;
-
-// ---------------------------------------------------------------------------
-// Mentor answer keys (passcode-gated). One block per finding covering all three
-// of its decisions, so a facilitator has the rejected options' reasoning too.
-// ---------------------------------------------------------------------------
-export const FINDING_ANSWER_KEYS: Record<string, AnswerKeyBlock> = {
-  "f-peripherals": {
-    prompt: "Storage room — 31 docks, 14 monitors, uncatalogued",
-    items: [
-      { option: "Category: Peripherals", verdict: "pick", why: "The hardware in question is everything around the notebook — docks, monitors, cables. No notebook lifecycle decision is described." },
-      { option: "Category: Replacement Cycles", verdict: "avoid", why: "Tempting, because the stock arrived through replacement rounds. But the finding is about what happened to the peripherals afterwards, not about when devices are replaced." },
-      { option: "Driver: Management & structural", verdict: "pick", why: "No role owns inventory of this room. That is an absent responsibility, not a behaviour." },
-      { option: "Driver: Individual behaviour", verdict: "avoid", why: "No individual could fix it by trying harder — there is nowhere to record what they found." },
-      { option: "Horizon: Short-term fix", verdict: "pick", why: "An inventory list plus a \"check stock before ordering new\" step needs no contract change and no new policy authority." },
-      { option: "Horizon: Structural change needed", verdict: "avoid", why: "Defensible only if you argue the onboarding issue process must change too — but the storeroom itself can be catalogued this month." },
-    ],
-  },
-  "f-returns": {
-    prompt: "Finance — 68 functional notebooks returned, 4 failed",
-    items: [
-      { option: "Category: Replacement Cycles", verdict: "pick", why: "The finding is precisely about when and why devices leave: a fixed cycle, not device condition." },
-      { option: "Category: Support Model", verdict: "avoid", why: "The helpdesk did not make this call. The lease term did, before any technician saw the device." },
-      { option: "Driver: Management & structural", verdict: "pick", why: "A Finance-negotiated lease term drives it. No employee behaviour is involved at any point." },
-      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Nobody chose to return a working laptop — the contract schedule did it automatically." },
-      { option: "Horizon: Structural change needed", verdict: "pick", why: "Keeping a healthy device requires the lease to permit condition-based extension and criteria to exist for assessing it. Both must change first." },
-      { option: "Horizon: Short-term fix", verdict: "avoid", why: "Nothing in current policy allows a device past the cycle, so there is no short-term action available that is not a contract exception." },
-    ],
-    teachingNote: "This is the single highest-carbon finding in the set (Block 2: the replacement re-triggers 75–85% of lifetime footprint), yet it is also the slowest to fix. Expect participants to want it as their first action. That is a reasonable instinct — push them to say what interim step they would take while the lease is renegotiated.",
-  },
-  "f-overnight": {
-    prompt: "Open workspace — 22% of notebooks awake overnight",
-    items: [
-      { option: "Category: Device Use", verdict: "pick", why: "It concerns the state a device is left in, not its purchase, repair or retirement." },
-      { option: "Category: User Behaviour", verdict: "avoid", why: "The most common wrong answer. Leaving a machine on is only behaviour if a power profile exists to override — here none was ever configured, so the gap is technical." },
-      { option: "Driver: Management & structural", verdict: "pick", why: "No fleet-wide power-management profile exists. That is a missing capability someone must build, not a habit." },
-      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Asking 180 people to remember nightly is a weaker and less durable control than one policy pushed from device management." },
-      { option: "Horizon: Short-term fix", verdict: "pick", why: "A power profile can be deployed under current policy with no contract or approval change." },
-      { option: "Horizon: Structural change needed", verdict: "avoid", why: "Nothing structural blocks it — no lease, criterion or approval path stands in the way." },
-    ],
-    teachingNote: "Worth naming out loud: this is a use-phase finding, so it moves the 13–15% slice from Block 2. It is the cheapest fix here and the smallest lever — a good illustration that \"easy\" and \"important\" are different axes.",
-  },
-  "f-duplex": {
-    prompt: "Print station — no duplex default, 40,000 pages/month",
-    items: [
-      { option: "Category: Printing Behaviour", verdict: "pick", why: "The finding names print defaults and paper volume directly." },
-      { option: "Category: User Behaviour", verdict: "avoid", why: "The 1,200-page outlier invites this reading, but the absent default and missing print release are system configuration, not personality." },
-      { option: "Driver: Management & structural", verdict: "pick", why: "Duplex default and print-release authentication are set once, centrally, by whoever configured the print system." },
-      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Individuals vary in usage, but they are choosing inside a system that defaults to single-sided and tracks nothing." },
-      { option: "Horizon: Short-term fix", verdict: "pick", why: "Changing a default setting and publishing a usage policy needs no structural change." },
-      { option: "Horizon: Structural change needed", verdict: "avoid", why: "Only if print release requires procurement of new hardware — worth acknowledging if a participant raises it, but not what the finding states." },
-    ],
-  },
-  "f-repairdefault": {
-    prompt: "Helpdesk — replace-over-repair default, no written criteria",
-    items: [
-      { option: "Category: Support Model", verdict: "pick", why: "It is explicitly about how IT chooses between repair, upgrade and replacement." },
-      { option: "Category: Replacement Cycles", verdict: "avoid", why: "Close, and a good discussion: the lease sets when devices leave on schedule, while this sets what happens when one breaks early. Different decision, different owner." },
-      { option: "Driver: Management & structural", verdict: "pick", why: "An undocumented default that varies by who is on shift is a missing rule — the definition of a structural gap." },
-      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Technicians are behaving rationally inside a process that makes repair slower than replacement. Fix the process, not the person." },
-      { option: "Horizon: Structural change needed", verdict: "pick", why: "Criteria have to be written and the repair routing time addressed before the default can change." },
-      { option: "Horizon: Short-term fix", verdict: "avoid", why: "You can publish guidance quickly, but without criteria and a faster repair path the convenient default simply returns." },
-    ],
-    teachingNote: "The 60%-of-slow-tickets-fixed-by-software detail belongs here: it shows the replace-first default is also a diagnosis gap. If a participant classified this as Device Use because of that detail, that is a thoughtful misread — acknowledge it, then point at who owns the default.",
-  },
-  "f-refurb": {
-    prompt: "Onboarding — 71% uncomfortable asking for refurbished",
-    items: [
-      { option: "Category: User Behaviour", verdict: "pick", why: "It is about what employees are willing to ask for — not a setting, contract or repair decision." },
-      { option: "Category: Peripherals", verdict: "avoid", why: "The new-peripheral-set detail pulls this way, but the finding's substance is the 71% perception figure." },
-      { option: "Driver: Individual behaviour", verdict: "pick", why: "The only finding in the set where the individual reading is the honest one: this is a perception held by people." },
-      { option: "Driver: Management & structural", verdict: "avoid", why: "Defensible — and worth debating. Nobody ever told employees refurbished is sanctioned, which is a leadership omission. Accept either answer if the reasoning names the missing signal." },
-      { option: "Horizon: Structural change needed", verdict: "pick", why: "A perception held by 71% of staff does not move on a reminder email; it needs visible leadership use and a changed onboarding default." },
-      { option: "Horizon: Short-term fix", verdict: "avoid", why: "Messaging alone, with onboarding still handing out new kit by default, contradicts itself — and staff read the default, not the message." },
-    ],
-    teachingNote: "This is the deliberate edge case in the set. Both drivers defend, and the productive answer is \"individual behaviour, structural root cause\" — which is exactly Block 4's point: behaviour is real but it is downstream of a decision nobody made.",
-  },
-};
+export const hotspotById = (id: string): Hotspot => HOTSPOTS.find((h) => h.id === id)!;
 
 /**
- * Stage 1 only needs the mapping, not the full reasoning — a mentor checking a
- * sort board wants one glance. The reasoning behind each one lives in
- * FINDING_ANSWER_KEYS, rendered at the diagnosis stage.
+ * Where each hotspot's pin sits on APPNEXA_TRACE. Kept next to the hotspots
+ * rather than inside the graph, because the graph is the reusable part and the
+ * pins are what Task 1 adds to it.
  */
-export const CATEGORY_KEY_SUMMARY =
-  "A → Peripherals · B → Replacement Cycles · C → Device Use · D → Printing Behaviour · E → Support Model · F → User Behaviour. Each area takes exactly one finding, so a doubled-up area always means another one is empty — point at the empty one rather than naming the right answer.";
+export const TRACE_PINS: FlowPin[] = [
+  { id: "h1", n: 1, x: 730, y: 243, label: "Checkout & Dashboard Query Storm" },
+  { id: "h2", n: 2, x: 774, y: 130, label: "The Nightly Job Nobody Remembers" },
+  { id: "h3", n: 3, x: 247, y: 224, label: "The Triple-Send Notification" },
+  { id: "h4", n: 4, x: 835, y: 313, label: "The Data That Lives Twice" },
+  { id: "h5", n: 5, x: 180, y: 204, label: "The Dashboard That Downloads Everything" },
+  { id: "h6", n: 6, x: 260, y: 344, label: "How the Team Is Actually Measured" },
+];
 
-export const OVERALL_PATTERN_NOTE =
-  "Expected pattern: 5 of 6 findings trace primarily to management/structural gaps; only the refurbished-device perception reads as individual behaviour — and even that one has a structural root cause. Note which quadrant stays empty: nothing here is both individual and short-term. That is the material's core claim made visible — you cannot nudge your way out of a procurement and support-default problem.";
-
-export const PRIORITY_ANSWER_KEY: AnswerKeyBlock = {
-  prompt: "Which two findings to act on first",
-  items: [
-    { option: "Helpdesk repair/replace default (Support Model)", verdict: "pick", why: "Highest leverage per euro: it governs every early-life device decision, and writing criteria costs nothing but decision time. Policy change." },
-    { option: "Storage room inventory (Peripherals)", verdict: "pick", why: "Cheapest credible win — an inventory plus a check-stock-first step stops new purchases immediately and proves the programme works. Process/tooling change." },
-    { option: "Lease renegotiation (Replacement Cycles)", verdict: "avoid", why: "Biggest carbon impact by far, but it is a contract cycle away. A strong answer may still pick it — if the justification names an interim step while the lease runs." },
-    { option: "Overnight power profile (Device Use)", verdict: "avoid", why: "Easy and worth doing, but it addresses the 13–15% use-phase slice. Accept it only when the participant acknowledges it is the smaller lever." },
-    { option: "Print defaults (Printing)", verdict: "avoid", why: "Quick and visible, but the smallest footprint effect of the six. Fine as a third action, weak as a first." },
-    { option: "Refurbished perception (User Behaviour)", verdict: "avoid", why: "Cannot succeed before the support default and onboarding default change — sequencing makes it a follow-on, not a first move." },
-  ],
-  teachingNote: "There is no single correct pair. Judge the justification, not the pick: a defensible answer names either impact (which lever it moves) or sequencing (what it unlocks). The weak answer is one that picks two cheap wins and never mentions the replacement cycle at all.",
-};
-
-export const JUSTIFICATION_ANSWER_NOTE =
-  "A strong justification names the root cause rather than the symptom, and says which decision-maker has to act. Model: \"The replace-first default is why healthy devices leave early, so writing repair/retire criteria — owned by the IT service lead — changes every future device decision, not just this year's.\" Weak: \"This will save money and is good for the environment.\"";
+/**
+ * Deterministic shuffle of a hotspot's lever options.
+ *
+ * Randomised order is required so the correct lever is not always first, but a
+ * per-render random shuffle would produce a server/client hydration mismatch in
+ * a static export. Seeding on the hotspot id gives a different order per
+ * hotspot, stable across renders and reloads — and stable is what lets a mentor
+ * refer to "the third option" in front of a cohort.
+ */
+export function shuffledLevers(hotspot: Hotspot): Lever[] {
+  let seed = 0;
+  for (let i = 0; i < hotspot.id.length; i++) seed = (seed * 31 + hotspot.id.charCodeAt(i)) >>> 0;
+  seed = (seed + hotspot.n * 7919) >>> 0;
+  const out = [...hotspot.levers];
+  for (let i = out.length - 1; i > 0; i--) {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    const j = seed % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
 
 // ---------------------------------------------------------------------------
-// Task 1 — copy
+// Task 1 framing, reflection prompt and export contract.
 // ---------------------------------------------------------------------------
 export const TASK1 = {
-  kicker: "Task 1",
-  heading: "The UrbanByte Walkthrough",
-  intro:
-    "UrbanByte Consulting is fictional, built so you can apply everything above. Three stages, about 13 minutes: walk the floor and collect evidence, diagnose what each finding really is, then decide what you would act on first. The brief on the right fills in as you go — that is what you export.",
-  orderBanner:
-    "Suggested order: Stage 1 → 3. Nothing is locked — the report builds itself from whatever you have answered, whichever stage you start with.",
-  stage1: {
-    heading: "Stage 1 — Walk the floor, then sort what you found",
-    instructions: "Open all six zones to collect the evidence, then sort each finding into the area it belongs to.",
-    part1: {
-      label: "Site walkthrough",
-      instructions: "Click each of the six zones on the floor plan. Every zone holds exactly one finding, which is logged to your evidence list automatically.",
-      material: ["workplace"] as MaterialSectionId[],
-    },
-    part2: {
-      label: "Sort into the six areas",
-      instructions:
-        "Drag each finding into the area it belongs to — or tap a finding, then tap an area. One finding per area; every area gets exactly one. Use the clue if you are unsure, and undo/redo freely.",
-      material: ["workplace", "servicelife"] as MaterialSectionId[],
-    },
+  id: "task1",
+  tag: "TASK 1",
+  title: "AppNexa System Trace",
+  framing:
+    "AppNexa's platform is stable, but expensive to run — and nobody knows exactly why. Walk through the live system trace below. Click each flagged component to inspect what it's actually doing. For every flagged behavior: (1) sort it into the category it belongs to, (2) choose the improvement lever that best fits, (3) mark it Quick Fix or Structural Fix. Your Diagnosis Report builds itself on the right as you go. You don't need engineering background — every behavior here is observable from outside the code.",
+  company: "AppNexa Solutions",
+  companyBrief:
+    "AppNexa Solutions builds and runs internal and external digital applications for business customers. The platform is functionally stable and users are not complaining. Infrastructure cost has risen steadily for two years, and no systematic efficiency review has ever been carried out.",
+  nameField: {
+    label: "Your name",
+    instruction: "Used to label the exported report — it becomes e.g. \"1-jane-day10-l1task1\".",
+    placeholder: "e.g. Jane Muller",
   },
-  stage2: {
-    heading: "Stage 2 — Diagnose each finding",
-    instructions:
-      "Two questions per finding. Answer both and the finding takes its own position on the matrix — you are not placing dots, you are deciding what the finding is and watching where that lands it.",
-    material: ["servicelife", "tradeoffs"] as MaterialSectionId[],
+  justificationField: {
+    label: "Justification (1–2 sentences)",
+    instruction:
+      "Reference which of AppNexa's original behaviors this fixes — name the behaviour from the symptom card, not a general principle.",
+    placeholder: "e.g. This removes the per-row lookups behind the 120-query dashboard load.",
   },
-  stage3: {
-    heading: "Stage 3 — Decide & export",
-    instructions: "Choose the two findings you would act on first, give each a direction, and export the brief.",
-    part1: {
-      label: "Your first two moves",
-      instructions: "Pick exactly two findings, then choose a direction and write one sentence of justification for each.",
-      material: ["carbon", "tradeoffs"] as MaterialSectionId[],
-    },
-    part2: {
-      label: "Live brief",
-      instructions: "A read-only recap of everything above, and the document it produces — ready to export once every stage is complete.",
-    },
+  reflection: {
+    id: "r1-reflection",
+    heading: "Root-cause reflection",
+    label: "Looking at your six findings — are AppNexa's problems mostly individual code decisions, or structural development logic?",
+    instruction: "Two to three sentences. Take a position and say what in your own six findings supports it.",
+    placeholder:
+      "e.g. Five of my six findings need a standard or an owner rather than a patch, which suggests…",
+    sample:
+      "Five of my six findings need a rule, a review criterion or an owner rather than a code change, and the sixth only looks cheap because measuring is cheap. That pattern points at development logic rather than individual decisions — no engineer at AppNexa is being careless, they are working inside a process that never asks the efficiency question. The Management Logic finding is the one that explains the other five.",
   },
   export: {
-    docHeading: "Green Workplace Diagnostic",
     filenameLevel: 1,
     filenameTask: 1,
+    docHeading: "Diagnosis Report",
+    buttonLabel: "Export Diagnosis Report",
   },
 } as const;

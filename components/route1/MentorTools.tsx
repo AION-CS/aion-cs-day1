@@ -1,55 +1,43 @@
 "use client";
 
 import { useProgress } from "@/lib/store";
-import { R1, LEARNER_NAME_KEY, ZONES, FINDINGS } from "@/lib/route1";
 import { MentorFillButton } from "@/components/ui/MentorFillButton";
 import { AnswerKeyButton } from "@/components/ui/AnswerKeyButton";
+import { HOTSPOTS, R1, TASK1 } from "@/lib/route1";
 
-/** The two findings the answer key recommends as first moves, with model directions and justifications. */
-const DEMO_FIRST_MOVES: Record<string, { direction: string; justification: string }> = {
-  "f-repairdefault": {
-    direction: "policy",
-    justification:
-      "An undocumented replace-first default is what sends healthy devices out early, so written repair, upgrade and retire criteria owned by the IT service lead change every future device decision rather than this year's batch.",
-  },
-  "f-peripherals": {
-    direction: "process",
-    justification:
-      "Unlogged stock is why onboarding keeps buying duplicates, so a simple inventory plus a check-stock-first step in the issuing process stops new spend immediately and proves the wider programme works.",
-  },
-};
-
-/** Mentor-only: fills every field on Route 1's Task 1 with model-quality demo answers, and unlocks the answer keys. */
+/**
+ * Route 1's mentor bar: demo auto-fill and the answer keys, both behind the
+ * shared passcode. Deliberately visually minor and out of the way — a
+ * convenience gate against accidental clicks, not a security boundary.
+ *
+ * The fill calls the store's raw actions for every persisted field this route
+ * writes, so it exercises the same code path a learner does and the export
+ * pipeline can be QA'd end to end without typing through the whole flow.
+ */
 export function MentorTools() {
-  const markSeen = useProgress((s) => s.markSeen);
-  const choose = useProgress((s) => s.choose);
-  const toggleCheck = useProgress((s) => s.toggleCheck);
   const setNote = useProgress((s) => s.setNote);
+  const choose = useProgress((s) => s.choose);
+  const markSeen = useProgress((s) => s.markSeen);
 
-  const fillDemoAnswers = () => {
-    setNote(LEARNER_NAME_KEY, "Muchson");
+  const fill = () => {
+    setNote(R1.name, "Muchson");
 
-    ZONES.forEach((z) => markSeen(R1.zones, z.id));
+    for (const h of HOTSPOTS) {
+      markSeen(R1.inspected, h.id);
+      markSeen(R1.order, h.id);
+      choose(R1.category(h.id), h.correctCategory);
+      choose(R1.lever(h.id), h.correctLever);
+      choose(R1.fixType(h.id), h.correctFixType);
+      setNote(R1.justification(h.id), h.sampleJustification);
+    }
 
-    FINDINGS.forEach((f) => {
-      choose(R1.stage1.category(f.id), f.correctCategory);
-      choose(R1.stage2.driver(f.id), f.correctDriver);
-      choose(R1.stage2.horizon(f.id), f.correctHorizon);
-      // clear any earlier selection so the demo always lands on exactly two picks
-      toggleCheck(R1.stage3.priority(f.id), false);
-    });
-
-    Object.entries(DEMO_FIRST_MOVES).forEach(([findingId, move]) => {
-      toggleCheck(R1.stage3.priority(findingId), true);
-      choose(R1.stage3.direction(findingId), move.direction);
-      setNote(R1.stage3.justification(findingId), move.justification);
-    });
+    setNote(R1.reflection, TASK1.reflection.sample);
   };
 
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
+    <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
+      <MentorFillButton onFill={fill} />
       <AnswerKeyButton />
-      <MentorFillButton onFill={fillDemoAnswers} />
     </div>
   );
 }

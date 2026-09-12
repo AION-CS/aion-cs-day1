@@ -23,11 +23,11 @@ export default function DayLanding() {
         </p>
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
-          Three routes, each its own case and its own deliverable. Route 1 grounds you in where a device&apos;s carbon
-          actually sits and why extending service life outperforms buying a greener replacement, then sends you through
-          a consultancy&apos;s own offices to find where that gap is costing money. Routes 2 and 3 build on that
-          foundation toward a board-ready position on workplace IT. Each route lives on its own page and ends in a
-          document a professional would actually produce.
+          Software has a physical energy cost. Every executed instruction, stored byte and transmitted byte draws real
+          electricity somewhere — and almost none of it is visible to the engineer who caused it. Route 1 gives you the
+          vocabulary and the measurement model to see that waste from outside the code, then puts you inside AppNexa
+          Solutions&apos; live system trace to diagnose six flagged behaviours. Routes 2 and 3 build on that foundation.
+          Each route lives on its own page and ends in a document a professional would actually produce.
         </p>
       </div>
 
