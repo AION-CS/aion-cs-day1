@@ -5,15 +5,15 @@ import { useProgress } from "@/lib/store";
 import {
   RANK_ANSWER_KEY,
   RANK_SLOTS,
-  R3,
-  TASK3,
+  R2,
+  TASK2,
   materialRefs,
   shuffledDecisions,
-} from "@/lib/route3";
+} from "@/lib/route2";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Close } from "@/components/icons/LineIcons";
-import { useRoute3, domId } from "./useRoute3";
+import { useRoute2, domId } from "./useRoute2";
 
 /**
  * Step 1 — pick and rank the top three guiding decisions.
@@ -23,13 +23,13 @@ import { useRoute3, domId } from "./useRoute3";
  * stable order lets a mentor refer to a card's position in front of a cohort.
  */
 export function DecisionRanking() {
-  const r3 = useRoute3();
+  const r2 = useRoute2();
   const markSeen = useProgress((s) => s.markSeen);
   const setNote = useProgress((s) => s.setNote);
   const resetSection = useProgress((s) => s.resetSection);
 
   const cards = shuffledDecisions();
-  const rank = (id: string) => r3.ranking.indexOf(id);
+  const rank = (id: string) => r2.ranking.indexOf(id);
 
   /**
    * markSeen appends unique ids in insertion order, which is exactly a ranked
@@ -37,21 +37,21 @@ export function DecisionRanking() {
    * re-append what is left, preserving the order of the survivors.
    */
   const setRanking = (next: string[]) => {
-    resetSection(R3.ranking);
-    for (const id of next.slice(0, RANK_SLOTS)) markSeen(R3.ranking, id);
+    resetSection(R2.ranking);
+    for (const id of next.slice(0, RANK_SLOTS)) markSeen(R2.ranking, id);
   };
 
   const toggle = (id: string) => {
     if (rank(id) >= 0) {
-      setRanking(r3.ranking.filter((x) => x !== id));
+      setRanking(r2.ranking.filter((x) => x !== id));
       return;
     }
-    if (r3.ranking.length >= RANK_SLOTS) return;
-    markSeen(R3.ranking, id);
+    if (r2.ranking.length >= RANK_SLOTS) return;
+    markSeen(R2.ranking, id);
   };
 
   const move = (id: string, dir: -1 | 1) => {
-    const list = [...r3.ranking];
+    const list = [...r2.ranking];
     const i = list.indexOf(id);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= list.length) return;
@@ -59,13 +59,13 @@ export function DecisionRanking() {
     setRanking(list);
   };
 
-  const full = r3.ranking.length >= RANK_SLOTS;
+  const full = r2.ranking.length >= RANK_SLOTS;
 
   return (
     <section id={domId.rank} className="scroll-mt-24 rounded-2xl border border-line bg-paper p-5">
       <p className="text-micro font-semibold uppercase tracking-wide text-accent">Step 1 · Rank</p>
-      <h3 className="text-h3 text-ink">{TASK3.rank.heading}</h3>
-      <p className="mt-1 max-w-prose text-caption text-ash">{TASK3.rank.instruction}</p>
+      <h3 className="text-h3 text-ink">{TASK2.rank.heading}</h3>
+      <p className="mt-1 max-w-prose text-caption text-ash">{TASK2.rank.instruction}</p>
       <MaterialRefs refs={materialRefs(["worked", "board"])} />
 
       {/* The six candidates */}
@@ -113,13 +113,13 @@ export function DecisionRanking() {
       {/* The ranked shortlist */}
       <div className="mt-4 rounded-xl border border-line bg-canvas p-3">
         <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          Your ranking ({r3.ranking.length} of {RANK_SLOTS})
+          Your ranking ({r2.ranking.length} of {RANK_SLOTS})
         </p>
-        {r3.rankedDecisions.length === 0 ? (
+        {r2.rankedDecisions.length === 0 ? (
           <p className="mt-2 text-caption text-ash">Nothing ranked yet — click a card above.</p>
         ) : (
           <ol className="mt-2 space-y-1.5">
-            {r3.rankedDecisions.map((d, i) => (
+            {r2.rankedDecisions.map((d, i) => (
               <li
                 key={d.id}
                 className="flex items-center gap-2 rounded-lg border border-accent/35 bg-accentSoft px-2.5 py-2"
@@ -166,21 +166,21 @@ export function DecisionRanking() {
 
       {/* Rationale for #1 */}
       <div id={domId.rankRationale} className="mt-5 scroll-mt-24">
-        <label htmlFor="r3-rank-why-field" className="block text-caption font-semibold text-ink">
-          {TASK3.rank.rationale.label}
+        <label htmlFor="r2-rank-why-field" className="block text-caption font-semibold text-ink">
+          {TASK2.rank.rationale.label}
         </label>
-        <p className="mt-0.5 text-micro text-ash">{TASK3.rank.rationale.instruction}</p>
-        {r3.rankedDecisions[0] && (
+        <p className="mt-0.5 text-micro text-ash">{TASK2.rank.rationale.instruction}</p>
+        {r2.rankedDecisions[0] && (
           <p className="mt-1.5 rounded-lg border border-accent/30 bg-accentSoft px-2.5 py-1.5 text-micro text-ink">
-            Your #1: <span className="font-semibold">{r3.rankedDecisions[0].text}</span>
+            Your #1: <span className="font-semibold">{r2.rankedDecisions[0].text}</span>
           </p>
         )}
         <textarea
-          id="r3-rank-why-field"
+          id="r2-rank-why-field"
           rows={3}
-          value={r3.rankRationale}
-          placeholder={TASK3.rank.rationale.placeholder}
-          onChange={(e) => setNote(R3.rankRationale, e.target.value)}
+          value={r2.rankRationale}
+          placeholder={TASK2.rank.rationale.placeholder}
+          onChange={(e) => setNote(R2.rankRationale, e.target.value)}
           className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-caption text-ink"
         />
       </div>

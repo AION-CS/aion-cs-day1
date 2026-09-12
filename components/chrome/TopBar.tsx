@@ -9,10 +9,10 @@ import { Lock } from "@/components/icons/LineIcons";
 
 /**
  * Persistent top bar across every page. Shows the day and a compact rail of
- * the three routes: the active one is highlighted, routes not yet built show
+ * the two routes: the active one is highlighted, routes not yet built show
  * a lock (every route is otherwise always reachable — recommended order is a
  * soft, in-page note, not a nav block). The rail is the day's spine — the
- * three routes live on separate pages and this is how the learner moves
+ * two routes live on separate pages and this is how the learner moves
  * between them.
  */
 export function TopBar() {
@@ -29,7 +29,7 @@ export function TopBar() {
             </span>
           </Link>
 
-          <nav aria-label="Day 10 routes" className="ml-auto">
+          <nav aria-label="Day 11 routes" className="ml-auto">
             <ol className="flex items-center gap-1.5">
               {ROUTES.map((rt) => {
                 const active = pathname.includes(`/${rt.slug}`);
@@ -58,7 +58,7 @@ export function TopBar() {
                         {inner}
                       </Link>
                     ) : (
-                      <span className={cls} aria-disabled="true" title="Day 10 content for this route is not written yet">
+                      <span className={cls} aria-disabled="true" title="Day 11 content for this route is not written yet">
                         {inner}
                       </span>
                     )}

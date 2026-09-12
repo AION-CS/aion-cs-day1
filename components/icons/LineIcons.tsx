@@ -122,7 +122,7 @@ function Layers({ className }: P) {
   );
 }
 
-// --- Day 10: one glyph per inefficiency category (Route 1, Section E) -------
+// --- Day 11: one glyph per inefficiency category (Route 1, Section E) -------
 
 function Blueprint({ className }: P) {
   return (

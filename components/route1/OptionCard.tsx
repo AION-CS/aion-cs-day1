@@ -2,14 +2,14 @@
 
 import clsx from "clsx";
 import { useProgress } from "@/lib/store";
-import { DIMENSIONS, R2, RADAR_AXES, TASK2, materialRefs } from "@/lib/route2";
+import { DIMENSIONS, R1, RADAR_AXES, STAGE2, materialRefs } from "@/lib/route1";
 import { RadarChart, RadarLegend, type RadarSeries } from "@/components/ui/RadarChart";
 import { Slider } from "@/components/ui/Slider";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Check as CheckGlyph } from "@/components/icons/LineIcons";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
-import { domId, type OptionState } from "./useRoute2";
+import { domId, type OptionState } from "./useRoute1";
 
 /**
  * One option's full flow: situational question, seven prediction sliders, then
@@ -30,7 +30,7 @@ export function OptionCard({ state }: { state: OptionState }) {
       scrollToAndFlash(domId.situational(o.id));
       return;
     }
-    markSeen(R2.revealed, o.id);
+    markSeen(R1.revealed, o.id);
   };
 
   const series: RadarSeries[] = [];
@@ -108,7 +108,7 @@ export function OptionCard({ state }: { state: OptionState }) {
                   <button
                     type="button"
                     aria-pressed={active}
-                    onClick={() => choose(R2.situational(o.id), active ? "" : s.id)}
+                    onClick={() => choose(R1.situational(o.id), active ? "" : s.id)}
                     className={clsx(
                       "flex w-full items-start gap-2.5 rounded-xl border p-3 text-left transition-colors duration-150",
                       active
@@ -146,17 +146,17 @@ export function OptionCard({ state }: { state: OptionState }) {
               / {DIMENSIONS.length} set
             </p>
           </div>
-          <p className="mt-0.5 text-micro text-ash">{TASK2.predictInstruction}</p>
+          <p className="mt-0.5 text-micro text-ash">{STAGE2.predictInstruction}</p>
 
           <div className="mt-2 divide-y divide-line">
             {DIMENSIONS.map((d) => (
               <Slider
                 key={d.key}
-                id={`r2-${o.id}-${d.key}`}
+                id={`r1-${o.id}-${d.key}`}
                 label={d.name}
                 instruction={d.question}
                 value={state.prediction[d.key] ?? 0}
-                onChange={(v) => choose(R2.predict(o.id, d.key), v >= 1 ? String(v) : "")}
+                onChange={(v) => choose(R1.predict(o.id, d.key), v >= 1 ? String(v) : "")}
                 lowLabel={`1 · ${d.low}`}
                 highLabel={`5 · ${d.high}`}
               />

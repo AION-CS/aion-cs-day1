@@ -8,14 +8,18 @@ import { exportFilename, downloadTextFile } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
 import { MissingList } from "@/components/ui/MissingList";
 import { ChevronDown } from "@/components/icons/LineIcons";
-import { TASK1 } from "@/lib/route1";
+import { EXPORT } from "@/lib/route1";
 import { useRoute1, domId } from "./useRoute1";
-import { buildReportJson, buildReportHtml } from "./exportDocuments";
+import { buildEngagementJson, buildEngagementHtml } from "./exportDocuments";
 
 /**
- * Sticky export bar. Never disabled (CLAUDE.md #3): clicking while incomplete
- * opens the itemized missing list and jumps to the first gap, rather than
- * doing nothing and leaving the learner to guess why.
+ * The route's one sticky export bar, covering both stages (CLAUDE.md #12).
+ *
+ * Never disabled (CLAUDE.md #3): clicking while incomplete opens the itemized
+ * missing list and jumps to the first gap — which may be four screens up in
+ * stage 1 — rather than doing nothing and leaving the learner to guess why.
+ * The readout counts both stages for the same reason: one route, one sense of
+ * how far along you are.
  */
 export function ExportBar() {
   const r1 = useRoute1();
@@ -28,9 +32,9 @@ export function ExportBar() {
       if (r1.missing[0]) scrollToAndFlash(r1.missing[0].id);
       return;
     }
-    const filename = exportFilename(r1.name, TASK1.export.filenameLevel, TASK1.export.filenameTask);
-    downloadTextFile(`${filename}.json`, buildReportJson(r1, filename), "application/json");
-    downloadTextFile(`${filename}.html`, buildReportHtml(r1), "text/html");
+    const filename = exportFilename(r1.name, EXPORT.filenameLevels, EXPORT.filenameTask);
+    downloadTextFile(`${filename}.json`, buildEngagementJson(r1, filename), "application/json");
+    downloadTextFile(`${filename}.html`, buildEngagementHtml(r1), "text/html");
     markRouteExported(toggleCheck, 1);
     setShowMissing(false);
   };
@@ -49,23 +53,33 @@ export function ExportBar() {
         <button
           type="button"
           onClick={() => setShowMissing((v) => !v)}
-          className="flex items-center gap-1.5 text-caption text-ash hover:text-ink"
+          className="flex flex-wrap items-center gap-x-1.5 text-caption text-ash hover:text-ink"
         >
-          <span className="tabular-nums font-semibold text-ink">{r1.completeCount}</span> / {r1.totalHotspots}{" "}
-          findings complete
+          <span>
+            <span className="tabular-nums font-semibold text-ink">{r1.completeCount}</span> /{" "}
+            {r1.totalHotspots} findings
+          </span>
+          <span className="text-ash">·</span>
+          <span>
+            <span className="tabular-nums font-semibold text-ink">{r1.revealedCount}</span> /{" "}
+            {r1.totalOptions} options compared
+          </span>
           {r1.missing.length > 0 && (
             <>
               <span className="text-ash">
                 · {r1.missing.length} item{r1.missing.length === 1 ? "" : "s"} still needed
               </span>
               <ChevronDown
-                className={clsx("h-3.5 w-3.5 transition-transform duration-150", showMissing && "rotate-180")}
+                className={clsx(
+                  "h-3.5 w-3.5 transition-transform duration-150",
+                  showMissing && "rotate-180",
+                )}
               />
             </>
           )}
         </button>
         <button type="button" onClick={handleExport} className="btn-accent">
-          {TASK1.export.buttonLabel}
+          {EXPORT.buttonLabel}
         </button>
       </div>
     </div>

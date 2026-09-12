@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CASE, ROUTES } from "@/lib/routes";
+import { CASE, ROUTES, levelLabel } from "@/lib/routes";
 import { useRouteUnlocked } from "@/lib/routeGating";
 import { LeafMark } from "@/components/chrome/Icons";
 import { ArrowRight, Lock } from "@/components/icons/LineIcons";
@@ -10,7 +10,6 @@ export default function DayLanding() {
   const unlockedByN: Record<number, boolean> = {
     1: useRouteUnlocked(1),
     2: useRouteUnlocked(2),
-    3: useRouteUnlocked(3),
   };
 
   return (
@@ -24,15 +23,15 @@ export default function DayLanding() {
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
           Software has a physical energy cost. Every executed instruction, stored byte and transmitted byte draws real
-          electricity somewhere — and almost none of it is visible to the engineer who caused it. Route 1 gives you the
-          vocabulary and the measurement model to see that waste from outside the code, then puts you inside AppNexa
-          Solutions&apos; live system trace to diagnose six flagged behaviours. Routes 2 and 3 build on that foundation.
-          Each route lives on its own page and ends in a document a professional would actually produce.
+          electricity somewhere — and almost none of it is visible to the engineer who caused it. Route 1 is a single
+          engagement at AppNexa Solutions that runs the way the real thing does: learn to see the waste, diagnose it on
+          a live system trace, then decide what one quarter of capacity actually buys and defend the call. Route 2
+          steps up a level, to the structure that makes good decisions the default after you leave the room.
         </p>
       </div>
 
       {/* Route cards */}
-      <div className="mt-10 grid gap-5 lg:grid-cols-3">
+      <div className="mt-10 grid gap-5 lg:grid-cols-2">
         {ROUTES.map((rt) => {
           const reachable = rt.available;
           const recommendedFirst = reachable && rt.n > 1 && !unlockedByN[rt.n];
@@ -43,15 +42,20 @@ export default function DayLanding() {
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-readout font-semibold text-paper">
                   {rt.n}
                 </span>
-                {reachable ? (
-                  <span className="rounded-full bg-accentSoft px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-accent">
-                    Available
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-line px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-ash">
+                    {levelLabel(rt.levels)} · ~{rt.minutes} min
                   </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-ash">
-                    <Lock className="h-3.5 w-3.5" /> Not built
-                  </span>
-                )}
+                  {reachable ? (
+                    <span className="rounded-full bg-accentSoft px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-accent">
+                      Available
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-ash">
+                      <Lock className="h-3.5 w-3.5" /> Not built
+                    </span>
+                  )}
+                </div>
               </div>
 
               <p className="mt-4 text-micro font-semibold uppercase tracking-wide text-ash">

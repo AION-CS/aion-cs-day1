@@ -11,7 +11,7 @@ import { Info } from "@/components/icons/LineIcons";
  * route's export hasn't been submitted yet, shows a non-blocking heads-up
  * recommending the intended order instead of hiding the page.
  */
-export function RouteGate({ routeN, children }: { routeN: 2 | 3; children: React.ReactNode }) {
+export function RouteGate({ routeN, children }: { routeN: 2; children: React.ReactNode }) {
   const hydrated = useHydrated();
   const unlocked = useRouteUnlocked(routeN);
   const prevRoute = ROUTES[routeN - 2];

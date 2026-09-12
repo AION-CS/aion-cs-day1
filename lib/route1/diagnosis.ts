@@ -1,100 +1,25 @@
 /**
- * Route 1 — Foundations (L1). All learner-facing copy and pure data live here
- * so components stay presentational. Case used throughout Task 1: AppNexa
- * Solutions (fictional).
+ * Route 1, stage 1 — the diagnosis half of the AppNexa engagement (level 1).
  *
- * Curriculum source: Module 7 (Day 1 of 2) — "Achieving Energy Efficiency in
- * Programming: Energy-Efficient Software and Green Coding Principles."
+ * What gives software a carbon footprint, how SCI measures it, the six places
+ * inefficiency hides, and the guided trace where the learner names six of them
+ * in AppNexa's running system. The route's shared identity — store keys, the
+ * case brief, the single export contract — lives in ./index.ts, and the
+ * deciding half in ./decision.ts.
+ *
+ * Curriculum source: Module 7 — "Achieving Energy Efficiency in Programming:
+ * Energy-Efficient Software and Green Coding Principles."
  */
 
 import type { IconKey } from "@/lib/routes";
 import type { AnswerKeyBlock } from "@/lib/answerKey";
 import type { FlowGraph, FlowPin } from "@/lib/flowDiagram";
-
-export const LEARNER_NAME_KEY = "learner:name";
-
-// ---------------------------------------------------------------------------
-// Store key map — every key this route writes to the shared progress store.
-// ---------------------------------------------------------------------------
-export const R1 = {
-  name: LEARNER_NAME_KEY,
-  /** markSeen bucket for hotspot pins the learner has opened on the trace. */
-  inspected: "r1:inspected",
-  /**
-   * markSeen bucket recording the order hotspots were first sorted into a bin.
-   * markSeen appends unique ids in insertion order and persists, so the
-   * Diagnosis Report can list findings "in the order completed" without a
-   * second source of truth for ordering.
-   */
-  order: "r1:order",
-  category: (hotspotId: string) => `r1:cat:${hotspotId}`,
-  lever: (hotspotId: string) => `r1:lever:${hotspotId}`,
-  justification: (hotspotId: string) => `r1:why:${hotspotId}`,
-  fixType: (hotspotId: string) => `r1:fix:${hotspotId}`,
-  reflection: "r1:reflection",
-} as const;
-
-/** Prefixes resetSection() must sweep to clear every compound key this route writes. */
-export const R1_KEY_PREFIXES = ["r1:cat:", "r1:lever:", "r1:why:", "r1:fix:", "r1:reflection"];
+import type { MaterialSection, MaterialSectionId } from "./sections";
 
 // ---------------------------------------------------------------------------
-// Material — six sections (A–F).
+// Material, sections A–F — the first half of the route's continuous run.
 // ---------------------------------------------------------------------------
-export type MaterialSectionId =
-  | "footprint"
-  | "correctness"
-  | "sci"
-  | "principles"
-  | "categories"
-  | "profession";
-
-export type MaterialSection = {
-  id: MaterialSectionId;
-  n: 1 | 2 | 3 | 4 | 5 | 6;
-  letter: "A" | "B" | "C" | "D" | "E" | "F";
-  icon: IconKey;
-  kicker: string;
-  title: string;
-  definition: string;
-  insight: string;
-  takeaway: string;
-  /**
-   * Standard #11a — the decision rules this block hands the task, phrased the
-   * way the task will need them, including the rule that rules out the
-   * plausible wrong answer. Rendered as "How to decide when this comes up in
-   * the task".
-   */
-  reasoning: string[];
-  callout: { label: string; text: string };
-  references: { label: string; url?: string }[];
-};
-
-/** DOM anchor a task step's MaterialRefs chip scrolls to. */
-export function materialAnchorId(id: MaterialSectionId): string {
-  return `r1-material-${id}`;
-}
-
-const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  footprint: "A · Why software has a footprint",
-  correctness: "B · Correct vs. efficient",
-  sci: "C · Measuring it (SCI)",
-  principles: "D · Three GSF principles",
-  categories: "E · The six categories",
-  profession: "F · Not just a developer's problem",
-};
-
-/** Chips for a task step: which material sections it draws on. */
-export function materialRefs(ids: MaterialSectionId[]) {
-  return ids.map((id) => ({ anchorId: materialAnchorId(id), label: MATERIAL_LABELS[id] }));
-}
-
-export const PAGE_INTRO = {
-  tag: "ROUTE 1 — FOUNDATIONS",
-  title: "Reading the System",
-  body: "You are joining AppNexa Solutions as a Software Sustainability Analyst. Before you can fix anything, you need to see it. This route gives you the vocabulary and mental model to recognize where software wastes energy — even without reading a single line of code.",
-} as const;
-
-export const MATERIAL: MaterialSection[] = [
+export const FOUNDATION_MATERIAL: MaterialSection[] = [
   {
     id: "footprint",
     n: 1,
@@ -466,9 +391,9 @@ export const categoryById = (id: CategoryId): Category =>
 // ---------------------------------------------------------------------------
 // Further reading — rendered as a card, not inline links.
 // ---------------------------------------------------------------------------
-export const FURTHER_READING = {
-  heading: "Further reading",
-  intro: "The three primary sources behind this route, in the order you would consult them.",
+export const FOUNDATION_READING = {
+  heading: "Further reading — sections A–F",
+  intro: "The three primary sources behind the first half of this material, in the order you would consult them.",
   items: [
     {
       body: "Green Software Foundation",
@@ -956,22 +881,18 @@ export function shuffledLevers(hotspot: Hotspot): Lever[] {
 }
 
 // ---------------------------------------------------------------------------
-// Task 1 framing, reflection prompt and export contract.
+// Stage 1 framing, field instructions and the closing reflection.
+//
+// No company brief, no name field and no export contract here: the route
+// introduces AppNexa once and exports once, both from ./index.ts. A stage that
+// re-introduces its own case is the seam CLAUDE.md #12 is about.
 // ---------------------------------------------------------------------------
-export const TASK1 = {
-  id: "task1",
-  tag: "TASK 1",
-  title: "AppNexa System Trace",
+export const STAGE1 = {
+  id: "stage1",
+  tag: "STAGE 1",
+  title: "Diagnose the live system trace",
   framing:
-    "AppNexa's platform is stable, but expensive to run — and nobody knows exactly why. Walk through the live system trace below. Click each flagged component to inspect what it's actually doing. For every flagged behavior: (1) sort it into the category it belongs to, (2) choose the improvement lever that best fits, (3) mark it Quick Fix or Structural Fix. Your Diagnosis Report builds itself on the right as you go. You don't need engineering background — every behavior here is observable from outside the code.",
-  company: "AppNexa Solutions",
-  companyBrief:
-    "AppNexa Solutions builds and runs internal and external digital applications for business customers. The platform is functionally stable and users are not complaining. Infrastructure cost has risen steadily for two years, and no systematic efficiency review has ever been carried out.",
-  nameField: {
-    label: "Your name",
-    instruction: "Used to label the exported report — it becomes e.g. \"1-jane-day10-l1task1\".",
-    placeholder: "e.g. Jane Muller",
-  },
+    "Walk AppNexa's live system trace below and click each flagged component to see what it is actually doing. For every flagged behaviour: (1) sort it into the category it belongs to, (2) choose the improvement lever that best fits, (3) mark it Quick Fix or Structural Fix, and (4) say which of AppNexa's original behaviours your lever fixes. Part 1 of your Engagement Report builds itself on the right as you go. You do not need an engineering background — every behaviour here is observable from outside the code.",
   justificationField: {
     label: "Justification (1–2 sentences)",
     instruction:
@@ -987,11 +908,5 @@ export const TASK1 = {
       "e.g. Five of my six findings need a standard or an owner rather than a patch, which suggests…",
     sample:
       "Five of my six findings need a rule, a review criterion or an owner rather than a code change, and the sixth only looks cheap because measuring is cheap. That pattern points at development logic rather than individual decisions — no engineer at AppNexa is being careless, they are working inside a process that never asks the efficiency question. The Management Logic finding is the one that explains the other five.",
-  },
-  export: {
-    filenameLevel: 1,
-    filenameTask: 1,
-    docHeading: "Diagnosis Report",
-    buttonLabel: "Export Diagnosis Report",
   },
 } as const;

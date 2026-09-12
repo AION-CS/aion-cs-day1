@@ -3,51 +3,36 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
 import { Reveal } from "@/components/ui/Reveal";
-import { FlowDiagram } from "@/components/ui/FlowDiagram";
 import { ArrowRight } from "@/components/icons/LineIcons";
-import {
-  FURTHER_READING,
-  LIFECYCLE_PINS,
-  LIFECYCLE_STAGES,
-  MATERIAL,
-  materialAnchorId,
-} from "@/lib/route2";
-import { DefensibilityTest, DimensionReference, OptionOverview } from "./MaterialSvgs";
-import { ConstraintPanel, RecapPanel } from "./RecapPanel";
+import { FURTHER_READING, MATERIAL, materialAnchorId } from "@/lib/route2";
+import { BackdropStrip, BoardTension, RaciLegend, WorkedExample } from "./MaterialSvgs";
 
-/** Route 2 material, Sections A–E. */
+/** Route 2 material, Sections A–D. Section D carries the SoftPulse worked example. */
 export function Material() {
-  const [a, b, c, d, e] = MATERIAL;
+  const [a, b, c, d] = MATERIAL;
 
   return (
     <section className="space-y-14">
       <SectionHeading
         kicker="Material · about 60 minutes"
-        title="A defensible way to compare options"
-        intro="Five sections. By the end you will be able to take three legitimate competing measures, judge them on dimensions that actually pull against each other, and write a recommendation that holds up in front of the people who control the budget."
+        title="From a fix to a decision architecture"
+        intro="Four sections, ending in a fully worked example. By the end you will be able to take a company you have never seen, name what its governance is missing, and design the structure that makes good decisions the default after you leave."
       />
 
-      <MaterialBlock block={a} anchorId={materialAnchorId("constraint")}>
-        <ConstraintPanel />
+      <MaterialBlock block={a} anchorId={materialAnchorId("board")}>
+        <BoardTension />
       </MaterialBlock>
 
-      <MaterialBlock block={b} anchorId={materialAnchorId("recap")}>
-        <RecapPanel />
+      <MaterialBlock block={b} anchorId={materialAnchorId("governance")}>
+        <RaciLegend />
       </MaterialBlock>
 
-      <MaterialBlock block={c} anchorId={materialAnchorId("measures")}>
-        <div>
-          <FlowDiagram graph={LIFECYCLE_STAGES} pins={LIFECYCLE_PINS} pinTone="marker" />
-          <OptionOverview />
-        </div>
+      <MaterialBlock block={c} anchorId={materialAnchorId("backdrop")}>
+        <BackdropStrip />
       </MaterialBlock>
 
-      <MaterialBlock block={d} anchorId={materialAnchorId("dimensions")}>
-        <DimensionReference />
-      </MaterialBlock>
-
-      <MaterialBlock block={e} anchorId={materialAnchorId("defensible")}>
-        <DefensibilityTest />
+      <MaterialBlock block={d} anchorId={materialAnchorId("worked")}>
+        <WorkedExample />
       </MaterialBlock>
 
       <FurtherReading />
@@ -62,7 +47,7 @@ function FurtherReading() {
         {FURTHER_READING.heading}
       </p>
       <p className="mt-1 text-caption text-ash">{FURTHER_READING.intro}</p>
-      <ul className="mt-4 grid gap-3 md:grid-cols-2">
+      <ul className="mt-4 grid gap-3 md:grid-cols-3">
         {FURTHER_READING.items.map((item) => (
           <li key={item.title}>
             <a

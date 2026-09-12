@@ -24,7 +24,7 @@ export function ExportBar() {
       if (r2.missing[0]) scrollToAndFlash(r2.missing[0].id);
       return;
     }
-    const filename = exportFilename(r2.name, TASK2.export.filenameLevel, TASK2.export.filenameTask);
+    const filename = exportFilename(r2.name, TASK2.export.filenameLevels, TASK2.export.filenameTask);
     downloadTextFile(`${filename}.json`, buildMemoJson(r2, filename), "application/json");
     downloadTextFile(`${filename}.html`, buildMemoHtml(r2), "text/html");
     markRouteExported(toggleCheck, 2);
@@ -47,8 +47,8 @@ export function ExportBar() {
           onClick={() => setShowMissing((v) => !v)}
           className="flex items-center gap-1.5 text-caption text-ash hover:text-ink"
         >
-          <span className="tabular-nums font-semibold text-ink">{r2.revealedCount}</span> /{" "}
-          {r2.totalOptions} profiles revealed
+          <span className="tabular-nums font-semibold text-ink">{r2.placedCards.length}</span> /{" "}
+          {r2.totalCards} measures mapped
           {r2.missing.length > 0 && (
             <>
               <span className="text-ash">

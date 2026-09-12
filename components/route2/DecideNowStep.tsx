@@ -1,16 +1,16 @@
 "use client";
 
 import { useProgress } from "@/lib/store";
-import { R3, TASK3, materialRefs } from "@/lib/route3";
+import { R2, TASK2, materialRefs } from "@/lib/route2";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { AnswerKeyNote } from "@/components/ui/AnswerKey";
-import { useRoute3, domId } from "./useRoute3";
+import { useRoute2, domId } from "./useRoute2";
 
 /** Step 4 — the two fields that make the memo a recommendation rather than a status report. */
 export function DecideNowStep() {
-  const r3 = useRoute3();
+  const r2 = useRoute2();
   const setNote = useProgress((s) => s.setNote);
-  const d = TASK3.decideNow;
+  const d = TASK2.decideNow;
 
   return (
     <section className="rounded-2xl border border-line bg-paper p-5">
@@ -23,31 +23,31 @@ export function DecideNowStep() {
       <MaterialRefs refs={materialRefs(["governance", "board"])} />
 
       <div id={domId.decideNow} className="mt-5 scroll-mt-24">
-        <label htmlFor="r3-decide-now-field" className="block text-caption font-semibold text-ink">
+        <label htmlFor="r2-decide-now-field" className="block text-caption font-semibold text-ink">
           {d.now.label}
         </label>
         <p className="mt-0.5 text-micro text-ash">{d.now.instruction}</p>
         <textarea
-          id="r3-decide-now-field"
+          id="r2-decide-now-field"
           rows={3}
-          value={r3.decideNow}
+          value={r2.decideNow}
           placeholder={d.now.placeholder}
-          onChange={(e) => setNote(R3.decideNow, e.target.value)}
+          onChange={(e) => setNote(R2.decideNow, e.target.value)}
           className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-caption text-ink"
         />
       </div>
 
       <div id={domId.decideWhy} className="mt-5 scroll-mt-24">
-        <label htmlFor="r3-decide-why-field" className="block text-caption font-semibold text-ink">
+        <label htmlFor="r2-decide-why-field" className="block text-caption font-semibold text-ink">
           {d.why.label}
         </label>
         <p className="mt-0.5 text-micro text-ash">{d.why.instruction}</p>
         <textarea
-          id="r3-decide-why-field"
+          id="r2-decide-why-field"
           rows={3}
-          value={r3.decideWhy}
+          value={r2.decideWhy}
           placeholder={d.why.placeholder}
-          onChange={(e) => setNote(R3.decideWhy, e.target.value)}
+          onChange={(e) => setNote(R2.decideWhy, e.target.value)}
           className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-caption text-ink"
         />
       </div>

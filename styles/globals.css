@@ -213,7 +213,7 @@
   border-radius: theme("borderRadius.2xl");
 }
 
-/* --- Day 10 flow diagram -------------------------------------------------
+/* --- Day 11 flow diagram -------------------------------------------------
  * A subtle pulsing dotted line travelling along an active edge, marking data
  * in motion. Pure CSS keyframes over an inline SVG path — no animation library
  * (stack rule #9). Drawn as a second path on top of the static edge, so the

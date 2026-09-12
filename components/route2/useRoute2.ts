@@ -2,144 +2,141 @@
 
 import { useProgress, useHydrated } from "@/lib/store";
 import type { MissingItem } from "@/components/ui/MissingList";
+import { createPlacementHistory } from "@/lib/usePlacementHistory";
 import {
-  DIMENSIONS,
-  OPTIONS,
+  GUIDING_DECISIONS,
+  QUADRANT_CARDS,
+  RACI_LETTERS,
+  RACI_ROLES,
+  RANK_SLOTS,
   R2,
-  optionById,
-  type DimensionKey,
-  type MeasureOption,
-  type OptionId,
+  quadrantCardById,
+  type QuadrantId,
+  type RaciLetter,
 } from "@/lib/route2";
+
+/**
+ * Route 2's own undo/redo history for the quadrant map — a separate instance of
+ * the shared factory, so an undo here can never restore a snapshot from Route
+ * 1's category bins after a client-side navigation.
+ */
+export const useQuadrantHistory = createPlacementHistory();
 
 /** DOM ids the missing-item list scrolls to and flashes. */
 export const domId = {
   name: "r2-name",
-  option: (id: OptionId) => `r2-option-${id}`,
-  situational: (id: OptionId) => `r2-option-${id}-situational`,
-  predict: (id: OptionId) => `r2-option-${id}-predict`,
-  reveal: (id: OptionId) => `r2-option-${id}-reveal`,
-  commit: "r2-commit",
-  pick: "r2-commit-pick",
-  rationale: "r2-commit-rationale",
-  feasibility: "r2-commit-feasibility",
-  followUp: (n: 1 | 2) => `r2-commit-followup-${n}`,
-  risk: (n: 1 | 2) => `r2-commit-risk-${n}`,
+  rank: "r2-rank",
+  rankRationale: "r2-rank-why",
+  quadrant: "r2-quadrant",
+  quadrantCell: (cellId: string) => `r2-quadrant-${cellId}`,
+  raci: "r2-raci",
+  raciLetter: (letter: RaciLetter) => `r2-raci-${letter}`,
+  decideNow: "r2-decide-now",
+  decideWhy: "r2-decide-why",
   export: "r2-export",
 };
 
-export type OptionState = {
-  option: MeasureOption;
-  /** Which of the four situational answers was given, if any. */
-  situational: string | null;
-  /** Dimension key → predicted 1–5. Absent means not set. */
-  prediction: Partial<Record<DimensionKey, number>>;
-  predictedCount: number;
-  predictionComplete: boolean;
-  /** Dimensions with no prediction yet — named in the missing list. */
-  missingDimensions: string[];
-  revealed: boolean;
-};
+export type QuadrantPlacements = Record<string, QuadrantId | null>;
 
 export function useRoute2() {
   const hydrated = useHydrated();
   const notes = useProgress((s) => s.notes);
   const choices = useProgress((s) => s.choices);
+  const checks = useProgress((s) => s.checks);
   const seen = useProgress((s) => s.seen);
 
   const name = notes[R2.name] ?? "";
-  const revealedIds = seen[R2.revealed] ?? [];
 
-  const optionStates: OptionState[] = OPTIONS.map((option) => {
-    const prediction: Partial<Record<DimensionKey, number>> = {};
-    const missingDimensions: string[] = [];
-    for (const d of DIMENSIONS) {
-      const raw = choices[R2.predict(option.id, d.key)];
-      const v = raw ? Number(raw) : 0;
-      if (v >= 1) prediction[d.key] = v;
-      else missingDimensions.push(d.name);
+  // --- Step 1: ranking -----------------------------------------------------
+  const ranking = (seen[R2.ranking] ?? []).slice(0, RANK_SLOTS);
+  const rankedDecisions = ranking
+    .map((id) => GUIDING_DECISIONS.find((d) => d.id === id))
+    .filter((d): d is (typeof GUIDING_DECISIONS)[number] => !!d);
+  const rankRationale = (notes[R2.rankRationale] ?? "").trim();
+
+  // --- Step 2: quadrant map ------------------------------------------------
+  const placements: QuadrantPlacements = {};
+  for (const c of QUADRANT_CARDS) {
+    const raw = choices[R2.quadrant(c.id)];
+    placements[c.id] = raw ? (raw as QuadrantId) : null;
+  }
+  const placedCards = QUADRANT_CARDS.filter((c) => placements[c.id]);
+  const unplacedCards = QUADRANT_CARDS.filter((c) => !placements[c.id]);
+
+  // --- Step 3: RACI --------------------------------------------------------
+  const raci: Record<RaciLetter, string[]> = { R: [], A: [], C: [], I: [] };
+  for (const letter of RACI_LETTERS) {
+    for (const role of RACI_ROLES) {
+      if (checks[R2.raci(role.id, letter.id)]) raci[letter.id].push(role.id);
     }
-    const predictedCount = DIMENSIONS.length - missingDimensions.length;
-    return {
-      option,
-      situational: choices[R2.situational(option.id)] || null,
-      prediction,
-      predictedCount,
-      predictionComplete: missingDimensions.length === 0,
-      missingDimensions,
-      revealed: revealedIds.includes(option.id),
-    };
-  });
+  }
+  const accountableCount = raci.A.length;
+  /** The one structural rule the check enforces — never which role should hold which letter. */
+  const accountableValid = accountableCount === 1;
+  const raciTouched = RACI_LETTERS.some((l) => raci[l.id].length > 0);
+  const emptyLetters = RACI_LETTERS.filter((l) => raci[l.id].length === 0);
 
-  const byId = (id: OptionId) => optionStates.find((s) => s.option.id === id)!;
+  // --- Step 4: decide now --------------------------------------------------
+  const decideNow = (notes[R2.decideNow] ?? "").trim();
+  const decideWhy = (notes[R2.decideWhy] ?? "").trim();
 
-  const rawPick = choices[R2.pick];
-  const pick: OptionId | null =
-    rawPick === "A" || rawPick === "B" || rawPick === "C" ? (rawPick as OptionId) : null;
-
-  const rationale = (notes[R2.rationale] ?? "").trim();
-  const feasibility = (notes[R2.feasibility] ?? "").trim();
-  const followUp: [string, string] = [
-    (notes[R2.followUp(1)] ?? "").trim(),
-    (notes[R2.followUp(2)] ?? "").trim(),
-  ];
-  const risks: [string, string] = [
-    (notes[R2.risk(1)] ?? "").trim(),
-    (notes[R2.risk(2)] ?? "").trim(),
-  ];
-
-  /** The commit step opens once all three real profiles have been seen at least once. */
-  const allRevealed = optionStates.every((s) => s.revealed);
-  const revealedCount = optionStates.filter((s) => s.revealed).length;
-
-  /**
-   * Standard #1: one entry per concretely-missing thing, named. Ordered so the
-   * list reads top-to-bottom in the same order the page does.
-   */
+  /** Standard #1: one named entry per concretely-missing thing. */
   const missing: MissingItem[] = [];
   if (!name.trim()) {
     missing.push({ id: domId.name, label: "Your name — needed to label the export" });
   }
-  for (const s of optionStates) {
-    const who = `Option ${s.option.id} — ${s.option.shortName}`;
-    if (!s.situational) {
-      missing.push({ id: domId.situational(s.option.id), label: `Situational question for ${who}` });
-    }
-    if (!s.predictionComplete) {
-      const n = s.missingDimensions.length;
-      missing.push({
-        id: domId.predict(s.option.id),
-        label: `Prediction sliders for ${who} — ${n} dimension${n === 1 ? "" : "s"} not set (${s.missingDimensions.join(", ")})`,
-      });
-    }
-    if (!s.revealed) {
-      missing.push({ id: domId.reveal(s.option.id), label: `Reveal the real profile for ${who}` });
-    }
+  if (rankedDecisions.length < RANK_SLOTS) {
+    const n = RANK_SLOTS - rankedDecisions.length;
+    missing.push({
+      id: domId.rank,
+      label: `Rank your top ${RANK_SLOTS} guiding decisions — ${n} slot${n === 1 ? "" : "s"} still empty`,
+    });
   }
-  if (!pick) {
-    missing.push({ id: domId.pick, label: "Your recommendation — pick one option to commit to" });
+  if (!rankRationale) {
+    missing.push({ id: domId.rankRationale, label: "Rationale for your #1-ranked decision" });
   }
-  if (!rationale) missing.push({ id: domId.rationale, label: "Strategic rationale for your recommendation" });
-  if (!feasibility) missing.push({ id: domId.feasibility, label: "Feasibility argument for your recommendation" });
-  if (!followUp[0]) missing.push({ id: domId.followUp(1), label: "First follow-up decision this choice forces" });
-  if (!followUp[1]) missing.push({ id: domId.followUp(2), label: "Second follow-up decision this choice forces" });
-  if (!risks[0]) missing.push({ id: domId.risk(1), label: "First risk of the road not taken" });
-  if (!risks[1]) missing.push({ id: domId.risk(2), label: "Second risk of the road not taken" });
+  for (const c of unplacedCards) {
+    missing.push({
+      id: domId.quadrant,
+      label: `Place "${c.short}" on the trade-off map`,
+    });
+  }
+  for (const l of emptyLetters) {
+    missing.push({
+      id: domId.raciLetter(l.id),
+      label: `RACI assignment for ${l.name} — no role assigned`,
+    });
+  }
+  if (raciTouched && !accountableValid && !emptyLetters.some((l) => l.id === "A")) {
+    missing.push({
+      id: domId.raciLetter("A"),
+      label: `Accountable must sit with exactly one role — ${accountableCount} are marked`,
+    });
+  }
+  if (!decideNow) {
+    missing.push({ id: domId.decideNow, label: "The decision you must make now, despite incomplete data" });
+  }
+  if (!decideWhy) {
+    missing.push({ id: domId.decideWhy, label: "Why waiting for better data would cost more" });
+  }
 
   return {
     hydrated,
     name,
-    optionStates,
-    byId,
-    pick,
-    pickedOption: pick ? optionById(pick) : null,
-    rationale,
-    feasibility,
-    followUp,
-    risks,
-    allRevealed,
-    revealedCount,
-    totalOptions: OPTIONS.length,
+    ranking,
+    rankedDecisions,
+    rankRationale,
+    placements,
+    placedCards,
+    unplacedCards,
+    totalCards: QUADRANT_CARDS.length,
+    raci,
+    accountableCount,
+    accountableValid,
+    raciTouched,
+    decideNow,
+    decideWhy,
+    quadrantCardById,
     missing,
     allComplete: missing.length === 0,
   };

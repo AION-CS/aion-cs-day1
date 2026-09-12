@@ -1,53 +1,69 @@
-import { DIMENSIONS, OPTIONS, TASK2 } from "@/lib/route2";
+import {
+  CODEVISTA,
+  QUADRANT_CARDS,
+  RACI_LETTERS,
+  RACI_ROLES,
+  RACI_SUBJECT,
+  TASK2,
+  quadrantById,
+} from "@/lib/route2";
 import type { Route2State } from "./useRoute2";
 
-/**
- * Raw structured answers for grading and QA. Includes the learner's prediction
- * against ground truth per dimension — the prediction gap is the interesting
- * signal in this task, more than which letter was chosen.
- */
+const roleName = (id: string) => RACI_ROLES.find((r) => r.id === id)?.name ?? id;
+
+/** Raw structured answers plus correctness flags, for grading and QA. */
 export function buildMemoJson(r2: Route2State, filename: string): string {
   const payload = {
     meta: {
-      day: 10,
+      day: 11,
       route: 2,
-      level: TASK2.export.filenameLevel,
+      levels: TASK2.export.filenameLevels,
       task: TASK2.export.filenameTask,
       filename,
       name: r2.name,
-      case: TASK2.company,
+      case: CODEVISTA.company,
+      role: CODEVISTA.role,
       exportedAt: new Date().toISOString(),
     },
-    options: r2.optionStates.map((s) => ({
-      id: s.option.id,
-      name: s.option.name,
-      stage: s.option.stage,
-      situationalAnswer: s.situational,
-      situationalText:
-        s.option.situational.options.find((x) => x.id === s.situational)?.text ?? null,
-      revealed: s.revealed,
-      dimensions: DIMENSIONS.map((d) => ({
-        key: d.key,
-        name: d.name,
-        predicted: s.prediction[d.key] ?? null,
-        actual: s.option.profile[d.key],
-        gap: s.prediction[d.key] ? s.option.profile[d.key] - s.prediction[d.key]! : null,
-        higherIsWorse: !!d.inverted,
-      })),
-      meanAbsoluteGap: (() => {
-        const gaps = DIMENSIONS.map((d) =>
-          s.prediction[d.key] ? Math.abs(s.option.profile[d.key] - s.prediction[d.key]!) : null,
-        ).filter((g): g is number => g !== null);
-        return gaps.length ? Number((gaps.reduce((a, b) => a + b, 0) / gaps.length).toFixed(2)) : null;
-      })(),
-    })),
-    recommendation: {
-      pick: r2.pick,
-      option: r2.pickedOption ? r2.pickedOption.name : null,
-      rationale: r2.rationale,
-      feasibility: r2.feasibility,
-      followUpDecisions: r2.followUp.filter(Boolean),
-      risksOfRoadNotTaken: r2.risks.filter(Boolean),
+    guidingDecisions: {
+      ranking: r2.rankedDecisions.map((d, i) => ({ rank: i + 1, id: d.id, text: d.text })),
+      topPickRationale: r2.rankRationale,
+    },
+    tradeOffMap: QUADRANT_CARDS.map((c) => {
+      const placed = r2.placements[c.id];
+      const q = placed ? quadrantById(placed) : null;
+      const ref = quadrantById(c.correct);
+      return {
+        id: c.id,
+        measure: c.text,
+        placed: placed
+          ? { quadrant: placed, momentumCost: q!.momentum, structuralImpact: q!.structural }
+          : null,
+        reference: {
+          quadrant: c.correct,
+          momentumCost: ref.momentum,
+          structuralImpact: ref.structural,
+        },
+        matched: placed === c.correct,
+      };
+    }),
+    governance: {
+      subject: RACI_SUBJECT,
+      assignments: Object.fromEntries(
+        RACI_LETTERS.map((l) => [l.name, r2.raci[l.id].map(roleName)]),
+      ),
+      accountableCount: r2.accountableCount,
+      // The one rule the exercise actually enforces.
+      oneAccountableRuleSatisfied: r2.accountableValid,
+    },
+    decisionUnderUncertainty: {
+      decideNow: r2.decideNow,
+      costOfWaiting: r2.decideWhy,
+    },
+    summary: {
+      quadrantScore: QUADRANT_CARDS.filter((c) => r2.placements[c.id] === c.correct).length,
+      quadrantTotal: QUADRANT_CARDS.length,
+      placed: r2.placedCards.length,
     },
   };
   return JSON.stringify(payload, null, 2);
@@ -63,22 +79,35 @@ export function buildMemoHtml(r2: Route2State): string {
     year: "numeric",
   });
 
-  const radarRows = DIMENSIONS.map(
-    (d) => `<tr>
-      <td>${esc(d.name)}${d.inverted ? ' <span class="warn" title="higher is worse">&#9650;</span>' : ""}</td>
-      ${OPTIONS.map(
-        (o) =>
-          `<td class="num${r2.pick === o.id ? " picked" : ""}">${o.profile[d.key]}</td>`,
-      ).join("")}
-    </tr>`,
-  ).join("");
+  const ranked = r2.rankedDecisions.length
+    ? `<ol>${r2.rankedDecisions
+        .map(
+          (d, i) =>
+            `<li><strong>${esc(d.text)}</strong>${
+              i === 0 && r2.rankRationale
+                ? `<div class="why">&ldquo;${esc(r2.rankRationale)}&rdquo;</div>`
+                : ""
+            }</li>`,
+        )
+        .join("")}</ol>`
+    : `<p class="muted">Nothing ranked.</p>`;
 
-  const bullets = (items: string[], empty: string) =>
-    items.filter(Boolean).length
-      ? `<ul>${items.filter(Boolean).map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`
-      : `<p class="muted">${esc(empty)}</p>`;
+  const mapRows = r2.placedCards
+    .map((c) => {
+      const q = quadrantById(r2.placements[c.id]!);
+      return `<tr><td>${esc(c.text)}</td><td class="num">${esc(q.momentum)}</td><td class="num">${esc(
+        q.structural,
+      )}</td></tr>`;
+    })
+    .join("");
 
-  const justification = [r2.rationale, r2.feasibility].filter(Boolean).join(" ");
+  const raciRows = RACI_LETTERS.map((l) => {
+    const roles = r2.raci[l.id];
+    const bad = l.id === "A" && roles.length !== 1;
+    return `<tr><td class="${bad ? "bad" : ""}"><strong>${esc(l.name)}</strong></td><td>${
+      roles.length ? esc(roles.map(roleName).join(", ")) : '<span class="muted">— none assigned</span>'
+    }${bad && roles.length > 1 ? ' <span class="bad">(RACI allows exactly one)</span>' : ""}</td></tr>`;
+  }).join("");
 
   return `<!doctype html>
 <html lang="en">
@@ -102,16 +131,17 @@ export function buildMemoHtml(r2: Route2State): string {
   table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
   th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
        color: #5E6670; border-bottom: 1px solid #E2E5E9; padding: 8px 10px 8px 0; font-weight: 700; }
-  th.num, td.num { text-align: center; width: 56px; padding-right: 0; }
-  td { padding: 8px 10px 8px 0; border-bottom: 1px solid #EEF1F3; }
-  td.picked { font-weight: 700; color: #0E7A5A; background: #E7F2EC; }
-  .warn { color: #B87514; }
+  th.num, td.num { text-align: center; width: 96px; padding-right: 0; }
+  td { vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid #EEF1F3; }
+  ol { margin: 8px 0 0; padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  .why { margin-top: 4px; font-style: italic; color: #16191D; }
   .muted { color: #5E6670; font-size: 12px; }
-  .pick { margin-top: 10px; padding: 14px 16px; border: 1px solid #E2E5E9;
-          border-left: 3px solid #0E7A5A; border-radius: 10px; background: #E7F2EC; }
-  .pick strong { display: block; font-size: 16px; margin-bottom: 4px; }
-  ul { margin: 8px 0 0; padding-left: 20px; }
-  li { margin-bottom: 6px; }
+  .bad { color: #B23B3B; }
+  .callout { margin-top: 10px; padding: 14px 16px; border: 1px solid #E2E5E9;
+             border-left: 3px solid #0E7A5A; border-radius: 10px; background: #E7F2EC; }
+  .callout p { margin: 0 0 8px; }
+  .callout p:last-child { margin: 0; font-style: italic; color: #5E6670; }
   footer { margin-top: 32px; border-top: 1px solid #E2E5E9; padding-top: 14px;
            color: #5E6670; font-size: 11px; }
   @media print {
@@ -123,44 +153,42 @@ export function buildMemoHtml(r2: Route2State): string {
 </head>
 <body>
 <div class="sheet">
-  <p class="kicker">AION Green IT · Day 10 · Route 2 · Level 2</p>
+  <p class="kicker">AION Green IT · Day 11 · Route 2 · Level 3</p>
   <h1>${esc(TASK2.export.docHeading)}</h1>
-  <p class="meta">${esc(r2.name.trim() || "learner")} · ${esc(date)} · Case: ${esc(TASK2.company)}</p>
+  <p class="meta">${esc(r2.name.trim() || "learner")} · ${esc(date)} · Case: ${esc(CODEVISTA.company)}</p>
+  <p class="meta">Role: ${esc(CODEVISTA.role)} / CTO</p>
 
-  <h2>Radar summary</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Criterion</th>
-        ${OPTIONS.map((o) => `<th class="num">${o.id}</th>`).join("")}
-      </tr>
-    </thead>
-    <tbody>${radarRows}</tbody>
-  </table>
-  <p class="muted"><span class="warn">&#9650;</span> Higher is worse on this axis. A = ${esc(
-    OPTIONS[0].shortName,
-  )}, B = ${esc(OPTIONS[1].shortName)}, C = ${esc(OPTIONS[2].shortName)}. All three are shown regardless of which was chosen.</p>
+  <h2>Guiding decisions (ranked)</h2>
+  ${ranked}
 
-  <h2>Recommendation &amp; justification</h2>
-  <div class="pick">
-    <strong>${
-      r2.pickedOption
-        ? `Option ${esc(r2.pickedOption.id)} — ${esc(r2.pickedOption.name)}`
-        : "No option committed to."
-    }</strong>
-    ${justification ? esc(justification) : '<span class="muted">No justification written.</span>'}
+  <h2>Trade-off map summary</h2>
+  ${
+    mapRows
+      ? `<table>
+    <thead><tr><th>Measure</th><th class="num">Momentum cost</th><th class="num">Structural impact</th></tr></thead>
+    <tbody>${mapRows}</tbody>
+  </table>`
+      : `<p class="muted">Nothing placed.</p>`
+  }
+  ${
+    r2.unplacedCards.length
+      ? `<p class="muted">Not placed: ${r2.unplacedCards.map((c) => esc(c.short)).join(", ")}.</p>`
+      : ""
+  }
+
+  <h2>Governance model (RACI)</h2>
+  <p class="muted">Subject: ${esc(RACI_SUBJECT)}</p>
+  <table><tbody>${raciRows}</tbody></table>
+
+  <h2>Decision under uncertainty</h2>
+  <div class="callout">
+    <p>${esc(r2.decideNow) || '<span class="muted">No decision named.</span>'}</p>
+    <p>${esc(r2.decideWhy) || '<span class="muted">Cost of waiting not stated.</span>'}</p>
   </div>
 
-  <h2>Follow-up decisions</h2>
-  ${bullets(r2.followUp, "Not written.")}
-
-  <h2>Risk register</h2>
-  <p class="muted">What the roads not taken would have prevented.</p>
-  ${bullets(r2.risks, "Not written.")}
-
   <footer>
-    AION Green IT — Day 10, Route 2 (Application). AppNexa Solutions is a fictional case for training use.
-    Prepared by the learner named above.
+    AION Green IT — Day 11, Route 2 (Management Decision). CodeVista Digital Platforms is a fictional case
+    for training use. Prepared by the learner named above.
   </footer>
 </div>
 </body>

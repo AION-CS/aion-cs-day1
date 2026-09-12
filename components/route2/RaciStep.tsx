@@ -8,15 +8,15 @@ import {
   RACI_LETTERS,
   RACI_ROLES,
   RACI_SUBJECT,
-  R3,
-  TASK3,
+  R2,
+  TASK2,
   materialRefs,
-} from "@/lib/route3";
+} from "@/lib/route2";
 import { ClueToggle } from "@/components/ui/ClueToggle";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Check as CheckGlyph } from "@/components/icons/LineIcons";
-import { useRoute3, domId } from "./useRoute3";
+import { useRoute2, domId } from "./useRoute2";
 
 /**
  * Step 3 — the RACI grid.
@@ -27,21 +27,21 @@ import { useRoute3, domId } from "./useRoute3";
  * mentor answer key instead.
  */
 export function RaciStep() {
-  const r3 = useRoute3();
+  const r2 = useRoute2();
   const toggleCheck = useProgress((s) => s.toggleCheck);
   const checks = useProgress((s) => s.checks);
   const [checked, setChecked] = useState(false);
 
   const accountableClue =
-    r3.accountableCount === 0
+    r2.accountableCount === 0
       ? "Nobody currently answers for the outcome. Ask which single role holds a budget line, a contract or a release gate that would actually change it."
       : "More than one role is marked Accountable. That reads as coverage and behaves like nobody owning it — both quietly assume the other does. Pick the one that controls the outcome, and move the others to Responsible or Consulted.";
 
   return (
     <section id={domId.raci} className="scroll-mt-24 rounded-2xl border border-line bg-paper p-5">
       <p className="text-micro font-semibold uppercase tracking-wide text-accent">Step 3 · Govern</p>
-      <h3 className="text-h3 text-ink">{TASK3.raci.heading}</h3>
-      <p className="mt-1 max-w-prose text-caption text-ash">{TASK3.raci.instruction}</p>
+      <h3 className="text-h3 text-ink">{TASK2.raci.heading}</h3>
+      <p className="mt-1 max-w-prose text-caption text-ash">{TASK2.raci.instruction}</p>
       <p className="mt-1.5 text-caption font-semibold text-ink">
         Subject: <span className="text-accent">{RACI_SUBJECT}</span>
       </p>
@@ -71,10 +71,10 @@ export function RaciStep() {
             </p>
             <p className="mt-1 text-micro text-ash">{l.meaning}</p>
             <p className="mt-1.5 text-micro font-semibold text-ash">
-              {r3.raci[l.id].length === 0 ? (
+              {r2.raci[l.id].length === 0 ? (
                 <span className="text-danger">No role assigned</span>
               ) : (
-                `${r3.raci[l.id].length} role${r3.raci[l.id].length === 1 ? "" : "s"}`
+                `${r2.raci[l.id].length} role${r2.raci[l.id].length === 1 ? "" : "s"}`
               )}
             </p>
           </li>
@@ -110,7 +110,7 @@ export function RaciStep() {
                   <p className="text-micro text-ash">{role.note}</p>
                 </td>
                 {RACI_LETTERS.map((l) => {
-                  const key = R3.raci(role.id, l.id);
+                  const key = R2.raci(role.id, l.id);
                   const on = !!checks[key];
                   return (
                     <td key={l.id} className="border-b border-line/60 py-2 text-center">
@@ -156,7 +156,7 @@ export function RaciStep() {
 
         {checked && (
           <div className="reveal-in mt-2">
-            {r3.accountableValid ? (
+            {r2.accountableValid ? (
               <p className="inline-flex items-center gap-1.5 text-caption font-semibold text-accent">
                 <CheckGlyph className="h-4 w-4" />
                 Exactly one Accountable. The structure holds — whether it is the right role is your call to
@@ -165,9 +165,9 @@ export function RaciStep() {
             ) : (
               <>
                 <p className="text-caption font-semibold text-danger">
-                  {r3.accountableCount === 0
+                  {r2.accountableCount === 0
                     ? "No role is marked Accountable."
-                    : `${r3.accountableCount} roles are marked Accountable.`}{" "}
+                    : `${r2.accountableCount} roles are marked Accountable.`}{" "}
                   RACI allows exactly one.
                 </p>
                 <ClueToggle clue={accountableClue} />

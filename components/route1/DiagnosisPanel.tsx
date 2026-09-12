@@ -1,7 +1,7 @@
 "use client";
 
 import { useProgress, useHydrated } from "@/lib/store";
-import { R1, TASK1 } from "@/lib/route1";
+import { ENGAGEMENT, EXPORT, R1, STAGE1 } from "@/lib/route1";
 import { AnswerKeyNote } from "@/components/ui/AnswerKey";
 import { categoryName } from "./CategoryGrid";
 import { useRoute1, domId } from "./useRoute1";
@@ -13,12 +13,15 @@ export function useReportDate() {
 }
 
 /**
- * The live-building Diagnosis Report. Mirrors the established AION Green IT
- * export shape: header → classification table → reflection → closing summary.
- * Rows appear the moment a card is sorted and fill in as the workup completes,
- * so the panel is a running account of the learner's own reasoning.
+ * Part 1 of the Engagement Report, building itself alongside stage 1: header
+ * → classification table → reflection → closing summary. Rows appear the
+ * moment a card is sorted and fill in as the workup completes, so the panel is
+ * a running account of the learner's own reasoning.
+ *
+ * Part 2 (components/route1/DecisionPanel.tsx) is the same document continued
+ * next to stage 2 — one report, two parts, one export.
  */
-export function DiagnosisReport() {
+export function DiagnosisPanel() {
   const r1 = useRoute1();
   const setNote = useProgress((s) => s.setNote);
   const date = useReportDate();
@@ -33,11 +36,12 @@ export function DiagnosisReport() {
       <div className="rounded-2xl border border-line bg-paper p-5">
         {/* Header */}
         <p className="text-micro font-semibold uppercase tracking-wide text-accent">
-          {TASK1.export.docHeading}
+          {EXPORT.docHeading}
         </p>
+        <p className="text-caption font-semibold text-ink">{EXPORT.partOne}</p>
         <p className="mt-1 text-caption text-ash">
           <span className="font-semibold text-ink">{r1.name.trim() || "[your name]"}</span>
-          {date ? ` · ${date}` : ""} · Case: {TASK1.company}
+          {date ? ` · ${date}` : ""} · Case: {ENGAGEMENT.company}
         </p>
 
         {/* Classification table */}
@@ -96,21 +100,21 @@ export function DiagnosisReport() {
         {/* Reflection */}
         <div id={domId.reflection} className="mt-5 scroll-mt-24 border-t border-line pt-4">
           <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-            {TASK1.reflection.heading}
+            {STAGE1.reflection.heading}
           </p>
           <label htmlFor="r1-reflection-field" className="mt-1.5 block text-caption font-semibold text-ink">
-            {TASK1.reflection.label}
+            {STAGE1.reflection.label}
           </label>
-          <p className="mt-0.5 text-micro text-ash">{TASK1.reflection.instruction}</p>
+          <p className="mt-0.5 text-micro text-ash">{STAGE1.reflection.instruction}</p>
           <textarea
             id="r1-reflection-field"
             rows={4}
             value={r1.reflection}
             onChange={(e) => setNote(R1.reflection, e.target.value)}
-            placeholder={TASK1.reflection.placeholder}
+            placeholder={STAGE1.reflection.placeholder}
             className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-caption text-ink"
           />
-          <AnswerKeyNote label="Root-cause reflection" text={TASK1.reflection.sample} />
+          <AnswerKeyNote label="Root-cause reflection" text={STAGE1.reflection.sample} />
         </div>
 
         {/* Closing summary */}

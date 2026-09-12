@@ -1,6 +1,6 @@
 # AION Green IT — Cross-Day UX/Interaction Standards
 
-Ten interaction/UX standards, generalized from Day 5 fixes (commits `e8b0077`, `7e4f9a7`,
+Twelve interaction/UX standards. The first ten were generalized from Day 5 fixes (commits `e8b0077`, `7e4f9a7`,
 `294b8af`, `b2fe5cd`). This is **not curriculum content** — it says nothing about what any
 route teaches. It's the minimum interaction bar every route, on every day, is expected to
 clear.
@@ -318,3 +318,57 @@ Then in the browser: clear the app's `localStorage` key (or use a private window
 and walk the actual golden path end to end — don't just eyeball the diff. Re-check after
 touching any `lib/routeN.ts` data file, since those drive the derived `stepNComplete` flags
 that gate exports and are easy to silently break.
+
+---
+
+## 11. Every task step traces back to the material, with a clickable reference
+
+**Why:** a learner should never meet a question whose reasoning was not taught above it.
+Prose explains a concept; it does not tell anyone how to answer.
+
+**Two halves, both required.** Each material section carries a `reasoning: string[]` — the
+decision rules phrased the way the task will need them, including the rule that rules out
+the plausible wrong option — rendered through `MaterialBlock` as "How to decide when this
+comes up in the task". And each task step carries a `material: MaterialSectionId[]`,
+rendered as `MaterialRefs` chips that scroll to that section and flash it in the accent
+(`anim-flash-ref`), deliberately not the red `anim-flash-warn` used for missing items.
+
+Coverage rule: before shipping a route, walk every task question and every selectable
+option and confirm the material names the basis for choosing between them.
+
+Ref: `lib/route1/sections.ts` (`materialAnchorId` / `materialRefs`),
+`components/ui/MaterialRefs.tsx`.
+
+---
+
+## 12. Two routes per day, and a merged route must read as one — new in Day 11
+
+**Why:** three routes meant the learner met the same company three times, with three
+intros, three name fields and three exports. Analysing a situation and deciding what to do
+about it are one job, and splitting them across two routes made the seam visible.
+
+**From Day 11 on, a day ships exactly two routes:** Route 1 carries levels 1 and 2 as one
+continuous engagement, Route 2 carries level 3. The objectives do not change — only the
+delivery merges.
+
+**What "merged" actually requires** (each item is a seam a learner would otherwise notice):
+
+- One case, one company, introduced **once**. "Same company as Route 1" is the tell.
+- One learner-name field per route.
+- Material as one continuous lettered run (A–J), split either side of the work that uses
+  it — never two runs that both start at A, never all ten sections front-loaded.
+- A bridge between the stages that consumes the learner's own stage-1 output, so stage 2
+  reads as caused by stage 1 (`components/route1/Bridge.tsx`).
+- Any "standalone recap" section written so the old second route could be entered cold is
+  deleted; what it carried moves into the bridge.
+- One export bar, one deliverable, one `missing` list spanning both stages
+  (`components/route1/useRoute1.ts`). The document carries a part per stage; the JSON keeps
+  `partOne` / `partTwo` separate so both levels stay gradable from one file.
+- "Stage 1 — …" / "Stage 2 — …", not "Task 1" / "Task 2" with their own framings.
+- One `MentorFillButton` per route, filling both stages in one click.
+
+Export filename lists every level the route covers: `1-jane-day11-l1l2task1` for Route 1,
+`1-jane-day11-l3task1` for Route 2 (`lib/downloadFile.ts`).
+
+Canonical wording lives in the parent `../CLAUDE.md` §12 and `../CURRICULUM-GUIDE.md` §2 —
+this file is the day-local copy and Days 1–10 are not retrofitted.

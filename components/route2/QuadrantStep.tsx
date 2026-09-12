@@ -7,18 +7,18 @@ import {
   QUADRANTS,
   QUADRANT_ANSWER_KEY,
   QUADRANT_CARDS,
-  R3,
-  TASK3,
+  R2,
+  TASK2,
   materialRefs,
   quadrantCardById,
   type QuadrantId,
-} from "@/lib/route3";
+} from "@/lib/route2";
 import { QuadrantMap } from "@/components/ui/QuadrantMap";
 import { ClueToggle } from "@/components/ui/ClueToggle";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Check as CheckGlyph, Redo, Undo } from "@/components/icons/LineIcons";
-import { useRoute3, useQuadrantHistory, domId, type QuadrantPlacements } from "./useRoute3";
+import { useRoute2, useQuadrantHistory, domId, type QuadrantPlacements } from "./useRoute2";
 
 /**
  * Step 2 — the trade-off quadrant map.
@@ -28,7 +28,7 @@ import { useRoute3, useQuadrantHistory, domId, type QuadrantPlacements } from ".
  * square. Undo/redo run through the shared placement-history utility.
  */
 export function QuadrantStep() {
-  const r3 = useRoute3();
+  const r2 = useRoute2();
   const choose = useProgress((s) => s.choose);
 
   const record = useQuadrantHistory((s) => s.recordChange);
@@ -48,31 +48,31 @@ export function QuadrantStep() {
   };
 
   const apply = (next: Record<string, string | null>) => {
-    for (const c of QUADRANT_CARDS) choose(R3.quadrant(c.id), next[c.id] ?? "");
+    for (const c of QUADRANT_CARDS) choose(R2.quadrant(c.id), next[c.id] ?? "");
   };
 
   const place = (cardId: string, cellId: string) => {
-    record(r3.placements as Record<string, string | null>);
-    choose(R3.quadrant(cardId), cellId);
+    record(r2.placements as Record<string, string | null>);
+    choose(R2.quadrant(cardId), cellId);
     setChecked(false);
   };
 
   const remove = (cardId: string) => {
-    record(r3.placements as Record<string, string | null>);
-    choose(R3.quadrant(cardId), "");
+    record(r2.placements as Record<string, string | null>);
+    choose(R2.quadrant(cardId), "");
     setChecked(false);
   };
 
-  const wrong = r3.placedCards.filter((c) => r3.placements[c.id] !== c.correct);
-  const allPlaced = r3.unplacedCards.length === 0;
+  const wrong = r2.placedCards.filter((c) => r2.placements[c.id] !== c.correct);
+  const allPlaced = r2.unplacedCards.length === 0;
 
   return (
     <section id={domId.quadrant} className="scroll-mt-24 rounded-2xl border border-line bg-paper p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-micro font-semibold uppercase tracking-wide text-accent">Step 2 · Map</p>
-          <h3 className="text-h3 text-ink">{TASK3.quadrant.heading}</h3>
-          <p className="mt-1 max-w-prose text-caption text-ash">{TASK3.quadrant.instruction}</p>
+          <h3 className="text-h3 text-ink">{TASK2.quadrant.heading}</h3>
+          <p className="mt-1 max-w-prose text-caption text-ash">{TASK2.quadrant.instruction}</p>
           <MaterialRefs refs={materialRefs(["worked", "board"])} />
         </div>
 
@@ -80,7 +80,7 @@ export function QuadrantStep() {
           <button
             type="button"
             onClick={() => {
-              const prev = undo(r3.placements as Record<string, string | null>);
+              const prev = undo(r2.placements as Record<string, string | null>);
               if (prev) {
                 apply(prev);
                 setChecked(false);
@@ -97,7 +97,7 @@ export function QuadrantStep() {
           <button
             type="button"
             onClick={() => {
-              const next = redo(r3.placements as Record<string, string | null>);
+              const next = redo(r2.placements as Record<string, string | null>);
               if (next) {
                 apply(next);
                 setChecked(false);
@@ -124,16 +124,16 @@ export function QuadrantStep() {
             hint: q.hint,
           }))}
           items={QUADRANT_CARDS.map((c) => ({ id: c.id, short: c.short }))}
-          placements={r3.placements as Record<string, string | null>}
+          placements={r2.placements as Record<string, string | null>}
           onPlace={place}
           onRemove={remove}
-          xAxis={TASK3.quadrant.xAxis}
-          yAxis={TASK3.quadrant.yAxis}
+          xAxis={TASK2.quadrant.xAxis}
+          yAxis={TASK2.quadrant.yAxis}
           idForCell={(cellId) => domId.quadrantCell(cellId)}
           cellStatus={(cardId) =>
             !checked
               ? "neutral"
-              : r3.placements[cardId] === quadrantCardById(cardId).correct
+              : r2.placements[cardId] === quadrantCardById(cardId).correct
                 ? "ok"
                 : "off"
           }
@@ -159,7 +159,7 @@ export function QuadrantStep() {
           <div className="reveal-in mt-2">
             {!allPlaced && (
               <p className="text-caption text-ash">
-                {r3.unplacedCards.length} measure{r3.unplacedCards.length === 1 ? " is" : "s are"} still
+                {r2.unplacedCards.length} measure{r2.unplacedCards.length === 1 ? " is" : "s are"} still
                 unplaced — checking only what is on the map so far.
               </p>
             )}
@@ -178,7 +178,7 @@ export function QuadrantStep() {
                 </p>
                 <ul className="mt-2 space-y-2">
                   {wrong.map((c) => {
-                    const placedIn = r3.placements[c.id] as QuadrantId;
+                    const placedIn = r2.placements[c.id] as QuadrantId;
                     const clue = c.clueByQuadrant?.[placedIn] ?? c.clue;
                     return (
                       <li key={c.id} className="rounded-lg border border-danger/30 bg-danger/5 px-2.5 py-2">

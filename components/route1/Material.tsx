@@ -4,24 +4,41 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowRight } from "@/components/icons/LineIcons";
-import { ENERGY_CHAIN, FURTHER_READING, MATERIAL, materialAnchorId } from "@/lib/route1";
 import { FlowDiagram } from "@/components/ui/FlowDiagram";
+import {
+  DECISION_MATERIAL,
+  DECISION_READING,
+  ENERGY_CHAIN,
+  FOUNDATION_MATERIAL,
+  FOUNDATION_READING,
+  LIFECYCLE_PINS,
+  LIFECYCLE_STAGES,
+  materialAnchorId,
+} from "@/lib/route1";
 import { SixCategoryGrid } from "./CategoryGrid";
 import { CorrectnessMatrix, SciFormulaBreakdown, ThreePrinciplesTriad } from "./MaterialSvgs";
+import { DefensibilityTest, DimensionReference, OptionOverview } from "./DecisionSvgs";
+import { ConstraintPanel } from "./ConstraintPanel";
 
 /**
- * Route 1 material, Sections A–F. Each block renders through the shared
- * MaterialBlock (definition / insight / takeaway / decision rules / callout /
- * sources); the `children` slot carries that section's visual.
+ * The route's material, in one continuous lettered run A–J, rendered in two
+ * halves either side of stage 1 (CLAUDE.md #12, CURRICULUM-GUIDE.md §2–§3).
+ *
+ * A–F teach the learner to see the waste; G–J teach them how to choose what to
+ * do about it. They are one sequence, not two: the letters run straight
+ * through, the MaterialRefs chips on both stages point into the same run, and
+ * nothing in G–J re-teaches anything from A–F.
  */
-export function Material() {
-  const [a, b, c, d, e, f] = MATERIAL;
+
+/** Sections A–F — read before stage 1. */
+export function FoundationsMaterial() {
+  const [a, b, c, d, e, f] = FOUNDATION_MATERIAL;
 
   return (
     <section className="space-y-14">
       <SectionHeading
-        kicker="Material · about 60 minutes"
-        title="The vocabulary and the measurement model"
+        kicker="Material A–F · about 20 minutes"
+        title="Seeing where software wastes energy"
         intro="Six sections. By the end you will be able to look at a running system you did not build, name where it wastes energy, and say which measurable variable a proposed fix would actually move."
       />
 
@@ -44,7 +61,7 @@ export function Material() {
       <MaterialBlock block={e} anchorId={materialAnchorId("categories")}>
         <div className="space-y-4">
           <p className="text-micro font-semibold uppercase tracking-wide text-accent">
-            The six categories — and Task 1&apos;s six bins
+            The six categories — and the six bins you will sort into
           </p>
           <SixCategoryGrid detailed />
         </div>
@@ -54,7 +71,43 @@ export function Material() {
         <ProfessionalContext />
       </MaterialBlock>
 
-      <FurtherReading />
+      <FurtherReading block={FOUNDATION_READING} columns={3} />
+    </section>
+  );
+}
+
+/** Sections G–J — read after the diagnosis, before stage 2. */
+export function DecisionMaterial() {
+  const [g, h, i, j] = DECISION_MATERIAL;
+
+  return (
+    <section className="space-y-14">
+      <SectionHeading
+        kicker="Material G–J · about 15 minutes"
+        title="A defensible way to compare the options"
+        intro="Four more sections, continuing the same run. By the end you will be able to take three legitimate competing measures, judge them on dimensions that actually pull against each other, and write a recommendation that holds up in front of the people who control the budget."
+      />
+
+      <MaterialBlock block={g} anchorId={materialAnchorId("constraint")}>
+        <ConstraintPanel />
+      </MaterialBlock>
+
+      <MaterialBlock block={h} anchorId={materialAnchorId("measures")}>
+        <div>
+          <FlowDiagram graph={LIFECYCLE_STAGES} pins={LIFECYCLE_PINS} pinTone="marker" />
+          <OptionOverview />
+        </div>
+      </MaterialBlock>
+
+      <MaterialBlock block={i} anchorId={materialAnchorId("dimensions")}>
+        <DimensionReference />
+      </MaterialBlock>
+
+      <MaterialBlock block={j} anchorId={materialAnchorId("defensible")}>
+        <DefensibilityTest />
+      </MaterialBlock>
+
+      <FurtherReading block={DECISION_READING} columns={2} />
     </section>
   );
 }
@@ -71,7 +124,8 @@ function ProfessionalContext() {
     {
       layer: "Standards layer",
       owner: "Architects · leads · review criteria",
-      scope: "Where the lever for most of categories 1–5 actually sits. iSAQB CPSA Advanced Level, Module GREEN lives here.",
+      scope:
+        "Where the lever for most of categories 1–5 actually sits. iSAQB CPSA Advanced Level, Module GREEN lives here.",
       tone: "accent" as const,
     },
     {
@@ -106,15 +160,20 @@ function ProfessionalContext() {
   );
 }
 
-function FurtherReading() {
+type ReadingBlock = {
+  heading: string;
+  intro: string;
+  items: readonly { body: string; title: string; host: string; url: string }[];
+};
+
+/** One reading card per material half, sourced from that half's own module. */
+function FurtherReading({ block, columns }: { block: ReadingBlock; columns: 2 | 3 }) {
   return (
     <Reveal as="aside" className="rounded-2xl border border-line bg-mist p-5">
-      <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-        {FURTHER_READING.heading}
-      </p>
-      <p className="mt-1 text-caption text-ash">{FURTHER_READING.intro}</p>
-      <ul className="mt-4 grid gap-3 md:grid-cols-3">
-        {FURTHER_READING.items.map((item) => (
+      <p className="text-micro font-semibold uppercase tracking-wide text-ash">{block.heading}</p>
+      <p className="mt-1 text-caption text-ash">{block.intro}</p>
+      <ul className={`mt-4 grid gap-3 ${columns === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+        {block.items.map((item) => (
           <li key={item.title}>
             <a
               href={item.url}

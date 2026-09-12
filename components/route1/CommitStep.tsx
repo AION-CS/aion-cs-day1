@@ -2,11 +2,11 @@
 
 import clsx from "clsx";
 import { useProgress } from "@/lib/store";
-import { OPTIONS, R2, TASK2, materialRefs } from "@/lib/route2";
+import { OPTIONS, R1, STAGE2, materialRefs } from "@/lib/route1";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { AnswerKeyNote } from "@/components/ui/AnswerKey";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
-import { useRoute2, domId } from "./useRoute2";
+import { useRoute1, domId } from "./useRoute1";
 
 /**
  * The commit step. Opens for real once all three profiles have been revealed —
@@ -15,10 +15,10 @@ import { useRoute2, domId } from "./useRoute2";
  * always knows what would open it.
  */
 export function CommitStep() {
-  const r2 = useRoute2();
+  const r1 = useRoute1();
   const choose = useProgress((s) => s.choose);
   const setNote = useProgress((s) => s.setNote);
-  const c = TASK2.commit;
+  const c = STAGE2.commit;
 
   return (
     <section id={domId.commit} className="scroll-mt-24 rounded-2xl border border-line bg-paper p-5">
@@ -32,16 +32,16 @@ export function CommitStep() {
       </p>
       <MaterialRefs refs={materialRefs(["defensible", "constraint"])} />
 
-      {!r2.allRevealed && (
+      {!r1.allRevealed && (
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-warn/40 bg-warn/5 p-3">
           <p className="flex-1 text-caption text-ink">
-            Recommended: reveal all three profiles before committing — you have seen {r2.revealedCount} of{" "}
-            {r2.totalOptions}. You can still fill this in now.
+            Recommended: reveal all three profiles before committing — you have seen {r1.revealedCount} of{" "}
+            {r1.totalOptions}. You can still fill this in now.
           </p>
           <button
             type="button"
             onClick={() => {
-              const next = r2.optionStates.find((s) => !s.revealed);
+              const next = r1.optionStates.find((s) => !s.revealed);
               if (next) scrollToAndFlash(domId.reveal(next.option.id), "ref");
             }}
             className="rounded-full border border-warn/50 px-3 py-1 text-micro font-semibold text-warn hover:bg-warn/10"
@@ -57,13 +57,13 @@ export function CommitStep() {
         <p className="mt-0.5 text-micro text-ash">{c.pick.instruction}</p>
         <div className="mt-2 grid gap-2 md:grid-cols-3">
           {OPTIONS.map((o) => {
-            const active = r2.pick === o.id;
+            const active = r1.pick === o.id;
             return (
               <button
                 key={o.id}
                 type="button"
                 aria-pressed={active}
-                onClick={() => choose(R2.pick, active ? "" : o.id)}
+                onClick={() => choose(R1.pick, active ? "" : o.id)}
                 className={clsx(
                   "rounded-xl border p-3 text-left transition-colors duration-150",
                   active ? "border-accent bg-accentSoft" : "border-line bg-paper hover:border-ash",
@@ -92,25 +92,25 @@ export function CommitStep() {
       {/* --- Rationale --- */}
       <Field
         id={domId.rationale}
-        fieldId="r2-rationale-field"
+        fieldId="r1-rationale-field"
         label={c.rationale.label}
         instruction={c.rationale.instruction}
         placeholder={c.rationale.placeholder}
-        value={r2.rationale}
+        value={r1.rationale}
         rows={3}
-        onChange={(v) => setNote(R2.rationale, v)}
+        onChange={(v) => setNote(R1.rationale, v)}
       />
 
       {/* --- Feasibility --- */}
       <Field
         id={domId.feasibility}
-        fieldId="r2-feasibility-field"
+        fieldId="r1-feasibility-field"
         label={c.feasibility.label}
         instruction={c.feasibility.instruction}
         placeholder={c.feasibility.placeholder}
-        value={r2.feasibility}
+        value={r1.feasibility}
         rows={2}
-        onChange={(v) => setNote(R2.feasibility, v)}
+        onChange={(v) => setNote(R1.feasibility, v)}
       />
 
       {/* --- Follow-up decisions --- */}
@@ -122,13 +122,13 @@ export function CommitStep() {
             <Field
               key={n}
               id={domId.followUp(n)}
-              fieldId={`r2-followup-${n}`}
+              fieldId={`r1-followup-${n}`}
               label={c.followUp.label(n)}
               placeholder={c.followUp.placeholder}
-              value={r2.followUp[n - 1]}
+              value={r1.followUp[n - 1]}
               rows={3}
               compact
-              onChange={(v) => setNote(R2.followUp(n), v)}
+              onChange={(v) => setNote(R1.followUp(n), v)}
             />
           ))}
         </div>
@@ -143,13 +143,13 @@ export function CommitStep() {
             <Field
               key={n}
               id={domId.risk(n)}
-              fieldId={`r2-risk-${n}`}
+              fieldId={`r1-risk-${n}`}
               label={c.risk.label(n)}
               placeholder={c.risk.placeholder}
-              value={r2.risks[n - 1]}
+              value={r1.risks[n - 1]}
               rows={3}
               compact
-              onChange={(v) => setNote(R2.risk(n), v)}
+              onChange={(v) => setNote(R1.risk(n), v)}
             />
           ))}
         </div>

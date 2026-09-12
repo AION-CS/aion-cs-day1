@@ -1,13 +1,17 @@
 /**
- * Day 10 route registry. Each route is its own case study, so unlike a
- * single-case module, there is no shared "CASE" business name here — only
- * the day-level program identity. Route-specific content (e.g. Route 1's
- * AppNexa Solutions case) lives in that route's own lib/routeN.ts.
+ * Day 11 route registry.
+ *
+ * From Day 11 on, a day ships exactly two routes (CLAUDE.md #12,
+ * CURRICULUM-GUIDE.md §2): Route 1 carries levels 1 and 2 as one continuous
+ * engagement on a single case, Route 2 carries level 3. The `levels` field is
+ * what keeps that legible to a mentor — the learner never sees a level
+ * boundary inside a route, but the registry, the export filename and the
+ * export JSON all still say which objectives a route covers.
  */
 
 export const CASE = {
   company: "AION Green IT",
-  module: "Day 10",
+  module: "Day 11",
   moduleTitle: "Energy-Efficient Software & Green Coding Principles",
 } as const;
 
@@ -23,7 +27,7 @@ export type IconKey =
   | "certificate"
   | "link"
   | "layers"
-  // Day 10 additions — one glyph per inefficiency category (Route 1, Section E).
+  // One glyph per inefficiency category (Route 1, Section E).
   | "blueprint"
   | "database"
   | "drive"
@@ -32,18 +36,22 @@ export type IconKey =
   | "gauge";
 
 export type Route = {
-  n: 1 | 2 | 3;
+  n: 1 | 2;
   slug: string;
   href: string;
-  tag: string; // "Route 1 — Foundations"
+  tag: string; // "Route 1 — Diagnose & Decide"
   title: string; // page H1
   cardTitle: string; // landing card title
   cardBlurb: string; // landing card one-liner
   deliverable: string; // what the route produces
+  /** Curriculum levels this route covers. Route 1 spans two; Route 2 spans one. */
+  levels: number[];
+  /** Roughly how long the whole route takes, material and task together. */
+  minutes: number;
   /**
-   * Build status, not a progress lock: false only means this route's Day 10
-   * content hasn't been written yet. Every page that exists stays reachable by
-   * URL — no route is ever gated on finishing another one.
+   * Build status, not a progress lock: false only means this route's content
+   * hasn't been written yet. Every page that exists stays reachable by URL —
+   * no route is ever gated on finishing another one.
    */
   available: boolean;
 };
@@ -51,38 +59,36 @@ export type Route = {
 export const ROUTES: Route[] = [
   {
     n: 1,
-    slug: "route-1-foundations",
-    href: "/route-1-foundations",
-    tag: "Route 1 — Foundations",
-    title: "Route 1 — Foundations",
-    cardTitle: "Foundations",
+    slug: "route-1-diagnose-and-decide",
+    href: "/route-1-diagnose-and-decide",
+    tag: "Route 1 — Diagnose & Decide",
+    title: "Route 1 — Diagnose & Decide",
+    cardTitle: "Diagnose & Decide",
     cardBlurb:
-      "Why software has a carbon footprint at all, how SCI measures it, and the six places inefficiency hides — then trace AppNexa's live system and diagnose six flagged behaviours without reading a line of code.",
-    deliverable: "Diagnosis Report",
+      "One engagement at AppNexa Solutions, end to end: learn to see where software wastes energy, diagnose six flagged behaviours on the live system trace, then spend the one quarter of capacity you are given — and defend the call you make.",
+    deliverable: "AppNexa Engagement Report",
+    levels: [1, 2],
+    minutes: 40,
     available: true,
   },
   {
     n: 2,
-    slug: "route-2-application",
-    href: "/route-2-application",
-    tag: "Route 2 — Application",
-    title: "Route 2 — Application",
-    cardTitle: "Application",
-    cardBlurb:
-      "One quarter, limited capacity, three defensible places to spend it and no telemetry to prove which is best — predict each option's profile across seven decision dimensions, then commit and defend the call.",
-    deliverable: "Prioritization Memo",
-    available: true,
-  },
-  {
-    n: 3,
-    slug: "route-3-management-decision",
-    href: "/route-3-management-decision",
-    tag: "Route 3 — Management Decision",
-    title: "Route 3 — Management Decision",
+    slug: "route-2-management-decision",
+    href: "/route-2-management-decision",
+    tag: "Route 2 — Management Decision",
+    title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
       "Read how SoftPulse solved it, then lead: rank CodeVista's guiding decisions, map them for momentum cost against structural impact, assign a RACI that survives contact with a board, and make a call before the data is in.",
     deliverable: "Board Memo",
+    levels: [3],
+    minutes: 20,
     available: true,
   },
 ];
+
+/** "Levels 1–2" / "Level 3" — mentor-facing label for a route's curriculum scope. */
+export function levelLabel(levels: number[]): string {
+  if (levels.length === 1) return `Level ${levels[0]}`;
+  return `Levels ${levels[0]}–${levels[levels.length - 1]}`;
+}
