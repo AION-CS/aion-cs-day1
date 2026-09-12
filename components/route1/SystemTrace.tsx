@@ -17,7 +17,7 @@ import { materialRefs } from "@/lib/route1";
 import { Close, DragHandle, Redo, Undo } from "@/components/icons/LineIcons";
 import { FlowDiagram } from "@/components/ui/FlowDiagram";
 import { CategoryGlyph } from "./CategoryGrid";
-import { useFindingSortStore, type SortPlacements } from "./useFindingSortStore";
+import { useFindingSortStore, type PlacementMap } from "./useFindingSortStore";
 import { useRoute1, domId } from "./useRoute1";
 
 /**
@@ -55,7 +55,9 @@ export function SystemTrace() {
     noopTimer.current = window.setTimeout(() => setNoop(null), 320);
   };
 
-  const applyPlacements = (next: SortPlacements) => {
+  // Takes the history utility's wide map: it only ever writes category ids back
+  // into the store, and the snapshots it restores came from there in the first place.
+  const applyPlacements = (next: PlacementMap) => {
     for (const h of HOTSPOTS) choose(R1.category(h.id), next[h.id] ?? "");
   };
 

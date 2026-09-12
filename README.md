@@ -8,9 +8,9 @@ This repo began as the abandoned Day 9 scaffold and was migrated wholesale to Da
 Day 9 case content (UrbanByte Consulting, green workplace, device lifetimes) has been
 removed rather than left dormant; only genuinely shared cross-day infrastructure was kept.
 
-**Status: Routes 1 and 2 are built. Route 3 is not yet written.** Its page does not exist
-and its registry entry is marked `available: false` — a build-status flag, not a progress
-lock. Nothing already built is gated on it.
+**Status: complete.** All three routes are built, building clean, and their export pipelines
+are verified. No route is gated on any other — every page is reachable directly by URL, and a
+soft order-suggestion banner is the only cross-route signal.
 
 ## What's here
 
@@ -28,7 +28,7 @@ lock. Nothing already built is gated on it.
 |---|---|---|---|
 | `/route-1-foundations` | AppNexa Solutions | Diagnosis Report | **built** |
 | `/route-2-application` | AppNexa Solutions | Prioritization Memo | **built** |
-| `/route-3-management-decision` | — | — | not written |
+| `/route-3-management-decision` | SoftPulse (worked example) → CodeVista | Board Memo | **built** |
 
 **Export filenames** follow `{taskNumber}-{name}-day10-l{level}task{taskNumber}` — e.g.
 `1-muchson-day10-l1task1`. The leading number is the task's number *within its route*, and
@@ -93,6 +93,34 @@ measurability but shows nothing visible this quarter. Risk is the one inverted a
 is worse - and the material says so explicitly, because a radar chart otherwise implies a
 bigger polygon is a better option.
 
+## Route 3 — Management Decision: Leading the Standard
+
+Level 3. About 60 minutes of material and 20 minutes of task. Two companies on purpose:
+**SoftPulse Digital Products GmbH** is a read-only worked example in the material, and
+**CodeVista Digital Platforms** is the case the learner actually works. CodeVista appears
+nowhere else in the course, so the task tests whether the reasoning transfers rather than
+whether AppNexa's specifics were memorised.
+
+**Material (four sections, A-D).** Why this reaches a board at all - the question stops being
+"which fix is best" and becomes "which structure makes good fixes the default". RACI in full,
+with its one structural rule (exactly one Accountable) and the two ways it fails, plus what a
+board-ready recommendation under uncertainty actually owes. The regulatory and professional
+backdrop: CSRD / ESRS E1 pulling software's operational footprint into a disclosure, iSAQB's
+CPSA Advanced Level Module GREEN making it an examinable architect competency, and the SOFT
+framework as the cautionary case of pilots that succeed technically and never scale. Then the
+SoftPulse worked example - situation, initial position, the reasoning move, four levers,
+which was prioritised and why not the one that felt more productive, and the same four levers
+sorted by time horizon.
+
+**Task 3 - CodeVista Board Memo.** Rank three of six guiding decisions and justify the top
+one; place five measures on a 2x2 trade-off map (momentum cost against structural impact);
+assign a RACI for ownership of the green coding standard; and name one decision that must be
+made now plus what waiting would cost. The Board Memo assembles alongside and exports as JSON
+(with per-card reference comparison and the one-Accountable flag) plus a print-ready HTML memo.
+
+The worked example renders inside a bordered card with a dark banner, deliberately unlike any
+learner-facing surface, so it cannot be mistaken for something to fill in.
+
 ### Diagram reuse
 
 `components/ui/FlowDiagram.tsx` takes a graph and renders it. Section A passes
@@ -119,7 +147,17 @@ Route 2 reuses the same `FlowDiagram` for its Green Software Patterns lifecycle 
 - `lib/flowDiagram.ts` - the flow-graph types, lifted out of `lib/route1.ts` once a second
   route needed them.
 
-## Standards both routes implement
+### Components built for Route 3
+
+- `components/ui/QuadrantMap.tsx` - a draggable 2x2 map: cards placed on a plane with two
+  labelled axes, native HTML5 drag plus tap-to-select, controlled placement so the current
+  state stays in the persisted store. Styled to match `RadarChart` rather than inventing a
+  second visual language for "a measure scored on two dimensions".
+- `lib/usePlacementHistory.ts` - the undo/redo utility, now a factory. Each exercise creates
+  its own instance, so an undo on Route 3's quadrant map can never restore a snapshot from
+  Route 1's category bins after a client-side navigation.
+
+## Standards all three routes implement
 
 Interaction standards come from [`../CLAUDE.md`](../CLAUDE.md); content standards from
 [`../CURRICULUM-GUIDE.md`](../CURRICULUM-GUIDE.md).

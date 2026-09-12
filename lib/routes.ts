@@ -81,8 +81,8 @@ export const ROUTES: Route[] = [
     title: "Route 3 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "Not yet written. Day 10's Route 3 content is built in a later pass — nothing here is gated on it, and Route 1 stands complete on its own.",
-    deliverable: "To be defined",
-    available: false,
+      "Read how SoftPulse solved it, then lead: rank CodeVista's guiding decisions, map them for momentum cost against structural impact, assign a RACI that survives contact with a board, and make a call before the data is in.",
+    deliverable: "Board Memo",
+    available: true,
   },
 ];
