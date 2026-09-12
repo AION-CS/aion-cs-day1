@@ -1,9 +1,9 @@
-import { CRITERIA, OPTIONS, REFLECTION_PROMPTS } from "@/lib/route2";
+import { EVIDENCE_CARDS, CRITERIA, MEASURES, CONSTRAINTS, STANCES } from "@/lib/route2";
 import type { useRoute2 } from "./useRoute2";
 
 type Route2State = ReturnType<typeof useRoute2>;
 
-/** Left-hand raw recap — every answer as-entered, no formatting or narrative. The structured memo is the right-hand panel. */
+/** Left-hand raw recap — every answer as entered. The structured memo is the right-hand panel. */
 export function RecapPanel({ r2 }: { r2: Route2State }) {
   return (
     <div className="space-y-5 text-ink">
@@ -13,49 +13,72 @@ export function RecapPanel({ r2 }: { r2: Route2State }) {
       </div>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Scores</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Evidence</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
-          {CRITERIA.map((c) => (
+          {EVIDENCE_CARDS.map((c) => (
             <li key={c.id} className="flex items-baseline justify-between gap-2">
-              <span className="text-ash">{c.label}</span>
-              <span className="shrink-0 tabular-nums font-semibold text-ink">
-                {OPTIONS.map((o) => `${o.id}:${r2.scoreOf(c.id, o.id) || "—"}`).join("  ")}
+              <span className="text-ash">#{c.n}</span>
+              <span className="shrink-0 text-right font-semibold text-ink">
+                {r2.confidence[c.id] ?? "—"} · {r2.relevance[c.id] === "changes" ? "relevant" : r2.relevance[c.id] ? "not relevant" : "—"}
               </span>
             </li>
           ))}
         </ul>
+        <p className="mt-1.5 text-micro">
+          <span className="text-ash">Contradiction stance: </span>
+          <span className="text-ink">{STANCES.find((s) => s.id === r2.stance)?.label ?? "—"}</span>
+        </p>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — The Call</h3>
-        <p className="mt-1.5 text-micro"><span className="text-ash">Pick: </span><span className="font-semibold text-ink">{r2.pick || "—"}</span></p>
-        <p className="mt-1 text-micro text-ink">{r2.justify || "—"}</p>
-      </section>
-
-      <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Follow-Ups</h3>
-        <ul className="mt-1.5 space-y-1 text-micro text-ink">
-          {r2.followUps.map((f, i) => <li key={i}>{f || "—"}</li>)}
-        </ul>
-      </section>
-
-      <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Risks</h3>
-        <ul className="mt-1.5 space-y-1 text-micro text-ink">
-          {r2.risks.map((r, i) => <li key={i}>{r || "—"}</li>)}
-        </ul>
-      </section>
-
-      <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Reflection</h3>
-        <ul className="mt-1.5 space-y-1.5 text-micro">
-          {REFLECTION_PROMPTS.map((p, i) => (
-            <li key={p.id}>
-              <span className="text-ash">{p.question}: </span>
-              <span className="text-ink">{r2.reflections[i] || "—"}</span>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Weights &amp; scores</h3>
+        <ul className="mt-1.5 space-y-1 text-micro">
+          {CRITERIA.map((c) => (
+            <li key={c.id} className="flex items-baseline justify-between gap-2">
+              <span className="text-ash">{c.label}</span>
+              <span className="shrink-0 font-semibold tabular-nums text-ink">{r2.weights[c.id] || 0}</span>
             </li>
           ))}
         </ul>
+        <ul className="mt-2 space-y-1 text-micro">
+          {MEASURES.map((m) => (
+            <li key={m.id} className="flex items-baseline justify-between gap-2">
+              <span className="text-ash">
+                {m.id} · {CRITERIA.map((c) => r2.score[`${m.id}:${c.id}`] ?? "–").join(" / ")}
+              </span>
+              <span className="shrink-0 font-semibold tabular-nums text-ink">{r2.totals[m.id].toFixed(2)}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-1.5 text-micro">
+          <span className="text-ash">Sensitivity: </span>
+          <span className="text-ink">{r2.sensitivity ?? "—"}</span>
+        </p>
+      </section>
+
+      <section>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Stress-test &amp; commit</h3>
+        <ul className="mt-1.5 space-y-1 text-micro">
+          {CONSTRAINTS.map((c) => (
+            <li key={c.id} className="flex items-baseline justify-between gap-2">
+              <span className="text-ash">{c.text}</span>
+              <span className="shrink-0 font-semibold text-ink">{r2.constraintPlacement[c.id] ?? "—"}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-1.5 text-micro">
+          <span className="text-ash">Mid-year update: </span>
+          <span className="text-ink">{r2.shock ?? "—"}</span>
+        </p>
+        <p className="mt-1 text-micro">
+          <span className="text-ash">Ranking: </span>
+          <span className="text-ink">
+            {MEASURES.filter((m) => r2.rank[m.id])
+              .sort((a, b) => (r2.rank[a.id] ?? 0) - (r2.rank[b.id] ?? 0))
+              .map((m) => m.id)
+              .join(" → ") || "—"}
+          </span>
+        </p>
       </section>
     </div>
   );

@@ -1,10 +1,11 @@
 /**
- * Route 1 — Knowledge. All learner-facing copy and pure data live here so
- * components stay presentational. Case used throughout Task 1: Flexora
- * Digital Services (fictional).
+ * Route 1 — Knowledge (L1). All learner-facing copy and pure data live here so
+ * components stay presentational. Case used throughout Task 1: UrbanByte
+ * Consulting (fictional).
  */
 
 import type { IconKey } from "@/lib/routes";
+import type { AnswerKeyBlock } from "@/lib/answerKey";
 
 export const LEARNER_NAME_KEY = "learner:name";
 
@@ -13,28 +14,30 @@ export const LEARNER_NAME_KEY = "learner:name";
 // ---------------------------------------------------------------------------
 export const R1 = {
   name: LEARNER_NAME_KEY,
+  /** markSeen bucket for zones the learner has opened on the floor plan. */
+  zones: "r1:zones",
+  stage1: {
+    category: (findingId: string) => `r1:s1:cat:${findingId}`,
+  },
   stage2: {
-    verdict: (itemId: string) => `r1:s2:verdict:${itemId}`,
+    driver: (findingId: string) => `r1:s2:driver:${findingId}`,
+    horizon: (findingId: string) => `r1:s2:horizon:${findingId}`,
   },
   stage3: {
-    dimension: (itemId: string) => `r1:s3:dim:${itemId}`,
-  },
-  stage4: {
-    statement: (id: string) => `r1:s4:stmt:${id}`,
-  },
-  stage5: {
-    side: (itemId: string) => `r1:s5:side:${itemId}`,
+    priority: (findingId: string) => `r1:s3:pick:${findingId}`,
+    direction: (findingId: string) => `r1:s3:dir:${findingId}`,
+    justification: (findingId: string) => `r1:s3:why:${findingId}`,
   },
 } as const;
 
 // ---------------------------------------------------------------------------
-// Material — 5 blocks, each pairing prose with a custom SVG/visual.
+// Material — 4 blocks plus a framework reference grid.
 // ---------------------------------------------------------------------------
-export type MaterialSectionId = "fundamentals" | "scale" | "tension" | "challenges" | "inefficiency" | "wheel";
+export type MaterialSectionId = "workplace" | "carbon" | "servicelife" | "tradeoffs" | "frameworks";
 
 export type MaterialSection = {
-  id: Exclude<MaterialSectionId, "wheel">;
-  n: 1 | 2 | 3 | 4 | 5;
+  id: Exclude<MaterialSectionId, "frameworks">;
+  n: 1 | 2 | 3 | 4;
   icon: IconKey;
   kicker: string;
   title: string;
@@ -49,6 +52,8 @@ export type MaterialSection = {
    */
   reasoning: string[];
   callout: { label: string; text: string };
+  /** Real external sources, per the curriculum standard: named body, and a link where one is stable. */
+  references: { label: string; url?: string }[];
 };
 
 /** DOM anchor a task step's MaterialRefs chip scrolls to. */
@@ -57,12 +62,11 @@ export function materialAnchorId(id: MaterialSectionId): string {
 }
 
 const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  fundamentals: "Block 1 · Cloud benefits",
-  scale: "Block 2 · Economies of scale",
-  tension: "Block 3 · The core tension",
-  challenges: "Block 4 · Typical challenges",
-  inefficiency: "Block 5 · Sources of inefficiency",
-  wheel: "Summary · The 6-Dimension Wheel",
+  workplace: "Block 1 · The five elements",
+  carbon: "Block 2 · Where the carbon sits",
+  servicelife: "Block 3 · Two service lives",
+  tradeoffs: "Block 4 · Trade-offs & leverage",
+  frameworks: "Reference · Frameworks",
 };
 
 /** Chips for a task step: which material sections it draws on. */
@@ -72,313 +76,565 @@ export function materialRefs(ids: MaterialSectionId[]) {
 
 export const MATERIAL: MaterialSection[] = [
   {
-    id: "fundamentals",
+    id: "workplace",
     n: 1,
     icon: "layers",
-    kicker: "1 · What cloud actually offers",
-    title: "Cloud Fundamentals & Core Benefits",
+    kicker: "1 · What the term actually covers",
+    title: "A Green Workplace Is Five Things, Not One",
     definition:
-      "Cloud computing means renting standardised compute, storage, and networking capacity from a provider's shared infrastructure over the internet, instead of buying and running your own physical servers. In a corporate context, this typically shows up as six concrete benefits: scalability and elastic use of resources (capacity grows or shrinks with real demand), flexibility (a broad catalogue of services can be combined without new procurement), faster provisioning (a new server or database is available in minutes, not weeks), lower own-infrastructure effort (no data centre space, cooling, or hardware refresh cycles to manage yourself), standardisation (consistent, repeatable configurations across environments), and high availability (workloads run across multiple physical locations, with provider-managed failover).",
+      "A green workplace is not a single practice like switching monitors off at night. It is the interplay of five things most organisations manage separately, but which jointly determine both environmental and economic outcomes: device lifecycle decisions (how long hardware stays in service and what happens to it afterwards), individual usage behaviour (power states, printing, personal habits), the IT support model (whether the default response to a problem is repair or replacement), procurement policy (what gets bought, on what contract terms, against which criteria), and how the physical and digital workplace is organised (desk sharing, peripheral pools, remote-work patterns).",
     insight:
-      "These benefits are not marketing claims — they follow directly from the underlying model. A shared resource pool, exposed through self-service APIs, is what makes elasticity and fast provisioning possible: you are drawing from capacity the provider has already built for thousands of customers, not waiting for your own hardware order to arrive. Standardisation and high availability follow from the same shared-infrastructure logic: the provider maintains one hardened, replicated environment instead of every customer maintaining their own.",
+      "Because those five are usually owned by different people — IT operations, facilities, procurement, finance, HR — it is entirely normal for an organisation to run them against each other without noticing. An energy-saving awareness campaign aimed at employees, running alongside a procurement contract that replaces every notebook on a fixed three-year cycle regardless of condition, produces a great deal of visible activity and very little measurable change. The campaign works on one element; the contract quietly governs a much larger one.",
     takeaway:
-      "Each of these six benefits is real, but each has a boundary condition worth remembering before Task 1: elasticity only helps if actual demand is variable; lower own-infrastructure effort does not mean lower total cost; and standardisation benefits the provider's operating model as much as it benefits you. Keep that pairing — real benefit, real boundary — in mind as you read the next four blocks.",
+      "When you audit a workplace, the useful diagnostic question is never \"are people behaving well enough?\" but \"which of these five elements is unmanaged, and who owns the decision that would change it?\" That reframing is what turns a list of observations into a case a manager can act on.",
     reasoning: [
-      "Sorting Benefit vs Risk: if a card describes a condition one of these six benefits exists to absorb — growing demand, slow procurement, high own-infrastructure effort — it is a Benefit. It is a reason the move makes sense, not a warning about it.",
-      "\"Data volumes and storage requirements are continuously increasing\" is the textbook case for elasticity, so it sorts as Benefit. Growth only becomes a Risk when the case also says the growth is unmanaged or the data is retained with no lifecycle policy — read the card, not your worst-case assumption.",
-      "A card calling your own infrastructure inefficient is also a Benefit: it names the gap the efficiency argument in Block 2 is meant to close.",
-      "Every benefit has a boundary condition (elasticity needs variable demand; lower operating effort is not lower total cost). Use the boundary to explain your reasoning in Stage 3 — not to flip a Benefit into a Risk.",
+      "When a finding could belong to two of the five elements, ask which one would have to change for the finding to disappear. That is the element it belongs to — not the one where the symptom happens to be visible.",
+      "Hardware that nobody is tracking is a lifecycle and peripherals question, not a behaviour question: no amount of employee goodwill catalogues a storeroom.",
+      "Rules out the tempting wrong answer: visible activity is not evidence that an element is managed. A campaign, a poster, or an informal habit tells you someone cares — it does not tell you anyone owns the decision.",
     ],
     callout: {
       label: "Why this matters for the case ahead",
-      text: "Flexora's management is expecting exactly these six benefits from its cloud expansion — more speed, less operating burden. Whether the evidence actually supports that expectation is what Task 1 asks you to test.",
+      text: "UrbanByte Consulting advises other companies on sustainable digital transformation. Its own workplace has never been audited against that standard — and what you'll find is not a lack of goodwill, but five elements nobody has ever looked at together.",
     },
+    references: [
+      { label: "Blue Angel (Blauer Engel) — award criteria for computers and workplace IT", url: "https://www.blauer-engel.de/en" },
+      { label: "ESRS E5 (Resource use and circular economy) under the EU CSRD" },
+    ],
   },
   {
-    id: "scale",
+    id: "carbon",
     n: 2,
     icon: "factory",
-    kicker: "2 · Economies of scale",
-    title: "Why Cloud Can Be Efficient",
+    kicker: "2 · The number that reframes everything",
+    title: "Where a Device's Carbon Actually Sits",
     definition:
-      "Hyperscale providers can run data centres at a level of efficiency that is very difficult for an individual company to reach on its own. Three mechanisms explain most of the gap: utilisation (thousands of customers' workloads are pooled onto shared hardware, so servers run closer to full capacity instead of sitting mostly idle), automation (software-defined provisioning, patching, and cooling control replace manual operations at a scale no single enterprise IT team can justify building), and professional data-centre operations (purpose-built facilities with custom cooling, power delivery, and 24/7 specialist operations teams).",
+      "For a typical business laptop, manufacturing accounts for roughly 75–85% of the device's total lifetime carbon footprint — not the years of daily use that follow. Independent lifecycle assessments across Dell, HP and Lenovo business notebooks converge on that range; one detailed model of a 14-inch business laptop splits it as 81.4% manufacturing, 13.9% use phase, 4.4% transport and 0.3% end-of-life. The reason manufacturing dominates is physical: building a laptop means mining and refining rare-earth and precious metals, fabricating semiconductors (extremely energy- and water-intensive), producing a lithium battery, and moving components across several countries before final assembly. That footprint is spent the moment the device exists, largely regardless of how efficiently it runs afterwards.",
     insight:
-      "The clearest evidence of this gap is PUE (Power Usage Effectiveness — the ratio of total facility energy to IT equipment energy; a lower number means less energy lost to cooling, power delivery, and other overhead). The Uptime Institute's 2026 Global Data Center Survey put the industry-wide annual average PUE at 1.52 (1.36 once larger facilities are weighted proportionally), while leading hyperscale operators report PUEs as low as 1.08, typically in the 1.1–1.2 range for their newest facilities. The average enterprise-operated facility, by contrast, still runs at roughly 2.1 — effectively losing over half of the power it draws to non-IT overhead.",
+      "The consequence is counter-intuitive but well evidenced. A joint analysis by TCO Certified and the Öko-Institut — a German research institute specialising in sustainable consumption policy — examined 15 carbon footprint reports for 14-inch business notebooks from Dell, Lenovo and HP, and found that extending service life from four to six years cuts average annual emissions by roughly 29%: from about 74.7 kg CO₂e per year down to about 53.1 kg CO₂e per year. Nothing about the device changes. The fixed manufacturing footprint is simply spread across more years of useful work. Read the other way round: buying a \"greener\" replacement almost always creates more lifecycle carbon than keeping the current device running longer, because the purchase re-triggers the dominant manufacturing footprint while the use-phase efficiency gain is comparatively small.",
     takeaway:
-      "This is the strongest technical and economic argument for moving workloads to the cloud: a well-run hyperscale facility can deliver the same computing work using meaningfully less energy per unit of IT load than most companies' own data centres. That argument is about efficiency per unit of work, though — not about what happens to total energy demand once migration makes computing cheaper and easier to consume. That distinction is exactly where the next block picks up.",
+      "One honest caveat, because this argument will be challenged by anyone technical: the pattern is strongest for laptops. For desktop PCs the use-phase share is larger, simply because desktops draw more power — one comparative study put a desktop's total footprint at 679 kg CO₂e over four years against a laptop's 286 kg CO₂e for the same task load. \"Extend, don't replace\" is therefore not a universal law; it is a consequence of where the footprint sits for a given device category. Office fleets are increasingly laptop-dominated, which is precisely why this lever matters so much for workplace IT.",
     reasoning: [
-      "Wheel dimension: when a card contrasts your own infrastructure with the cloud's, the dominant dimension is Cost. An enterprise facility at PUE ≈ 2.1 against hyperscale at 1.1–1.2 is a cost-of-energy gap before it is anything else.",
-      "\"Partly inefficient, but easy to control\" is exactly the profile this block says the cloud improves on — efficiency yes, control no. That is why it reads as a reason for the move rather than an objection to it.",
-      "Rules out the tempting wrong answer: this block does not say a migration lowers total energy use. That claim belongs to Block 3, and Block 3 disagrees. Never cite a PUE number as proof of a sustainability outcome.",
+      "If a finding is about a working device leaving the organisation, the carbon question is already settled: the replacement's manufacturing footprint is the dominant number. Classify it under replacement cycles, not under cost.",
+      "Use-phase findings — power settings, machines left running overnight — are real, but they move the 13–15% slice. They belong under device use, and they are rarely the biggest lever in the room.",
+      "Rules out the tempting wrong answer: \"we procure energy-efficient models\" is an answer to a use-phase question. It does not address a lifetime-extension question at all, because the efficiency of the replacement never recovers the carbon spent building it.",
     ],
     callout: {
-      label: "Source and currency of these figures",
-      text: "Figures above are from the Uptime Institute's 2026 Global Data Center Survey. PUE benchmarks shift year to year as facilities are built and retired — always check the current-year survey before quoting a number in a real report.",
+      label: "Source and how to quote it",
+      text: "Figures above come from the TCO Certified / Öko-Institut review of 15 notebook footprint reports. When you quote a lifecycle figure in a real report, always name the device class and the assumed hold period — a laptop number and a desktop number are not interchangeable, and a 4-year and 6-year model produce different annual figures from identical hardware.",
     },
+    references: [
+      { label: "TCO Certified & Öko-Institut e.V. — service-life extension analysis of 14\" business notebooks", url: "https://tcocertified.com" },
+      { label: "Manufacturer product carbon footprint reports (Dell, HP, Lenovo business notebooks)" },
+    ],
   },
   {
-    id: "tension",
+    id: "servicelife",
     n: 3,
-    icon: "target",
-    kicker: "3 · The tension this route is built around",
-    title: "The Core Tension — Economies of Scale vs Energy Demand",
-    definition:
-      "Migrating to the cloud does not automatically make an organisation more sustainable, even though the underlying infrastructure is more efficient. The reason is a rebound effect: as computing becomes cheaper, faster to provision, and easier to consume (exactly the benefits described in Block 1), organisations tend to consume more of it — more environments, more data retained, more experiments spun up and left running. A rising efficiency curve and a rising total-demand curve can move in the same direction at the same time.",
-    insight:
-      "This mirrors a pattern economists have observed since the 19th century (Jevons' paradox): making a resource more efficient to use often increases total consumption of it, rather than reducing it, because the lower cost per unit removes a natural brake on demand. In a corporate cloud context, this shows up very concretely — a lower friction to spin up a new cloud resource (Block 1's \"faster provisioning\") is also a lower friction to leave that resource running unused (a direct link to Block 5's \"sources of inefficiency\").",
-    takeaway:
-      "The practical consequence: whether a specific cloud migration is genuinely more sustainable depends less on which provider you choose, and more on whether the organisation actively manages the demand side — governance over what gets provisioned, and discipline about decommissioning what is no longer needed. A provider's efficiency is a ceiling on how sustainable your cloud use can be; it is not a guarantee.",
-    reasoning: [
-      "Any card about announcing, communicating, or reporting a sustainability result belongs to the Sustainability dimension — and it is a Risk until someone has measured the demand side. Wanting to report a success is not the same as having evidence for one.",
-      "Efficiency per unit of work and total consumption are two different numbers. If a card only establishes the first, it cannot support a claim about the second.",
-      "This is also the backbone of both Stage 3 statements: genuine sustainability needs an efficient provider AND managed demand; it fails when demand growth outruns the efficiency gain.",
-    ],
-    callout: {
-      label: "You'll see this again",
-      text: "The diagram below reappears, smaller, at the start of Task 1 — Flexora's own numbers are a live example of efficiency and total demand moving in opposite directions from what management expects.",
-    },
-  },
-  {
-    id: "challenges",
-    n: 4,
-    icon: "shield",
-    kicker: "4 · What commonly goes wrong",
-    title: "Typical Challenges of Cloud Use",
-    definition:
-      "Beyond the sustainability question, six challenges recur across organisations adopting cloud at scale: vendor dependency and lock-in (proprietary services make switching providers costly), lack of transparency (usage and cost data is often scattered across teams and dashboards), cost control — FinOps (spend is usage-based and can grow silently without active management), data sovereignty (data may be legally required to stay within a jurisdiction, e.g. under GDPR), governance gaps (no consistent policy for who can provision what), and security & compliance risk (shared responsibility models mean the customer, not just the provider, must correctly configure security controls).",
-    insight:
-      "These six are not independent — they compound. A governance gap (no policy on who can order cloud services) is very often the root cause behind both a transparency problem (nobody has full visibility) and a cost-control problem (spend accumulates unnoticed across many small, individually-approved purchases). Vendor lock-in and data sovereignty are more structural: they are consequences of specific technical and legal choices made early in an adoption, and are expensive to reverse later.",
-    takeaway:
-      "Every one of these six challenges maps onto one of the six dimensions in the wheel at the end of this material — that mapping is the framework you will actually use in Task 1, not just a list to memorise.",
-    reasoning: [
-      "Governance or Controllability? A card about who may order or approve something maps to Governance. A card about whether anyone can see and steer what is already running maps to Controllability. \"No uniform cloud governance\" is the first; \"departments order independently\" is the second.",
-      "Technical or Management/Governance problem? Ask what is actually missing. If what's missing is a rule, a mandate, or an owner — nobody has decided who may do what — it is a Governance problem. If what's missing is a capability someone could build (a central provisioning path with guardrails, a cost dashboard, monitoring), it is a Technical problem, even when the symptom shows up as departmental behaviour.",
-      "Anything about what the organisation tells the outside world is decided by leadership, not engineering — classify it as Governance.",
-      "These six challenges compound: a governance gap is usually the root cause behind a transparency gap and a cost gap. When the wheel forces one segment, pick the dimension the card names most directly, not the root cause sitting behind it.",
-    ],
-    callout: {
-      label: "Not a reason to avoid cloud",
-      text: "None of these six challenges argue against cloud adoption itself — they argue for adopting it deliberately, with governance and monitoring built in from the start rather than added after problems appear.",
-    },
-  },
-  {
-    id: "inefficiency",
-    n: 5,
     icon: "recycleLoop",
-    kicker: "5 · Where the waste actually comes from",
-    title: "Sources of Inefficiency",
+    kicker: "3 · The gap you are auditing",
+    title: "Two Service Lives, and What Closes the Gap",
     definition:
-      "Even on efficient hyperscale infrastructure, an organisation's own cloud usage can be highly wasteful. Five patterns account for most of it: over-provisioning (requesting more capacity than a workload needs, \"just in case\"), unmanaged self-service usage (any team can spin up resources with no review), unnecessary data retention (storing data indefinitely with no lifecycle or deletion policy), zombie or idle workloads (resources left running after the project that needed them has ended), and poor architecture decisions (an application designed without cost or efficiency in mind, e.g. always-on compute for a workload that runs once a day).",
+      "Two different numbers both get called a device's \"service life\", and keeping them apart is the core analytical skill of this route. Technical service life is how long a device can physically and functionally keep working — CPU, RAM and storage still perform, the battery still holds a usable charge, the chassis is intact. For a well-specified, well-maintained business laptop that is realistically five to seven years, longer where components can be upgraded. Organisationally permitted service life is how long company policy allows a device to stay in service before mandatory replacement — commonly fixed at three years, and almost never because hardware is failing. It is set by leasing contract terms, depreciation schedules, or a support policy that prefers a uniform fleet age for simplicity. The gap between those two numbers is the lifetime-extension opportunity.",
     insight:
-      "Each of these is a demand-side problem, not a supply-side one — none of it is fixed by choosing a more efficient hyperscale provider, because the underlying resource is being consumed unnecessarily in the first place. This is the direct, practical face of Block 3's rebound effect: the same low friction that makes cloud fast and convenient (Block 1) is what allows over-provisioning and zombie workloads to accumulate unnoticed.",
+      "Closing that gap is not a matter of \"letting people keep old laptops\" — it needs five specific things to be true, and each one is decided well above desk level. Repairability, which is no longer merely a design nicety: the EU Right to Repair Directive (Directive (EU) 2024/1799) requires manufacturers of listed product categories to make repair available at a reasonable price and time, including after the warranty expires, with member states transposing it into national law by 31 July 2026; since June 2025 smartphones and tablets already carry a mandatory repairability label graded A to E, covering criteria such as spare-part availability and software-support duration. Laptops are not yet in scope, but they sit in the work plan of the Ecodesign for Sustainable Products Regulation that drives where these requirements go next — so this is a regulatory direction, not a hypothesis. Upgradability and material design, certified today through ecolabels: Blue Angel–certified computers must be repairable and upgradable by design and meet strict recyclable-design and material requirements, which is why a sourcing decision made years earlier is what makes extension feasible now. Fleet standardisation, which is commonly misapplied: standardising device models makes spare-part stocking and a repair-first process easier, whereas standardising the replacement schedule does the opposite. Support process design — whether IT's default is \"repair where possible\" or \"replace where convenient\" — which shapes outcomes more than almost anything else on this list and is a pure management decision nobody on the floor gets to make. And user acceptance: a technically excellent reuse programme still fails if employees read a repaired device as a status downgrade.",
     takeaway:
-      "This is also the most actionable list in this material: unlike the provider's own PUE or hardware roadmap, every one of these five sources of waste is within the customer organisation's own control, starting with visibility into what is actually running.",
+      "So when you find a three-year replacement cycle running on healthy hardware, the finding is not \"people replace things too often\". The finding is that permitted service life was set by a contract, and no documented criteria exist to let a healthy device stay. Name the mechanism, and the recommendation writes itself.",
     reasoning: [
-      "\"Cloud costs are rising faster than expected\" is a Cost-dimension Risk, and its cause is almost always on this list. Because over-provisioning, zombie workloads, and oversized resources are fixed by rightsizing and clean-up work, tag it as an Individual Technical Problem rather than a governance one.",
-      "Rules out the tempting wrong answer: growing storage is not automatically waste. Growth on its own is demand (Block 1); growth with no lifecycle or deletion policy is waste. Only the second is a Risk.",
-      "Every source here is demand-side and inside the customer's own control — none is fixed by switching to a more efficient provider. That is what makes this the most actionable list in the material, and the backbone of your second Stage 3 statement.",
+      "Standardising models and standardising replacement cycles are two different decisions. A finding about a uniform fixed cycle is a replacement-cycle problem — never evidence of a standardisation benefit.",
+      "If what is missing is a written rule, a criterion or an owner, the driver is management and structural, even when the visible symptom is one technician's habit on one shift.",
+      "A perception problem — status, \"refurbished feels second-class\" — is the one place where individual behaviour is the honest reading of the driver. But the fix still sits with leadership, because only leadership can sanction reuse publicly and make it the normal choice.",
+      "Rules out the tempting wrong answer: \"nobody stops people keeping older devices\" is not a lifetime-extension policy. An absent rule is not a permissive rule; it is an absent one, and it produces whatever the convenient default happens to be.",
     ],
     callout: {
-      label: "Before you move on",
-      text: "The wheel below is a summary of everything in this material as one working framework. Study it — you will use it directly, as an interactive tool, in Stage 2 of Task 1.",
+      label: "The procurement link back to Day 5",
+      text: "Buying Blue Angel–certified, repairable, upgradable devices is a Day 5 sourcing decision. Extending their life is a Day 9 operations decision. They are the same lever seen from two ends of the process — which is why a workplace cannot extend its way out of hardware that was never specified to be repairable.",
     },
+    references: [
+      { label: "Directive (EU) 2024/1799 — common rules promoting the repair of goods", url: "https://eur-lex.europa.eu/eli/dir/2024/1799/oj" },
+      { label: "Regulation (EU) 2024/1781 — Ecodesign for Sustainable Products Regulation (ESPR)", url: "https://eur-lex.europa.eu/eli/reg/2024/1781/oj" },
+      { label: "Blue Angel (Blauer Engel) — basic award criteria for computers", url: "https://www.blauer-engel.de/en" },
+    ],
+  },
+  {
+    id: "tradeoffs",
+    n: 4,
+    icon: "target",
+    kicker: "4 · The counter-arguments, and the real lever",
+    title: "Honest Trade-offs — and Why This Is a Leadership Topic",
+    definition:
+      "Lifetime extension is not free of cost or risk, and presenting it that way will not survive five minutes with an IT security or service lead. Three trade-offs are genuine. Security: ageing hardware eventually falls outside vendor security-patch support windows, or lacks hardware security modules that newer compliance baselines assume — there is a real point past which extension becomes a liability rather than a saving. Performance and software bloat: hardware and software are entangled, a machine can only be as efficient as the software running on it allows, and the way software is designed influences when otherwise-capable hardware starts to feel obsolete — which means some \"this laptop is too slow\" complaints are software problems wearing a hardware costume. Convenience and standardisation: a fleet with mixed repair and upgrade histories is genuinely harder to support uniformly than a fleet of identical age and spec.",
+    insight:
+      "Now put Block 2's number together with that list. If 75–85% of a device's footprint is already locked in at manufacturing, then desk-level behaviour — screen brightness, sleep settings, printing habits — can only ever influence the remaining 15–25%. Behaviour change is real and worth doing, and it is usually the cheapest thing to start. But it structurally cannot outperform a decision about when and how often devices get replaced, because that decision controls whether the dominant 75–85% is re-triggered at all. A workplace programme made entirely of behavioural nudges is optimising the smaller lever while leaving the larger one on autopilot.",
+    takeaway:
+      "That is why lifetime extension has to be designed as governance — leasing terms, documented repair/upgrade/retire criteria, support defaults, and a visible signal that reuse is sanctioned — rather than delegated to individual goodwill. It also now has a reporting counterpart: under the CSRD, ESRS E5 asks companies to disclose resource inflows and outflows and circular-economy performance, which makes \"how long do our devices stay in service\" a number an organisation may have to state publicly rather than merely intend.",
+    reasoning: [
+      "Diagnosing the horizon: a fix is short-term only if it can be done under current policy and current contracts. If a lease, a written criterion or an approval path has to change first, it is a structural change — however technically easy it sounds.",
+      "Security is the one legitimate reason to replace a working device, but it has to be named specifically — out of patch support, missing a required hardware security module — not used as a blanket justification for a fixed cycle.",
+      "Rules out the tempting wrong answer: \"the device feels slow\" is not evidence of hardware end-of-life until a software cause has been ruled out. Treat a perceived-performance finding as a diagnosis gap, not a hardware fact.",
+      "When you choose what to act on first, prefer the finding whose fix is cheap and reversible over the one with the biggest theoretical impact — then say in your justification which larger lever it unlocks.",
+    ],
+    callout: {
+      label: "How this plays in a German/EU corporate setting",
+      text: "In a CSRD-reporting organisation, \"we extended average device service life from three to five years\" is both an emissions story and a disclosure line. That dual framing is usually what moves a finance stakeholder who was unmoved by the environmental argument alone.",
+    },
+    references: [
+      { label: "ESRS E5 — Resource use and circular economy (EU CSRD reporting standards)" },
+      { label: "Regulation (EU) 2024/1781 — ESPR, on software support and premature obsolescence", url: "https://eur-lex.europa.eu/eli/reg/2024/1781/oj" },
+    ],
   },
 ];
 
 // ---------------------------------------------------------------------------
-// The 6-Dimension Wheel — used as a materials summary and, functionally, as
-// the Stage 2 drag target in Task 1.
+// Framework reference grid (material summary block).
 // ---------------------------------------------------------------------------
-export type DimensionId = "scalability" | "cost" | "controllability" | "sustainability" | "governance" | "dependencies";
-
-export type Dimension = {
-  id: DimensionId;
-  label: string;
-  question: string;
+export type Framework = {
+  id: string;
+  name: string;
+  governs: string;
 };
 
-export const DIMENSIONS: Dimension[] = [
-  { id: "scalability", label: "Scalability", question: "Can capacity grow or shrink with real demand, without a slow procurement cycle?" },
-  { id: "cost", label: "Cost", question: "Is total spend predictable, and does it track the value actually delivered?" },
-  { id: "controllability", label: "Controllability", question: "Does the organisation have visibility and control over what is running, and who ordered it?" },
-  { id: "sustainability", label: "Sustainability", question: "Is the environmental claim backed by real data — not just a certificate or a good PUE?" },
-  { id: "governance", label: "Governance", question: "Are there clear policies, ownership, and approval paths for how cloud is used?" },
-  { id: "dependencies", label: "Dependencies", question: "How hard would it be to leave this provider, or negotiate on equal terms?" },
+export const FRAMEWORKS: Framework[] = [
+  {
+    id: "r2r",
+    name: "EU Right to Repair Directive (2024/1799)",
+    governs: "A legal right to repair for covered product categories — available at reasonable price and time, including after warranty. Member-state transposition deadline: 31 July 2026.",
+  },
+  {
+    id: "espr",
+    name: "ESPR (Regulation (EU) 2024/1781)",
+    governs: "The ecodesign framework that decides which product categories get repairability, durability and software-support requirements next. Laptops sit in its work plan.",
+  },
+  {
+    id: "blauer-engel",
+    name: "Blue Angel (Blauer Engel)",
+    governs: "German ecolabel certifying computers that are repairable and upgradable by design, with recyclable-design and material requirements — the sourcing decision that makes later extension possible.",
+  },
+  {
+    id: "esrs-e5",
+    name: "ESRS E5 (under CSRD)",
+    governs: "Corporate disclosure of resource inflows/outflows and circular-economy performance — the reporting-side counterpart to a lifetime-extension decision.",
+  },
+];
+
+export const FRAMEWORK_REASONING: string[] = [
+  "Regulation tells you which way the ground is moving, not what to do this quarter. Cite it to justify why a policy change is worth doing now rather than in three years.",
+  "Use Blue Angel at procurement and the Right to Repair Directive at operations. If a finding is about hardware that simply cannot be repaired, no operations policy will fix it — that is a sourcing failure.",
+  "ESRS E5 is the argument that reaches finance: service life stops being a preference and becomes a figure the organisation may have to disclose.",
 ];
 
 // ---------------------------------------------------------------------------
-// Case brief — Flexora Digital Services (Task 1)
+// Case brief — UrbanByte Consulting (Task 1)
 // ---------------------------------------------------------------------------
 export const CASE_BRIEF = {
-  company: "Flexora Digital Services",
+  company: "UrbanByte Consulting",
   setup:
-    "Flexora Digital Services is growing strongly, has so far operated a mix of local infrastructure and individual cloud services, and plans to move further applications to the cloud. Management expects this to bring more speed and a lower operating burden. At the same time, there is uncertainty about cost development, controllability, and sustainability impact.",
+    "UrbanByte Consulting is a boutique digital transformation consultancy founded in 2014, with roughly 180 employees split between its Frankfurt headquarters and a smaller Amsterdam office. It has grown fast — headcount is up about 40% in three years — and IT has scaled reactively to keep pace rather than by design. Externally, UrbanByte markets itself heavily on sustainable digital transformation; several of its own consultants advise other companies on exactly this topic. Internally, its workplace IT has never been audited against that standard.",
+  fleet:
+    "The fleet: roughly 210 business notebooks (13\" and 14\" class), 90 external monitors and 140 docking stations across both offices, plus a shared printer fleet on each floor. Notebooks are leased on a company-wide contract that Finance negotiated for a flat three-year replacement cycle, applied uniformly regardless of a device's actual condition.",
   role:
-    "Your role: cloud strategy analyst. Work through the evidence systematically — the same way a professional would before recommending a course of action to management.",
+    "Your role: you have been asked to do a quiet, evidence-based walkthrough — not to fix anything yet, just to observe. Walk the floor, collect what you find, and build the case.",
 } as const;
 
 // ---------------------------------------------------------------------------
-// Evidence cards — shared across Stages 2 and 3.
+// Case story — the same brief, delivered as a narrated sequence instead of a
+// wall of text (CURRICULUM-GUIDE §5.1, format C's linear cousin). Art drops
+// into /public/story/ under the filenames below; until a file exists the
+// player shows a labelled placeholder, so this ships and works without it.
 // ---------------------------------------------------------------------------
-export type Verdict2 = "benefit" | "risk";
+export const NARRATOR = {
+  name: "Nadine Keller",
+  role: "Managing Partner, UrbanByte Consulting",
+  /** Transparent-background cut-out, roughly waist-up. Optional. */
+  portraitSrc: "/story/r1-narrator.png",
+} as const;
 
-export type EvidenceItem = {
+export type StoryBeat = {
   id: string;
+  /** Scene art, 16:9. Missing files degrade to a labelled placeholder. */
+  imageSrc: string;
+  imageAlt: string;
+  /** Short label shown on the progress rail. */
+  chapter: string;
+  /** Set when the narrator says it; omitted for third-person scene text. */
+  speaker?: string;
   text: string;
-  correctVerdict: Verdict2;
-  verdictClue: string;
-  correctDimension: DimensionId;
-  dimensionClue: string;
 };
 
-export const EVIDENCE_ITEMS: EvidenceItem[] = [
+export const CASE_STORY: StoryBeat[] = [
   {
-    id: "ev-departments",
-    text: "Several departments order cloud services independently.",
-    correctVerdict: "risk",
-    verdictClue: "If nobody has a full picture of what's being ordered, is that closer to a benefit of moving fast, or a risk of losing oversight?",
-    correctDimension: "controllability",
-    dimensionClue: "Which dimension is directly about whether the organisation can see and control what is running and who ordered it?",
+    id: "pitch",
+    imageSrc: "/story/r1-01-the-pitch.jpg",
+    imageAlt: "A UrbanByte consultant presenting a sustainability roadmap to a client in a bright meeting room",
+    chapter: "The pitch",
+    speaker: NARRATOR.name,
+    text: "We sell sustainable digital transformation. Last month I stood in a client's boardroom and told them to stop replacing laptops every three years. Then their CIO asked what we do ourselves — and I realised I had no idea.",
   },
   {
-    id: "ev-governance",
-    text: "There is no uniform cloud governance.",
-    correctVerdict: "risk",
-    verdictClue: "\"No uniform policy\" — is that ever a strength, or is it always at least a gap waiting to cause a problem?",
-    correctDimension: "governance",
-    dimensionClue: "This one names the dimension almost directly in the word itself.",
+    id: "growth",
+    imageSrc: "/story/r1-02-the-growth.jpg",
+    imageAlt: "A busy open-plan consulting office, more desks than the room was designed for",
+    chapter: "The growth",
+    text: "UrbanByte was founded in 2014. Today it is roughly 180 people, split between a Frankfurt headquarters and a smaller Amsterdam office, and headcount is up about 40% in three years. IT scaled to keep pace — reactively, one purchase order at a time, never by design.",
   },
   {
-    id: "ev-internal-ops",
-    text: "Internal server operations are partly inefficient, but easy to control.",
-    correctVerdict: "benefit",
-    verdictClue: "Read this as a reason FOR the cloud move, not a warning about it — what does \"partly inefficient\" internal infrastructure suggest cloud could improve?",
-    correctDimension: "cost",
-    dimensionClue: "Inefficient operations usually show up on which line of a budget?",
+    id: "fleet",
+    imageSrc: "/story/r1-03-the-fleet.jpg",
+    imageAlt: "Rows of identical business notebooks, monitors and docking stations laid out like an inventory",
+    chapter: "The fleet",
+    text: "On paper it looks unremarkable: about 210 business notebooks, 90 external monitors, 140 docking stations, and a shared printer on each floor. Ordinary numbers for a company this size — which is exactly why nobody has ever looked at them closely.",
   },
   {
-    id: "ev-costs-rising",
-    text: "Cloud costs are rising faster than expected.",
-    correctVerdict: "risk",
-    verdictClue: "\"Faster than expected\" is a phrase about a plan going wrong, not right — which side does that put it on?",
-    correctDimension: "cost",
-    dimensionClue: "This one is direct: which dimension is literally about spend?",
+    id: "contract",
+    imageSrc: "/story/r1-04-the-contract.jpg",
+    imageAlt: "A leasing contract on a finance desk beside a calendar marked with repeating three-year intervals",
+    chapter: "The contract",
+    speaker: NARRATOR.name,
+    text: "Finance negotiated one leasing contract for the whole fleet: every notebook goes back after three years, whatever condition it is in. At the time it was the simplest option on the table. Nobody asked what it would mean four years later.",
   },
   {
-    id: "ev-data-growth",
-    text: "Data volumes and storage requirements are continuously increasing.",
-    correctVerdict: "benefit",
-    verdictClue: "Re-read Block 1 — which cloud benefit exists specifically to absorb continuously growing demand without a slow procurement cycle?",
-    correctDimension: "scalability",
-    dimensionClue: "Continuously growing demand is the exact scenario one dimension is designed to answer for.",
+    id: "blindspot",
+    imageSrc: "/story/r1-05-the-blind-spot.jpg",
+    imageAlt: "Five separate corners of the same office — storage, finance, desks, print station, helpdesk — seen at once",
+    chapter: "The blind spot",
+    text: "There is no villain in this story. Procurement owns the contract, IT owns the support process, Facilities owns the building, HR owns onboarding — and each of them is doing their job. What nobody owns is the picture all five make together.",
   },
   {
-    id: "ev-sustainability-pr",
-    text: "Management would also like to communicate the cloud as a sustainability success.",
-    correctVerdict: "risk",
-    verdictClue: "Wanting to communicate something as a success is not the same as having the evidence for it — re-read Block 3 on the difference between efficiency and total demand.",
-    correctDimension: "sustainability",
-    dimensionClue: "Which dimension asks whether a claim like this is actually backed by data?",
+    id: "brief",
+    imageSrc: "/story/r1-06-your-brief.jpg",
+    imageAlt: "An early-morning office corridor seen from the visitor's point of view, notebook in hand",
+    chapter: "Your brief",
+    speaker: NARRATOR.name,
+    text: "So here is what I need from you. Walk the floor — quietly, before the place fills up. Six areas. Don't fix anything yet, don't tell anyone what to do. Just look, and bring me what you actually find.",
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Stage 4 — two sentence-starter statements.
+// Six categories — the Stage 1 sorting bins.
 // ---------------------------------------------------------------------------
-export type StatementPrompt = {
+export type CategoryId = "deviceUse" | "replacement" | "peripherals" | "printing" | "userBehaviour" | "support";
+
+export type Category = {
+  id: CategoryId;
+  label: string;
+  /** Permanent caption under the bin label — what belongs here. */
+  hint: string;
+};
+
+export const CATEGORIES: Category[] = [
+  { id: "deviceUse", label: "Device Use", hint: "How devices are actually run day to day: power state, idle time, settings." },
+  { id: "replacement", label: "Replacement Cycles", hint: "When and why a device leaves the organisation." },
+  { id: "peripherals", label: "Peripherals", hint: "Monitors, docks, keyboards — the hardware around the device." },
+  { id: "printing", label: "Printing Behaviour", hint: "Paper use, print defaults, and what the print system permits." },
+  { id: "userBehaviour", label: "User Behaviour", hint: "What employees are willing to ask for, accept, or avoid." },
+  { id: "support", label: "Support Model", hint: "How IT decides between repair, upgrade and replace." },
+];
+
+// ---------------------------------------------------------------------------
+// Diagnosis axes — two forced choices per finding, which together place it on
+// the 2×2. Deliberately answered as questions first: the quadrant position is
+// a consequence of the two answers, never something the learner drags directly.
+// ---------------------------------------------------------------------------
+export type DriverId = "individual" | "structural";
+export type HorizonId = "shortTerm" | "structuralChange";
+
+export const DRIVER_QUESTION = "Is this primarily driven by individual behaviour, or by a management/structural gap?";
+export const HORIZON_QUESTION = "Can this be resolved short-term under current policy, or does it need a structural change?";
+
+export const DRIVER_OPTIONS: { id: DriverId; label: string }[] = [
+  { id: "individual", label: "Individual behaviour" },
+  { id: "structural", label: "Management & structural" },
+];
+
+export const HORIZON_OPTIONS: { id: HorizonId; label: string }[] = [
+  { id: "shortTerm", label: "Short-term fix" },
+  { id: "structuralChange", label: "Structural change needed" },
+];
+
+// ---------------------------------------------------------------------------
+// Six zones, one finding each. Zone → finding → category is 1:1, so Stage 1's
+// sort is a real matching exercise rather than a pile-sorting chore.
+// ---------------------------------------------------------------------------
+export type ZoneId = "storage" | "finance" | "workspace" | "print" | "helpdesk" | "onboarding";
+
+export type Zone = {
+  id: ZoneId;
+  letter: string;
+  label: string;
+  /** One line of scene-setting shown above the finding when the zone opens. */
+  scene: string;
+};
+
+export const ZONES: Zone[] = [
+  { id: "storage", letter: "A", label: "IT Storage Room", scene: "A narrow room behind the server cupboard. Shelves, boxes, and three replacement rounds' worth of hardware nobody has logged." },
+  { id: "finance", letter: "B", label: "Finance & Procurement", scene: "Tidy desk, neat folders. The leasing contract and the replacement schedule both live here." },
+  { id: "workspace", letter: "C", label: "Open Workspace", scene: "Two floors of consultant desks. You come back at 21:40 on a Thursday to see what is still awake." },
+  { id: "print", letter: "D", label: "Print Station", scene: "The shared multifunction printer on each floor, a paper cupboard, and a recycling bin that is fuller than it should be." },
+  { id: "helpdesk", letter: "E", label: "IT Helpdesk", scene: "A two-person counter with a shelf of spare notebooks behind it, and a ticket queue on the wall monitor." },
+  { id: "onboarding", letter: "F", label: "Onboarding Desk", scene: "Where every new hire meets their equipment for the first time — and learns what \"normal\" looks like here." },
+];
+
+export type Finding = {
   id: string;
-  starter: string;
-  helper: string;
+  zoneId: ZoneId;
+  /** The observation as logged in the evidence log. */
+  text: string;
+  /** Chip-length version of the same finding, for the sort board and the matrix legend. */
+  short: string;
+  /** Extra colour shown in the scene card only — context, not a classifiable item. */
+  context?: string;
+  correctCategory: CategoryId;
+  categoryClue: string;
+  correctDriver: DriverId;
+  driverClue: string;
+  correctHorizon: HorizonId;
+  horizonClue: string;
 };
 
-export const STATEMENT_PROMPTS: StatementPrompt[] = [
+export const FINDINGS: Finding[] = [
   {
-    id: "genuinely-sustainable",
-    starter: "Cloud use is genuinely sustainable when",
-    helper: "Think back to Block 3 — what has to be true about both efficiency AND total demand.",
+    id: "f-peripherals",
+    zoneId: "storage",
+    text: "31 disconnected docking stations, 14 external monitors and an uncatalogued box of cables from the last three replacement rounds sit in storage. None of it is logged or flagged for reassignment.",
+    short: "31 docks + 14 monitors in storage, unlogged",
+    context: "Nobody could tell you how long any of it has been there, because nothing records when it arrived.",
+    correctCategory: "peripherals",
+    categoryClue: "What kind of hardware is this actually about — the notebooks themselves, or everything that plugs into them?",
+    correctDriver: "structural",
+    driverClue: "Ask who is responsible for tracking what is in that room. Is there such a role at all?",
+    correctHorizon: "shortTerm",
+    horizonClue: "Could this be changed under existing policy — an inventory and a check before new stock is ordered — or does a contract have to be renegotiated first?",
   },
   {
-    id: "fails-sustainable",
-    starter: "A cloud migration fails to be sustainable if",
-    helper: "Consider which of Block 5's sources of inefficiency would undo an efficient provider's advantage.",
+    id: "f-returns",
+    zoneId: "finance",
+    text: "The most recent replacement round returned 68 notebooks to the leasing company as \"still fully functional\". Only 4 devices in that same round were flagged for genuine hardware failure.",
+    short: "68 working notebooks returned, only 4 failed",
+    context: "The lease Finance negotiated sets a flat three-year cycle for the whole fleet, regardless of a device's condition.",
+    correctCategory: "replacement",
+    categoryClue: "68 working machines left the building. Which of the six areas is about when and why a device leaves at all?",
+    correctDriver: "structural",
+    driverClue: "Whose decision sent those 68 devices back — and could any individual employee have changed it by behaving differently?",
+    correctHorizon: "structuralChange",
+    horizonClue: "If the hardware worked, what would have to change for it to be allowed to stay? Check what the answer depends on.",
+  },
+  {
+    id: "f-overnight",
+    zoneId: "workspace",
+    text: "A facilities audit of badge-out times against overnight network activity found 22% of Frankfurt notebooks stay powered on and undocked through the night and across weekends.",
+    short: "22% of notebooks stay awake overnight",
+    context: "No fleet-wide power-management profile has ever been configured; each device keeps whatever settings it shipped with.",
+    correctCategory: "deviceUse",
+    categoryClue: "Nothing here is being bought, retired or repaired — it is about the state a device is left in. Which area covers that?",
+    correctDriver: "structural",
+    driverClue: "Would this stop happening if every employee simply tried harder — or is there a setting nobody has configured at fleet level?",
+    correctHorizon: "shortTerm",
+    horizonClue: "Think about what a single device-management policy push could change, without touching any contract.",
+  },
+  {
+    id: "f-duplex",
+    zoneId: "print",
+    text: "There is no default duplex setting and no print-release authentication. The two floors together print an estimated 40,000 pages a month, with no tracking of paper source.",
+    short: "No duplex default · 40,000 pages/month",
+    context: "Individual usage on one floor ranges from near-zero to 1,200 pages a month, with no policy explaining the spread.",
+    correctCategory: "printing",
+    categoryClue: "This one names its own area almost directly — resist reading it as general user behaviour.",
+    correctDriver: "structural",
+    driverClue: "Is the default setting something each person at the printer controls, or something set once by whoever configured the print system?",
+    correctHorizon: "shortTerm",
+    horizonClue: "How much would have to change for duplex to become the enforced default tomorrow?",
+  },
+  {
+    id: "f-repairdefault",
+    zoneId: "helpdesk",
+    text: "IT's informal default is replace-over-repair for any device older than 18 months, because routing a repair ticket takes longer than swapping in a spare — and no documented criteria exist for when a device should be repaired, upgraded or retired.",
+    short: "Replace-over-repair default, no written criteria",
+    context: "The top ticket type is \"laptop feels slow\" — roughly 60% of those are resolved by clearing browser cache and disabling startup apps, not by replacing hardware.",
+    correctCategory: "support",
+    categoryClue: "Which area is specifically about how IT chooses between repairing, upgrading and replacing?",
+    correctDriver: "structural",
+    driverClue: "This is a stated internal default with no written criteria. Can a single technician on shift override it on their own?",
+    correctHorizon: "structuralChange",
+    horizonClue: "If the rule depends on who is on shift, is there a rule at all — and what has to exist before the default can change?",
+  },
+  {
+    id: "f-refurb",
+    zoneId: "onboarding",
+    text: "An internal pulse survey found 71% of employees would feel uncomfortable asking for a repaired or refurbished laptop instead of a new one, citing status and perceived performance. New hires are issued a complete new peripheral set by default.",
+    short: "71% won't ask for a refurbished device",
+    context: "Several employees quietly keep a second monitor taken from the unused peripheral stock — an unofficial reuse workaround that IT neither tracks nor supports.",
+    correctCategory: "userBehaviour",
+    categoryClue: "Nothing here is a setting or a contract. It is about what people are willing to ask for — which area is that?",
+    correctDriver: "individual",
+    driverClue: "This one looks purely personal — and for the driver, that reading is defensible. But ask why nobody has ever told employees that refurbished is a sanctioned choice.",
+    correctHorizon: "structuralChange",
+    horizonClue: "Could a single reminder email change how 71% of people feel about status — or does something more visible have to change first?",
   },
 ];
 
-export const STATEMENT_MIN_WORDS = 10;
+// ---------------------------------------------------------------------------
+// Stage 3 — pick the two findings to act on first, with a direction each.
+// ---------------------------------------------------------------------------
+export type DirectionId = "policy" | "process" | "culture";
+
+export const DIRECTIONS: { id: DirectionId; label: string; hint: string }[] = [
+  { id: "policy", label: "Policy change", hint: "A written rule, criterion or contract term changes." },
+  { id: "process", label: "Process / tooling change", hint: "A workflow or a tool changes; the rules stay as they are." },
+  { id: "culture", label: "Communication / culture change", hint: "What people are told, shown, or see leadership do changes." },
+];
+
+export const PRIORITY_PICK_COUNT = 2;
+export const JUSTIFICATION_MIN_WORDS = 8;
 
 // ---------------------------------------------------------------------------
-// Technical vs. Management/Governance split of Stage 2's "risk" items — an
-// inline tag shown right on each Risk-zone card in Stage 2 (not a separate
-// stage). The working set is derived live from the learner's own Stage 2
-// verdicts (see useRoute1) — the classification below is reference data for
-// every evidence item that CAN appear here, used to drive clues and the
-// report, not to gate which items show up.
+// Mentor answer keys (passcode-gated). One block per finding covering all three
+// of its decisions, so a facilitator has the rejected options' reasoning too.
 // ---------------------------------------------------------------------------
-export type Side5 = "technical" | "governance";
-
-export const STAGE5_CLASSIFICATION: Record<string, { correctSide: Side5; clue: string }> = {
-  "ev-departments": {
-    correctSide: "technical",
-    clue: "Is there a centralised, self-service provisioning tool with guardrails in place — or is that capability simply missing?",
+export const FINDING_ANSWER_KEYS: Record<string, AnswerKeyBlock> = {
+  "f-peripherals": {
+    prompt: "Storage room — 31 docks, 14 monitors, uncatalogued",
+    items: [
+      { option: "Category: Peripherals", verdict: "pick", why: "The hardware in question is everything around the notebook — docks, monitors, cables. No notebook lifecycle decision is described." },
+      { option: "Category: Replacement Cycles", verdict: "avoid", why: "Tempting, because the stock arrived through replacement rounds. But the finding is about what happened to the peripherals afterwards, not about when devices are replaced." },
+      { option: "Driver: Management & structural", verdict: "pick", why: "No role owns inventory of this room. That is an absent responsibility, not a behaviour." },
+      { option: "Driver: Individual behaviour", verdict: "avoid", why: "No individual could fix it by trying harder — there is nowhere to record what they found." },
+      { option: "Horizon: Short-term fix", verdict: "pick", why: "An inventory list plus a \"check stock before ordering new\" step needs no contract change and no new policy authority." },
+      { option: "Horizon: Structural change needed", verdict: "avoid", why: "Defensible only if you argue the onboarding issue process must change too — but the storeroom itself can be catalogued this month." },
+    ],
   },
-  "ev-governance": {
-    correctSide: "governance",
-    clue: "A missing policy is a decision no one has made yet — whose job is it to make it?",
+  "f-returns": {
+    prompt: "Finance — 68 functional notebooks returned, 4 failed",
+    items: [
+      { option: "Category: Replacement Cycles", verdict: "pick", why: "The finding is precisely about when and why devices leave: a fixed cycle, not device condition." },
+      { option: "Category: Support Model", verdict: "avoid", why: "The helpdesk did not make this call. The lease term did, before any technician saw the device." },
+      { option: "Driver: Management & structural", verdict: "pick", why: "A Finance-negotiated lease term drives it. No employee behaviour is involved at any point." },
+      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Nobody chose to return a working laptop — the contract schedule did it automatically." },
+      { option: "Horizon: Structural change needed", verdict: "pick", why: "Keeping a healthy device requires the lease to permit condition-based extension and criteria to exist for assessing it. Both must change first." },
+      { option: "Horizon: Short-term fix", verdict: "avoid", why: "Nothing in current policy allows a device past the cycle, so there is no short-term action available that is not a contract exception." },
+    ],
+    teachingNote: "This is the single highest-carbon finding in the set (Block 2: the replacement re-triggers 75–85% of lifetime footprint), yet it is also the slowest to fix. Expect participants to want it as their first action. That is a reasonable instinct — push them to say what interim step they would take while the lease is renegotiated.",
   },
-  "ev-costs-rising": {
-    correctSide: "technical",
-    clue: "Re-read Block 5 — rising costs very often trace back to a specific, fixable technical pattern on that list.",
+  "f-overnight": {
+    prompt: "Open workspace — 22% of notebooks awake overnight",
+    items: [
+      { option: "Category: Device Use", verdict: "pick", why: "It concerns the state a device is left in, not its purchase, repair or retirement." },
+      { option: "Category: User Behaviour", verdict: "avoid", why: "The most common wrong answer. Leaving a machine on is only behaviour if a power profile exists to override — here none was ever configured, so the gap is technical." },
+      { option: "Driver: Management & structural", verdict: "pick", why: "No fleet-wide power-management profile exists. That is a missing capability someone must build, not a habit." },
+      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Asking 180 people to remember nightly is a weaker and less durable control than one policy pushed from device management." },
+      { option: "Horizon: Short-term fix", verdict: "pick", why: "A power profile can be deployed under current policy with no contract or approval change." },
+      { option: "Horizon: Structural change needed", verdict: "avoid", why: "Nothing structural blocks it — no lease, criterion or approval path stands in the way." },
+    ],
+    teachingNote: "Worth naming out loud: this is a use-phase finding, so it moves the 13–15% slice from Block 2. It is the cheapest fix here and the smallest lever — a good illustration that \"easy\" and \"important\" are different axes.",
   },
-  "ev-sustainability-pr": {
-    correctSide: "governance",
-    clue: "Deciding what to tell the outside world about sustainability — is that produced by engineers, or approved by leadership?",
+  "f-duplex": {
+    prompt: "Print station — no duplex default, 40,000 pages/month",
+    items: [
+      { option: "Category: Printing Behaviour", verdict: "pick", why: "The finding names print defaults and paper volume directly." },
+      { option: "Category: User Behaviour", verdict: "avoid", why: "The 1,200-page outlier invites this reading, but the absent default and missing print release are system configuration, not personality." },
+      { option: "Driver: Management & structural", verdict: "pick", why: "Duplex default and print-release authentication are set once, centrally, by whoever configured the print system." },
+      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Individuals vary in usage, but they are choosing inside a system that defaults to single-sided and tracks nothing." },
+      { option: "Horizon: Short-term fix", verdict: "pick", why: "Changing a default setting and publishing a usage policy needs no structural change." },
+      { option: "Horizon: Structural change needed", verdict: "avoid", why: "Only if print release requires procurement of new hardware — worth acknowledging if a participant raises it, but not what the finding states." },
+    ],
+  },
+  "f-repairdefault": {
+    prompt: "Helpdesk — replace-over-repair default, no written criteria",
+    items: [
+      { option: "Category: Support Model", verdict: "pick", why: "It is explicitly about how IT chooses between repair, upgrade and replacement." },
+      { option: "Category: Replacement Cycles", verdict: "avoid", why: "Close, and a good discussion: the lease sets when devices leave on schedule, while this sets what happens when one breaks early. Different decision, different owner." },
+      { option: "Driver: Management & structural", verdict: "pick", why: "An undocumented default that varies by who is on shift is a missing rule — the definition of a structural gap." },
+      { option: "Driver: Individual behaviour", verdict: "avoid", why: "Technicians are behaving rationally inside a process that makes repair slower than replacement. Fix the process, not the person." },
+      { option: "Horizon: Structural change needed", verdict: "pick", why: "Criteria have to be written and the repair routing time addressed before the default can change." },
+      { option: "Horizon: Short-term fix", verdict: "avoid", why: "You can publish guidance quickly, but without criteria and a faster repair path the convenient default simply returns." },
+    ],
+    teachingNote: "The 60%-of-slow-tickets-fixed-by-software detail belongs here: it shows the replace-first default is also a diagnosis gap. If a participant classified this as Device Use because of that detail, that is a thoughtful misread — acknowledge it, then point at who owns the default.",
+  },
+  "f-refurb": {
+    prompt: "Onboarding — 71% uncomfortable asking for refurbished",
+    items: [
+      { option: "Category: User Behaviour", verdict: "pick", why: "It is about what employees are willing to ask for — not a setting, contract or repair decision." },
+      { option: "Category: Peripherals", verdict: "avoid", why: "The new-peripheral-set detail pulls this way, but the finding's substance is the 71% perception figure." },
+      { option: "Driver: Individual behaviour", verdict: "pick", why: "The only finding in the set where the individual reading is the honest one: this is a perception held by people." },
+      { option: "Driver: Management & structural", verdict: "avoid", why: "Defensible — and worth debating. Nobody ever told employees refurbished is sanctioned, which is a leadership omission. Accept either answer if the reasoning names the missing signal." },
+      { option: "Horizon: Structural change needed", verdict: "pick", why: "A perception held by 71% of staff does not move on a reminder email; it needs visible leadership use and a changed onboarding default." },
+      { option: "Horizon: Short-term fix", verdict: "avoid", why: "Messaging alone, with onboarding still handing out new kit by default, contradicts itself — and staff read the default, not the message." },
+    ],
+    teachingNote: "This is the deliberate edge case in the set. Both drivers defend, and the productive answer is \"individual behaviour, structural root cause\" — which is exactly Block 4's point: behaviour is real but it is downstream of a decision nobody made.",
   },
 };
+
+/**
+ * Stage 1 only needs the mapping, not the full reasoning — a mentor checking a
+ * sort board wants one glance. The reasoning behind each one lives in
+ * FINDING_ANSWER_KEYS, rendered at the diagnosis stage.
+ */
+export const CATEGORY_KEY_SUMMARY =
+  "A → Peripherals · B → Replacement Cycles · C → Device Use · D → Printing Behaviour · E → Support Model · F → User Behaviour. Each area takes exactly one finding, so a doubled-up area always means another one is empty — point at the empty one rather than naming the right answer.";
+
+export const OVERALL_PATTERN_NOTE =
+  "Expected pattern: 5 of 6 findings trace primarily to management/structural gaps; only the refurbished-device perception reads as individual behaviour — and even that one has a structural root cause. Note which quadrant stays empty: nothing here is both individual and short-term. That is the material's core claim made visible — you cannot nudge your way out of a procurement and support-default problem.";
+
+export const PRIORITY_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "Which two findings to act on first",
+  items: [
+    { option: "Helpdesk repair/replace default (Support Model)", verdict: "pick", why: "Highest leverage per euro: it governs every early-life device decision, and writing criteria costs nothing but decision time. Policy change." },
+    { option: "Storage room inventory (Peripherals)", verdict: "pick", why: "Cheapest credible win — an inventory plus a check-stock-first step stops new purchases immediately and proves the programme works. Process/tooling change." },
+    { option: "Lease renegotiation (Replacement Cycles)", verdict: "avoid", why: "Biggest carbon impact by far, but it is a contract cycle away. A strong answer may still pick it — if the justification names an interim step while the lease runs." },
+    { option: "Overnight power profile (Device Use)", verdict: "avoid", why: "Easy and worth doing, but it addresses the 13–15% use-phase slice. Accept it only when the participant acknowledges it is the smaller lever." },
+    { option: "Print defaults (Printing)", verdict: "avoid", why: "Quick and visible, but the smallest footprint effect of the six. Fine as a third action, weak as a first." },
+    { option: "Refurbished perception (User Behaviour)", verdict: "avoid", why: "Cannot succeed before the support default and onboarding default change — sequencing makes it a follow-on, not a first move." },
+  ],
+  teachingNote: "There is no single correct pair. Judge the justification, not the pick: a defensible answer names either impact (which lever it moves) or sequencing (what it unlocks). The weak answer is one that picks two cheap wins and never mentions the replacement cycle at all.",
+};
+
+export const JUSTIFICATION_ANSWER_NOTE =
+  "A strong justification names the root cause rather than the symptom, and says which decision-maker has to act. Model: \"The replace-first default is why healthy devices leave early, so writing repair/retire criteria — owned by the IT service lead — changes every future device decision, not just this year's.\" Weak: \"This will save money and is good for the environment.\"";
 
 // ---------------------------------------------------------------------------
 // Task 1 — copy
 // ---------------------------------------------------------------------------
 export const TASK1 = {
   kicker: "Task 1",
-  heading: "Flexora Cloud Decision Audit",
+  heading: "The UrbanByte Walkthrough",
   intro:
-    "Flexora Digital Services is a fictional company, built to let you apply everything from the material above. Work through the three stages below — nothing is locked, and each one feeds the live Decision Brief on the right, which is what you'll actually export.",
-  orderBanner: "Suggested order: Stage 1 → 3. You can work in any order — the report on the right fills in as you go, whichever stage you start with.",
+    "UrbanByte Consulting is fictional, built so you can apply everything above. Three stages, about 13 minutes: walk the floor and collect evidence, diagnose what each finding really is, then decide what you would act on first. The brief on the right fills in as you go — that is what you export.",
+  orderBanner:
+    "Suggested order: Stage 1 → 3. Nothing is locked — the report builds itself from whatever you have answered, whichever stage you start with.",
   stage1: {
-    heading: "Stage 1 — Read & Classify",
-    instructions: "Read the dossier, then sort each of the six evidence cards into Benefit or Risk / Challenge.",
+    heading: "Stage 1 — Walk the floor, then sort what you found",
+    instructions: "Open all six zones to collect the evidence, then sort each finding into the area it belongs to.",
     part1: {
-      label: "Case Briefing",
-      instructions: "Read the dossier and click each evidence card to expand it. These six cards are what you'll classify next, and again on the wheel in Stage 2.",
+      label: "Site walkthrough",
+      instructions: "Click each of the six zones on the floor plan. Every zone holds exactly one finding, which is logged to your evidence list automatically.",
+      material: ["workplace"] as MaterialSectionId[],
     },
     part2: {
-      label: "Sort: Benefit vs Risk",
+      label: "Sort into the six areas",
       instructions:
-        "Drag each of the six evidence cards into Benefit or Risk / Challenge — or tap a card, then tap a bucket. Use the clue if you're unsure; undo/redo freely. Every card you land on Risk also asks one more thing right there: is it an Individual Technical Problem or a Management / Governance Problem?",
-      material: ["fundamentals", "scale", "challenges", "inefficiency"] as MaterialSectionId[],
+        "Drag each finding into the area it belongs to — or tap a finding, then tap an area. One finding per area; every area gets exactly one. Use the clue if you are unsure, and undo/redo freely.",
+      material: ["workplace", "servicelife"] as MaterialSectionId[],
     },
   },
   stage2: {
-    heading: "Stage 2 — Map to the 6-Dimension Wheel",
+    heading: "Stage 2 — Diagnose each finding",
     instructions:
-      "Drag the same six cards onto the wheel — one segment each, whichever dimension the evidence is most dominantly about. A card can only touch one segment: pick the strongest fit.",
-    material: ["challenges", "inefficiency", "wheel"] as MaterialSectionId[],
+      "Two questions per finding. Answer both and the finding takes its own position on the matrix — you are not placing dots, you are deciding what the finding is and watching where that lands it.",
+    material: ["servicelife", "tradeoffs"] as MaterialSectionId[],
   },
   stage3: {
-    heading: "Stage 3 — Synthesize & Export",
-    instructions: "Complete two sustainability statements in your own words, then review and export the live brief.",
+    heading: "Stage 3 — Decide & export",
+    instructions: "Choose the two findings you would act on first, give each a direction, and export the brief.",
     part1: {
-      label: "Write 2 Sustainability Statements",
-      instructions: "Complete each sentence in your own words, grounded in the material and in Flexora's situation.",
-      material: ["tension", "inefficiency"] as MaterialSectionId[],
+      label: "Your first two moves",
+      instructions: "Pick exactly two findings, then choose a direction and write one sentence of justification for each.",
+      material: ["carbon", "tradeoffs"] as MaterialSectionId[],
     },
     part2: {
-      label: "Live Report",
-      instructions: "A read-only recap of everything above, and the structured brief it produces — ready to export once every stage is complete.",
+      label: "Live brief",
+      instructions: "A read-only recap of everything above, and the document it produces — ready to export once every stage is complete.",
     },
   },
   export: {
-    docHeading: "Cloud Decision Audit Brief",
+    docHeading: "Green Workplace Diagnostic",
     filenameLevel: 1,
     filenameTask: 1,
   },

@@ -5,18 +5,19 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Info } from "@/components/icons/LineIcons";
 import { CaseBrief } from "./CaseBrief";
-import { BenefitRiskSort } from "./BenefitRiskSort";
-import { WheelClassifier } from "./WheelClassifier";
-import { StatementBuilder } from "./StatementBuilder";
+import { FloorWalk } from "./FloorWalk";
+import { FindingSort } from "./FindingSort";
+import { DiagnosisBoard } from "./DiagnosisBoard";
+import { PriorityPicker } from "./PriorityPicker";
 import { RecapPanel } from "./RecapPanel";
-import { DecisionReportDoc } from "./DecisionReportDoc";
+import { WorkplaceReportDoc } from "./WorkplaceReportDoc";
 import { useRoute1 } from "./useRoute1";
-import { useDecisionReportData } from "./useDecisionReportData";
+import { useWorkplaceReportData } from "./useWorkplaceReportData";
 import { ExportBar } from "./ExportBar";
 
 export function TaskFlow() {
   const r1 = useRoute1();
-  const report = useDecisionReportData();
+  const report = useWorkplaceReportData();
 
   return (
     <section id="task" className="space-y-10">
@@ -27,34 +28,37 @@ export function TaskFlow() {
         <p className="text-caption text-ash">{TASK1.orderBanner}</p>
       </div>
 
+      <CaseBrief />
+
       <div>
         <h3 className="text-h3 text-ink">{TASK1.stage1.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK1.stage1.instructions}</p>
 
-        <div id="r1-stage1" className="mt-5">
+        <div id="r1-walk" className="mt-5 scroll-mt-24">
           <p className="text-caption font-semibold text-ink">{TASK1.stage1.part1.label}</p>
           <p className="mt-1 text-micro text-ash">{TASK1.stage1.part1.instructions}</p>
+          <MaterialRefs refs={materialRefs(TASK1.stage1.part1.material)} />
           <div className="mt-4">
-            <CaseBrief />
+            <FloorWalk />
           </div>
         </div>
 
-        <div id="r1-stage2" className="mt-6">
+        <div id="r1-sort" className="mt-8 scroll-mt-24">
           <p className="text-caption font-semibold text-ink">{TASK1.stage1.part2.label}</p>
           <p className="mt-1 text-micro text-ash">{TASK1.stage1.part2.instructions}</p>
           <MaterialRefs refs={materialRefs(TASK1.stage1.part2.material)} />
           <div className="mt-4">
-            <BenefitRiskSort />
+            <FindingSort />
           </div>
         </div>
       </div>
 
-      <div id="r1-stage3">
+      <div id="r1-diagnose" className="scroll-mt-24">
         <h3 className="text-h3 text-ink">{TASK1.stage2.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK1.stage2.instructions}</p>
         <MaterialRefs refs={materialRefs(TASK1.stage2.material)} />
         <div className="mt-4">
-          <WheelClassifier />
+          <DiagnosisBoard />
         </div>
       </div>
 
@@ -62,23 +66,24 @@ export function TaskFlow() {
         <h3 className="text-h3 text-ink">{TASK1.stage3.heading}</h3>
         <p className="mt-1 text-caption text-ash">{TASK1.stage3.instructions}</p>
 
-        <div id="r1-stage4" className="mt-5">
+        <div id="r1-decide" className="mt-5 scroll-mt-24">
           <p className="text-caption font-semibold text-ink">{TASK1.stage3.part1.label}</p>
           <p className="mt-1 text-micro text-ash">{TASK1.stage3.part1.instructions}</p>
           <MaterialRefs refs={materialRefs(TASK1.stage3.part1.material)} />
           <div className="mt-4">
-            <StatementBuilder />
+            <PriorityPicker />
           </div>
         </div>
 
-        <div id="r1-stage5" className="mt-6">
+        <div className="mt-8">
           <p className="text-caption font-semibold text-ink">{TASK1.stage3.part2.label}</p>
+          <p className="mt-1 text-micro text-ash">{TASK1.stage3.part2.instructions}</p>
           <div className="mt-4 grid gap-5 lg:grid-cols-2">
             <div className="rounded-2xl border border-line bg-canvas p-5">
               <RecapPanel r1={r1} />
             </div>
             <div className="rounded-2xl border border-line bg-paper p-5">
-              <DecisionReportDoc data={report} live />
+              <WorkplaceReportDoc data={report} live />
             </div>
           </div>
         </div>

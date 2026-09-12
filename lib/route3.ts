@@ -1,11 +1,14 @@
 /**
- * Route 3 — Management Decision. All learner-facing copy and pure data live
- * here so components stay presentational. Two cases in one progressive
- * flow: SkyBridge Solutions GmbH (diagnostic, Stages 1-4) bridges into
- * Helix Digital Platforms (executive proposal, Stage 3).
+ * Route 3 — Management Decision (L3). Building a decision architecture for
+ * workplace IT, user behaviour and device service life. Case: BrightPath
+ * Corporate Services (fictional).
+ *
+ * Standalone like Route 2: the recap block carries the two facts everything
+ * here rests on, so a learner starting at Route 3 is never missing a premise.
  */
 
 import type { IconKey } from "@/lib/routes";
+import type { AnswerKeyBlock } from "@/lib/answerKey";
 
 export const LEARNER_NAME_KEY = "learner:name";
 
@@ -14,432 +17,786 @@ export const LEARNER_NAME_KEY = "learner:name";
 // ---------------------------------------------------------------------------
 export const R3 = {
   name: LEARNER_NAME_KEY,
-  s2: { node: (itemId: string) => `r3:s2:node:${itemId}` },
-  s3: {
-    selected: (leverId: string) => `r3:s3:sel:${leverId}`,
-    reason: (leverId: string) => `r3:s3:reason:${leverId}`,
+  stage1: {
+    driver: (driverId: string) => `r3:s1:driver:${driverId}`,
+    decision: (decisionId: string) => `r3:s1:dec:${decisionId}`,
+    order: (decisionId: string) => `r3:s1:ord:${decisionId}`,
+    resolution: "r3:s1:resolution",
   },
-  s4: {
-    horizon: (leverId: string) => `r3:s4:horizon:${leverId}`,
-    firstMove: "r3:s4:firstmove",
-    firstMoveJustify: "r3:s4:firstmove:justify",
+  stage2: {
+    threshold: (key: string) => `r3:s2:th:${key}`,
+    outcomeMark: (deviceId: string) => `r3:s2:mark:${deviceId}`,
+    iterations: "r3:s2:iterations",
+    exceptionPath: "r3:s2:exception",
+    reasonCode: (codeId: string) => `r3:s2:code:${codeId}`,
   },
-  s5: { gutcheck: (i: number) => `r3:s5:gutcheck:${i}` },
-  s6: {
-    strategicRelevance: "r3:s6:relevance",
-    guidingDecision: (i: number) => `r3:s6:guiding:${i}`,
-    prioritizationLogic: "r3:s6:logic",
-    tradeoff: (i: number) => `r3:s6:tradeoff:${i}`,
-    firstMeasure: "r3:s6:firstmeasure",
-    firstMeasureJustify: "r3:s6:firstmeasure:justify",
-    role: (roleId: string) => `r3:s6:role:${roleId}`,
-    decideNow: "r3:s6:decidenow",
-    waitingMeans: "r3:s6:waitingmeans",
+  stage3: {
+    raci: (decisionId: string, roleId: string) => `r3:s3:raci:${decisionId}:${roleId}`,
+    tradeoffOwner: (tradeoffId: string) => `r3:s3:towner:${tradeoffId}`,
+    tradeoffDefault: (tradeoffId: string) => `r3:s3:tdef:${tradeoffId}`,
+    indicator: (indicatorId: string) => `r3:s3:ind:${indicatorId}`,
+    cadence: (indicatorId: string) => `r3:s3:cad:${indicatorId}`,
+    trigger: "r3:s3:trigger",
+    challenge: (challengeId: string) => `r3:s3:ch:${challengeId}`,
+    challengeNote: (challengeId: string) => `r3:s3:chnote:${challengeId}`,
+    commitment: "r3:s3:commitment",
   },
 } as const;
 
 // ---------------------------------------------------------------------------
-// Case brief — SkyBridge Solutions GmbH (diagnostic)
+// Material
 // ---------------------------------------------------------------------------
-export const SKYBRIDGE = {
-  company: "SkyBridge Solutions GmbH",
-  setup:
-    "SkyBridge Solutions GmbH is a growing service company with 1,000 employees. Over the past two years, numerous applications and data holdings have been moved to various cloud environments. Management regards the cloud as a central lever for modernisation, flexibility and sustainability. At the same time, cloud costs are rising significantly, resource use is only partly transparent, and the number of unused or oversized workloads is growing.",
-  role: "Your role: strategic infrastructure advisor. Diagnose the situation before recommending anything.",
-} as const;
-
-// ---------------------------------------------------------------------------
-// Stage 2 — Decision Architecture Model (reusable, functional component)
-// ---------------------------------------------------------------------------
-export type NodeId = "usage-demand" | "governance" | "architecture" | "economics" | "sustainability-impact";
-
-export type DecisionNode = { id: NodeId; label: string; folds: string };
-
-export const DECISION_NODES: DecisionNode[] = [
-  { id: "usage-demand", label: "Usage & Demand", folds: "folds in energy demand" },
-  { id: "governance", label: "Governance", folds: "folds in controllability" },
-  { id: "architecture", label: "Architecture", folds: "on-prem/cloud structure, parallel systems" },
-  { id: "economics", label: "Economics", folds: "folds in cost" },
-  { id: "sustainability-impact", label: "Sustainability Impact", folds: "the realistic environmental outcome" },
-];
-
-export type EvidenceItem = { id: string; text: string; correctNode: NodeId; clue: string };
-
-export const SKYBRIDGE_EVIDENCE: EvidenceItem[] = [
-  {
-    id: "sb-independent",
-    text: "Several departments use cloud services independently without uniform standards.",
-    correctNode: "governance",
-    clue: "\"No uniform standards\" — is that about how much is being used, or about who's setting the rules?",
-  },
-  {
-    id: "sb-partial-dismantle",
-    text: "The internal infrastructure has been dismantled only in part.",
-    correctNode: "architecture",
-    clue: "A half-dismantled infrastructure — is that a demand pattern, or a statement about how the system is structured?",
-  },
-  {
-    id: "sb-parallel",
-    text: "Parallel structures exist between on-premises and cloud.",
-    correctNode: "architecture",
-    clue: "Running two infrastructures side by side — which of the five components is directly about how the system is built?",
-  },
-  {
-    id: "sb-storage-growth",
-    text: "Storage and data volumes are growing strongly.",
-    correctNode: "usage-demand",
-    clue: "Growing storage and data volumes — which component tracks how much is actually being consumed?",
-  },
-  {
-    id: "sb-no-visibility",
-    text: "There is no clear view of energy-intensive workloads and their actual use.",
-    correctNode: "usage-demand",
-    clue: "\"Actual use\" of energy-intensive workloads is literally what this component is built to track.",
-  },
-  {
-    id: "sb-mandate",
-    text: "Management expects a recommendation on how cloud use can be developed further in an economical, manageable, and sustainable way.",
-    correctNode: "economics",
-    clue: "Three words are packed into this one — \"economical,\" \"manageable,\" \"sustainable.\" Which of the five components does the first of those three map onto?",
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Stage 3 — 8 candidate levers, pick exactly 4
-// ---------------------------------------------------------------------------
-export type HorizonId = "short" | "medium" | "structural";
-
-export const HORIZONS: { id: HorizonId; label: string }[] = [
-  { id: "short", label: "Short-Term" },
-  { id: "medium", label: "Medium-Term" },
-  { id: "structural", label: "Structural" },
-];
-
-export type Lever = {
-  id: string;
-  text: string;
-  isModelPick: boolean;
-  pickClue: string;
-  typicalHorizon: HorizonId;
-  horizonClue: string;
-};
-
-export const LEVERS: Lever[] = [
-  {
-    id: "lever-dashboard",
-    text: "Build a usage and cost transparency dashboard across all workloads.",
-    isModelPick: true,
-    pickClue: "Re-read the case — is there currently any clear view of usage at all? What has to exist before anything else can be prioritised well?",
-    typicalHorizon: "short",
-    horizonClue: "Building a dashboard mostly needs data that already exists and some tooling — is that a multi-year rebuild, or achievable soon?",
-  },
-  {
-    id: "lever-accelerate-migration",
-    text: "Accelerate the remaining on-premises-to-cloud migration.",
-    isModelPick: false,
-    pickClue: "Re-read Route 2's Block 4 — does accelerating scale help before governance exists underneath it, or does it risk compounding the same problem?",
-    typicalHorizon: "structural",
-    horizonClue: "Accelerating a full migration is a large, multi-quarter commitment — where does that sit on the horizon scale?",
-  },
-  {
-    id: "lever-decommission",
-    text: "Clean up parallel on-premises/cloud structures and decommission redundant systems.",
-    isModelPick: true,
-    pickClue: "The case explicitly names parallel structures as a symptom — which lever addresses that root architecture issue directly?",
-    typicalHorizon: "structural",
-    horizonClue: "Decommissioning entire parallel infrastructures usually spans many quarters — a short win, or a structural undertaking?",
-  },
-  {
-    id: "lever-standards",
-    text: "Introduce mandatory sizing and provisioning standards for all departments.",
-    isModelPick: true,
-    pickClue: "Departments currently order independently with no uniform standards — which lever closes that specific gap?",
-    typicalHorizon: "medium",
-    horizonClue: "Rolling out new mandatory standards across departments needs buy-in and change management — faster than a structural rebuild, slower than flipping on a dashboard.",
-  },
-  {
-    id: "lever-vendor-discount",
-    text: "Negotiate a bulk discount with the primary cloud vendor.",
-    isModelPick: false,
-    pickClue: "A discount lowers the price per unit — does it fix the underlying visibility or standards problem the case describes?",
-    typicalHorizon: "short",
-    horizonClue: "Negotiating a discount is usually a fast, one-time commercial action.",
-  },
-  {
-    id: "lever-monitoring",
-    text: "Establish energy/workload monitoring for high-intensity systems.",
-    isModelPick: true,
-    pickClue: "The case explicitly says there's no clear view of energy-intensive workloads — which lever closes that specific gap?",
-    typicalHorizon: "short",
-    horizonClue: "Instrumenting monitoring on already-identified high-intensity systems is usually one of the faster no-regret moves.",
-  },
-  {
-    id: "lever-marketing",
-    text: "Launch an internal sustainability marketing campaign.",
-    isModelPick: false,
-    pickClue: "Re-read Route 1's Block 3 and Route 2's Block 5 — does communicating a success change the underlying numbers?",
-    typicalHorizon: "short",
-    horizonClue: "A campaign can be launched quickly — but is \"fast\" the same as \"structurally sound\"?",
-  },
-  {
-    id: "lever-budget-cap",
-    text: "Set a fixed cloud budget cap per department.",
-    isModelPick: false,
-    pickClue: "A cap limits spend, but without visibility into what's actually driving it — does it fix the cause, or just its symptom?",
-    typicalHorizon: "medium",
-    horizonClue: "Setting and enforcing a budget cap across departments takes some rollout time, but isn't a multi-year structural change.",
-  },
-];
-
-export const LEVERS_REQUIRED_COUNT = 4;
-export const LEVER_REASON_MIN_WORDS = 10;
-
-// ---------------------------------------------------------------------------
-// Stage 5 — bridge (narrative + optional gut-check, not required to proceed)
-// ---------------------------------------------------------------------------
-export const GUTCHECK_PROMPTS: { id: string; question: string }[] = [
-  { id: "attractive-but-weak", question: "Which decision would be attractive in the short term, but too weak strategically?" },
-  { id: "quick-solution", question: "Where might the cloud be seen as a quick solution without properly assessing the long-term effects?" },
-];
-
-// ---------------------------------------------------------------------------
-// Stage 6 — Helix Digital Platforms (executive proposal)
-// ---------------------------------------------------------------------------
-export const HELIX = {
-  company: "Helix Digital Platforms",
-  conditions: [
-    "A strongly growing cloud share alongside existing on-premises structures.",
-    "Differing interests of departments, IT, finance, and management.",
-    "A strong desire for flexibility and rapid provisioning.",
-    "Incomplete transparency on workloads, storage, energy demand, and total costs.",
-    "Budget restrictions and the expectation of visible progress.",
-    "The risk that the cloud is overstated as an automatically sustainable solution.",
-  ],
-} as const;
-
-export const PROPOSAL_ROLES: { id: string; label: string }[] = [
-  { id: "board", label: "Board / Executive Committee" },
-  { id: "cio", label: "CIO / Strategy Advisor" },
-  { id: "ops", label: "IT Operations & Finance" },
-];
-
-export const TRADEOFF_COUNT = 1;
-export const GUIDING_DECISION_COUNT = 2;
-
-// ---------------------------------------------------------------------------
-// Material — 5 blocks (C1-C5)
-// ---------------------------------------------------------------------------
-export type MaterialSectionId = "shift" | "architecture-model" | "iceberg" | "horizons" | "proposal-structure";
+export type MaterialSectionId = "architecture" | "rules" | "accountability" | "review";
 
 export type MaterialSection = {
   id: MaterialSectionId;
-  n: 1 | 2 | 3 | 4 | 5;
+  n: 1 | 2 | 3 | 4;
   icon: IconKey;
   kicker: string;
   title: string;
   definition: string;
   insight: string;
   takeaway: string;
-  /** Standard #11a — decision rules, phrased the way Task 3 will need them. */
   reasoning: string[];
   callout: { label: string; text: string };
+  references: { label: string; url?: string }[];
 };
 
-/** DOM anchor a task step's MaterialRefs chip scrolls to. */
 export function materialAnchorId(id: MaterialSectionId): string {
   return `r3-material-${id}`;
 }
 
 const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  shift: "Block 1 · Analyst to decision-maker",
-  "architecture-model": "Block 2 · Decision Architecture",
-  iceberg: "Block 3 · Levers vs. symptoms",
-  horizons: "Block 4 · Horizons of action",
-  "proposal-structure": "Block 5 · Proposal structure",
+  architecture: "Block 1 · Measures vs architecture",
+  rules: "Block 2 · Rules & thresholds",
+  accountability: "Block 3 · Accountability",
+  review: "Block 4 · Review & regulation",
 };
 
-/** Chips for a task step: which material sections it draws on. */
 export function materialRefs(ids: MaterialSectionId[]) {
   return ids.map((id) => ({ anchorId: materialAnchorId(id), label: MATERIAL_LABELS[id] }));
 }
 
+export const RECAP = {
+  label: "The two facts this route builds on",
+  text: "Roughly 75–85% of a business laptop's lifetime carbon is emitted in manufacturing, not in use — one detailed model splits a 14-inch business notebook 81.4% manufacturing, 13.9% use, 4.4% transport, 0.3% end-of-life — and extending service life from four to six years cuts average annual emissions by about 29%, from roughly 74.7 to 53.1 kg CO₂e per device-year, purely by amortising that fixed burden. It follows that desk-level behaviour can only ever influence the remaining 15–25%, while the decisions with real leverage — replacement cycles, repair defaults, support model, procurement specification — are all management decisions nobody on the office floor gets to make.",
+  implication:
+    "So you are no longer being asked which measure is best. You are being asked to design the structure that keeps producing good decisions after you leave the room.",
+} as const;
+
 export const MATERIAL: MaterialSection[] = [
   {
-    id: "shift",
+    id: "architecture",
     n: 1,
-    icon: "shield",
-    kicker: "1 · The shift this route makes",
-    title: "From Analyst to Decision-Maker",
-    definition:
-      "Route 1 taught the concepts. Route 2 scored and prioritised a single line of action. Route 3 is a different kind of work: cloud use is no longer a technical or outsourcing question, but a management decision that touches architecture, cost, energy demand, controllability, dependencies, resilience, and sustainability all at once.",
-    insight:
-      "MIT Sloan's Center for Information Systems Research (CISR) has published research since the early 2010s arguing that digital and cloud governance decisions are increasingly board-level and executive-committee matters, not delegated IT decisions — because the trade-offs (cost, risk, speed, control) now carry enough weight to shape overall company strategy, not just system architecture.",
-    takeaway:
-      "Every question in this route should be answered the way a management team actually decides things: under a budget constraint, under incomplete data, and with an eye on who is accountable if it goes wrong — not just what is technically correct.",
-    reasoning: [
-      "Every answer in this route is a management answer, not a technical one: it has to survive a budget constraint, incomplete data, and the question \"who is accountable if this goes wrong?\"",
-      "That is also the standard your Stage 3 proposal is judged by — a technically correct measure with no named owner and no review point is not yet a decision.",
-      "Rules out the tempting wrong answer: the most technically sophisticated option is not automatically the right recommendation. Ask what a board can actually approve, fund, and hold someone to.",
-    ],
-    callout: {
-      label: "Verify before you cite it",
-      text: "MIT CISR and Gartner publish updated governance research regularly — if you reference a specific study or statistic from them in a real proposal, check their current publication rather than reusing a remembered claim.",
-    },
-  },
-  {
-    id: "architecture-model",
-    n: 2,
     icon: "layers",
-    kicker: "2 · The model this whole route runs on",
-    title: "The Decision Architecture Model",
+    kicker: "1 · The distinction the whole route turns on",
+    title: "A List of Measures Is Not a Decision Architecture",
     definition:
-      "Five components feed one Management Decision: Usage & Demand (what's actually running and how much — this folds in Route 1's energy demand), Governance (policy, standards, oversight — this folds in Route 1's controllability), Architecture (how the system is structurally built — on-premises, cloud, or both), Economics (cost relative to benefit — this folds in Route 2's cost dimension), and Sustainability Impact (the realistic environmental outcome, as distinct from the sustainability claim).",
+      "A list of measures answers what will we do this year. A decision architecture answers how will this organisation decide, repeatedly, without re-litigating the principle every time. Five components make one: decision rules and thresholds (when does X happen instead of Y), accountability assignment (who decides, who is consulted, who merely executes), approval thresholds (what can be decided locally versus what must escalate), a review mechanism (how do we know the rule is still working), and trade-off defaults (what happens when two valid principles collide).",
     insight:
-      "This is a deliberate simplification that unifies terms from across the whole course into one consistent model, so every stage of this route can refer back to the same five components instead of juggling route-specific vocabulary. It is not a new set of concepts — it's the same ideas from Routes 1 and 2, organised for management-level decision-making.",
+      "The difference is not academic, and each missing component has a predictable failure mode. Without thresholds, every case escalates and the outcome depends on who is on shift. Without single-point accountability, conflicts stall or are resolved by whoever pushes hardest. Without approval logic you get either a bottleneck at the top or uncontrolled local variation. Without review, the policy exists on paper while reality quietly diverges from it. Without stated trade-off defaults, the loudest stakeholder wins every time by default.",
     takeaway:
-      "You'll use this exact model, interactively, in Stage 1 — mapping SkyBridge's own evidence onto these five components before recommending anything.",
+      "The senior-level test for any proposal is one question: if the person who wrote this leaves the company in six months, does the behaviour it produces continue? If the answer is no, what was written was a measure, not an architecture. A measure list degrades on a schedule you can predict — the sponsor moves on, the budget line closes, the next procurement round is handled by someone who was not in the original meeting, and the organisation reverts to its previous default.",
     reasoning: [
-      "Mapping evidence in Stage 1: ask what the card is fundamentally about, not what it eventually causes. \"No uniform standards\" is about who sets the rules (Governance); \"parallel on-prem and cloud structures\" is about how the system is built (Architecture); \"storage growing\" is about what is being consumed (Usage & Demand).",
-      "Economics is the component for anything framed as cost, budget, or economical use — including a mandate phrased as \"develop cloud use economically\".",
-      "Sustainability Impact means the realistic outcome, deliberately kept separate from the sustainability claim. A card about wanting to report a result is not evidence of one.",
-      "Rules out the tempting wrong answer: several cards touch more than one component. Each gets exactly one — pick the component the card names in its own words, not the root cause behind it.",
+      "When selecting what a board should decide, prefer the decision that changes a default over the one that funds an activity. Defaults keep applying after attention moves on.",
+      "Any decision that requires another decision to exist before it can be executed must come after that one. Sequencing is not presentation order — it is dependency order.",
+      "Rules out the tempting wrong answer: publishing an external commitment early feels like momentum, but a commitment made before the capability exists is the visible-but-weak trap at board level.",
     ],
     callout: {
-      label: "This is the anchor for the whole route",
-      text: "Every later stage refers back to these five components. If a stage asks you to name a trade-off or a lever, it's implicitly asking which of these five it touches.",
+      label: "Why BrightPath has already failed at this twice",
+      text: "Two previous consultancy reports recommended broadly sensible measures and neither changed behaviour — because neither changed a default. The board is not sceptical of the topic; it is sceptical of another list.",
     },
-  },
-  {
-    id: "iceberg",
-    n: 3,
-    icon: "target",
-    kicker: "3 · Root cause vs. surface symptom",
-    title: "Levers vs. Symptoms",
-    definition:
-      "A symptom is what's visible above the waterline — rising cost, growing storage, a slow application. A lever is what's below it — a governance gap, an architectural debt, a missing monitoring capability. Simple root-cause logic: fixing a symptom directly (e.g. cutting a budget line) rarely fixes what's producing it; a lever addresses the underlying cause the symptom keeps coming back from.",
-    insight:
-      "A recommendation aimed only at symptoms needs to be repeated every cycle, because nothing about the underlying cause changed. A recommendation aimed at a lever changes what produces the symptom, so the same problem doesn't need solving again next quarter.",
-    takeaway:
-      "In Stage 2, you'll be offered several candidate actions — some are levers, some are symptom-level distractors dressed up as solutions. Telling them apart is the actual skill being tested.",
-    reasoning: [
-      "The test for Stage 2's lever selection is one question: \"if we do only this, does the underlying cause still exist next quarter?\" If yes, it is a symptom fix, not a lever.",
-      "Distractors in the candidate list look responsible and are easy to approve — a discount negotiation lowers unit price without touching what drives usage; a budget cap limits spend without revealing what is driving it; a communications campaign changes what is said, not what is consumed.",
-      "A real lever creates a capability the organisation did not have (visibility, standards, monitoring) or removes the structural cause of the symptom (parallel systems, redundant infrastructure).",
-      "Rules out the tempting wrong answer: \"it saves money\" is not enough to make something a lever. Ask whether the saving repeats itself without anyone watching.",
+    references: [
+      { label: "ESRS E5 — Resource use and circular economy (EU CSRD reporting standards)" },
+      { label: "COBIT / ISO 38500 governance principles on decision rights and accountability" },
     ],
-    callout: {
-      label: "A test you can apply anywhere",
-      text: "Ask of any proposed action: \"if we do only this, does the underlying cause still exist next quarter?\" If yes, it's a symptom fix, not a lever.",
-    },
   },
   {
-    id: "horizons",
-    n: 4,
-    icon: "coins",
-    kicker: "4 · Sequencing matters as much as choice",
-    title: "Horizons of Action: Short / Medium / Structural",
-    definition:
-      "Classify any action by how long it realistically takes to deliver: Short-Term (weeks, using data and capability that already exist), Medium-Term (a quarter or two, needing coordination or buy-in across teams), or Structural (multiple quarters to years, a fundamental change to architecture or operating model).",
-    insight:
-      "Choosing the right first move is a strategic decision on its own, independent of which lever is objectively \"biggest\": a well-chosen Short-Term move builds credibility and often produces the data a later Structural move needs to be justified — while starting with an ambitious Structural commitment before any visibility exists repeats the exact mistake Route 2's Block 5 warned about.",
-    takeaway:
-      "You'll build a real roadmap in Stage 2 — placing your chosen levers onto these three horizons, and naming exactly one as the first move.",
-    reasoning: [
-      "Placing a lever on a horizon: ask what it needs before it can start. Already-available data and tooling means Short-Term; cross-team buy-in or a rollout means Medium-Term; changing architecture or the operating model means Structural.",
-      "The first move is the one that de-risks or informs everything after it — usually a Short-Term visibility move — not the one with the largest headline impact.",
-      "Your first-move justification should say what the later moves gain from it. \"It produces the data the structural decision depends on\" is a management argument; \"it is quick\" is not.",
-      "Rules out the tempting wrong answer: starting with the biggest Structural commitment before any visibility exists repeats exactly the mistake Route 2's Block 5 described.",
-    ],
-    callout: {
-      label: "First move ≠ biggest move",
-      text: "The first move on a credible roadmap is usually the one that de-risks or informs the moves after it — not the one with the largest headline impact.",
-    },
-  },
-  {
-    id: "proposal-structure",
-    n: 5,
+    id: "rules",
+    n: 2,
     icon: "gavel",
-    kicker: "5 · What a board actually needs",
-    title: "Building a Decision-Ready Proposal",
+    kicker: "2 · The part most proposals skip",
+    title: "Decision Rules, Thresholds and Escalation",
     definition:
-      "A credible executive proposal has a specific shape: (1) strategic relevance — why this matters now, (2) guiding decisions for the next planning cycle, (3) the decision logic used to prioritise, (4) the central trade-offs being consciously accepted, (5) the first prioritised line of measures with justification, (6) roles, responsibilities, and review mechanisms, and (7) the decision that must be made now despite incomplete information.",
+      "\"We will repair before we replace\" is a principle, not a rule. A technician holding a four-year-old notebook with a failing battery and a cracked hinge cannot act on it. A rule is falsifiable and threshold-based: repair is the default where estimated repair cost is at or below 30% of current replacement cost AND the device meets the current security baseline AND remaining supported life is at least 18 months — where any condition fails, retire. Useful threshold families for workplace IT are repair-cost ratio, minimum remaining supported life, a device condition score built from battery health, storage health and incident frequency, security-baseline compliance, and a reuse-before-purchase check on peripherals.",
     insight:
-      "Each of these seven elements answers an objection before it's raised: (1) answers \"why should we spend time on this,\" (6) answers \"who do we hold accountable,\" (7) answers \"why not just wait for better data.\" A proposal missing any of the seven leaves that objection for someone in the room to raise live.",
+      "Three design properties decide whether a rule survives contact with a service desk. It must be locally applicable — if applying it needs a judgement the technician is not authorised to make, it will be bypassed. It must state its own exception path, because a rule with no defined escalation route gets broken silently rather than escalated. And it must be tested against real cases before publication: this is the step almost universally skipped, and a rule that reads sensibly in a policy document can produce absurd outcomes on real devices. Approval design follows the same logic — technicians apply published thresholds with no approval, team leads handle exceptions within a cost band against logged reason codes, steering owns changes to the thresholds themselves, and the board owns only the principle, the budget envelope and the accountability assignment.",
     takeaway:
-      "This is the exact scaffold you'll fill in for Helix Digital Platforms in Stage 3 — not a new framework, but the assembly of everything from Routes 1-3 into one board-ready document.",
+      "Watch the escalation volume: it should be low but non-zero. Zero escalations means the rule is being bypassed rather than followed; high volume means the thresholds are mis-set. And on the familiar objection that condition-based thresholds are impossible without condition data — the correct move is not to postpone, it is to make the condition assessment itself the first deliverable of the policy, so the policy generates the data its own thresholds require.",
     reasoning: [
-      "Each of the seven sections answers an objection before it is raised — write each one as if the objection had just been said out loud in the room.",
-      "Section 4 (trade-off) means something you consciously accept and can defend, phrased as one against the other: speed against control, flexibility against governance. A benefit with no cost attached is not a trade-off.",
-      "Section 6 (roles) is answering \"who do we hold accountable?\" — name what each role approves and when it reviews, not just that it is \"involved\".",
-      "Section 7 is answering \"why not wait for better data?\" — so it needs both halves: what must be decided now, and what waiting would actually cost.",
-      "Rules out the tempting wrong answer: a proposal that lists measures without naming a decision, an owner, or a trade-off reads as a status update, not a board proposal.",
+      "Age is not a criterion. Age is a proxy for condition and remaining supported life — and if your rule measures those directly, putting age back in double-counts a thing you already have.",
+      "Security belongs in the rule as a hard constraint, not in the consultation as an opinion. A cheap, high-condition, non-compliant device must still retire, or the baseline erodes case by case.",
+      "Before publishing any threshold, run it against real devices and ask of each outcome: did I intend this? An outcome you did not intend is a mis-set threshold, not an unusual device.",
+      "Rules out the tempting wrong answer: a role-based exception for executives is not forbidden — but it must be written into the rule and its cost owned. A silent exception destroys the rule's authority everywhere else.",
     ],
     callout: {
-      label: "Direct use in Task 3",
-      text: "Stage 3 gives you a sentence-starter for each of these seven elements. Treat this block as the answer key for what each one is actually asking.",
+      label: "Industry callout",
+      text: "The tightest threshold is rarely the best one. A 20% repair ceiling retires machines with high condition scores and years of supported life left, which contradicts the purpose of the policy while looking prudent on paper.",
     },
+    references: [
+      { label: "Directive (EU) 2024/1799 — common rules promoting the repair of goods", url: "https://eur-lex.europa.eu/eli/dir/2024/1799/oj" },
+      { label: "Microsoft — Windows 10 end of support and Extended Security Updates pricing" },
+    ],
+  },
+  {
+    id: "accountability",
+    n: 3,
+    icon: "supplier",
+    kicker: "3 · Who actually decides",
+    title: "Accountability, and the Trade-offs a Board Must Own",
+    definition:
+      "RACI assigns, per decision: Responsible does the work, Accountable owns the outcome and is exactly one person, Consulted gives input before the decision, Informed is told after. Two rules are violated constantly. First, exactly one Accountable per decision — two Accountables is not shared ownership, it is a guaranteed stall the first time they disagree; if a decision genuinely spans two domains, split the decision or name the tie-breaker explicitly. Second, Consulted is not a veto: a stakeholder whose objection cannot be overruled is functionally Accountable, and the chart is lying.",
+    insight:
+      "That second rule matters most with security. A CISO consulted on lifetime extension will, correctly, hold a hard veto over devices outside the security baseline — so that veto must be written as a constraint inside the rule, not as a consultation. Constraints belong in the threshold; opinions belong in the consultation. Get this right and the CISO becomes co-author of the extension policy rather than its blocker. The other classic failure is making sustainability Accountable for device lifetime — an outcome actually controlled by procurement contracts, IT support defaults and finance depreciation schedules, none of which the sustainability function can change. Accountability without control produces reporting, not results.",
+    takeaway:
+      "Some conflicts cannot be delegated downward at all, and each needs a named owner and a stated default: security versus lifetime extension, user experience versus standardisation, short-term visibility versus structural effect, support effort versus device longevity, and cost certainty versus condition-based flexibility. Naming the default in advance — \"where security baseline and extension conflict, security prevails and the device is retired early\" — is what stops every individual case from becoming a negotiation.",
+    reasoning: [
+      "Before assigning Accountable, ask which contract, budget line or default that role can actually change. If the answer is none, you are assigning reporting duty, not accountability.",
+      "If a stakeholder's objection cannot be overruled, either they are Accountable or their constraint belongs inside the rule. Never leave a veto sitting in the Consulted column.",
+      "Individual device exceptions belong as low as they can safely sit — the service desk team lead, against logged reason codes — or the escalation path becomes the bottleneck it was meant to prevent.",
+    ],
+    callout: {
+      label: "The sentence that resolves the security argument",
+      text: "\"The security baseline is a hard constraint inside the rule, and the CISO owns its definition.\" That single design choice is what lets a CISO be Consulted rather than Accountable on the repair threshold without the chart becoming fiction.",
+    },
+    references: [
+      { label: "ISO/IEC 38500 — corporate governance of information technology" },
+      { label: "Standard RACI practice in IT service management (ITIL-aligned)" },
+    ],
+  },
+  {
+    id: "review",
+    n: 4,
+    icon: "certificate",
+    kicker: "4 · Knowing it still works, under moving rules",
+    title: "Review Mechanisms and the European Regulatory Horizon",
+    definition:
+      "A published policy is an assumption, not an outcome; review mechanisms convert it into something observable. Four indicators carry most of the signal for workplace IT: average fleet age and its distribution (an average that rises while the distribution stays bimodal means extension is happening in only one pocket), the repair-to-replace ratio (the direct behavioural indicator of whether the default actually changed), exception rate and reason codes (the most diagnostic metric — a cluster on one reason code tells you exactly which threshold is mis-set), and peripheral reuse rate (usually fastest-moving, which makes it useful as an early proof point). Cadence matters as much as choice: quarterly operational review, annual strategic review. A single annual review is too slow to catch a mis-set threshold before a full procurement cycle has passed.",
+    insight:
+      "A board will ask whether it is premature to commit while the rules are still moving. The honest answer is that the rules are always moving and the direction of travel is far more stable than the detail. The EU Right to Repair Directive (2024/1799) obliges manufacturers of covered categories to offer repair at reasonable price and time, including after the guarantee expires, and member states must transpose it by 31 July 2026; smartphones and tablets have carried a mandatory A–E repairability label since June 2025, and laptops sit in the ESPR work plan that expands these requirements. ESRS E5 under CSRD governs disclosure of resource inflows and outflows and circular-economy performance, remaining required where circularity is material for companies above the Omnibus thresholds of 1,000+ employees and over €450m turnover — and that standard is itself being simplified and restructured as it moves through the EU process.",
+    takeaway:
+      "The senior-level reading: the detail of what must be disclosed is in flux, the direction is not. An organisation that holds device condition data, a repair-to-replace ratio and a reuse rate can answer any version of the question. One that holds none of these cannot answer any version. That asymmetry is the argument for acting now, and it does not depend on predicting the final text of anything. Present it that way to a board — and when citing specific datapoint obligations, verify the current status first, because a revision in progress is exactly where confident citation becomes wrong citation.",
+    reasoning: [
+      "Choose indicators that would visibly move if the policy worked, and that would visibly stall if it did not. An indicator that looks the same either way is decoration.",
+      "A trigger condition must be recognisable by someone reading the quarterly report without asking you what you meant. \"More than 25% of exceptions in a quarter on one reason code\" qualifies; \"if things look wrong\" does not.",
+      "Rules out the tempting wrong answer: regulatory uncertainty is an argument for building the data capability now, not for waiting. The capability is what makes any final text answerable.",
+    ],
+    callout: {
+      label: "How to present a moving regulation to a board",
+      text: "State the in-force position, name what is under revision, and say which of your recommendations depends on the outcome. In this case: none of them do — which is precisely why it is safe to decide today.",
+    },
+    references: [
+      { label: "Directive (EU) 2024/1799 — repair of goods; transposition deadline 31 July 2026", url: "https://eur-lex.europa.eu/eli/dir/2024/1799/oj" },
+      { label: "Regulation (EU) 2024/1781 — Ecodesign for Sustainable Products Regulation (ESPR)", url: "https://eur-lex.europa.eu/eli/reg/2024/1781/oj" },
+      { label: "ESRS E5 — Resource use and circular economy, under the EU CSRD (revision in progress)" },
+    ],
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Task 3 — copy
+// Case — BrightPath Corporate Services
+// ---------------------------------------------------------------------------
+export const CASE_BRIEF = {
+  company: "BrightPath Corporate Services",
+  brief:
+    "You are the incoming Head of Workplace Strategy. The board has read two previous consultant reports on this topic and implemented neither, because both delivered a list of recommendations rather than a way of deciding. You have one board session. Do not bring them a list — bring an architecture, and be ready to defend the one decision you are taking before the data is complete.",
+  profile:
+    "BrightPath is a European business-services group headquartered in Düsseldorf: 3,100 employees across seven countries, providing finance, HR and administrative outsourcing to enterprise clients. It sits comfortably above the CSRD Omnibus thresholds and already reports under ESRS.",
+  estate:
+    "The estate: roughly 3,400 notebooks, 2,100 monitors, 2,600 docking stations and 96 multifunction printers, plus a growing population of client-site devices governed by client security requirements.",
+  state: [
+    "Replacement runs on inherited fixed cycles that differ by country — three years in three countries, four in three others, and one site with no documented cycle at all.",
+    "Support is reactive and structurally prefers replacement over repair — not by policy, but because replacement is the faster path to closing a ticket.",
+    "No device condition data is collected anywhere in the group.",
+    "Procurement, IT Operations, Finance, HR, Security and Sustainability each hold a piece of the decision; none holds the whole.",
+    "The group's largest client has begun requesting device lifecycle and reuse data as part of its own supply-chain reporting.",
+  ],
+  boardExpectation:
+    "The board will approve a principle, a budget envelope and an accountability assignment — nothing more granular. Everything else must be designed to work without them.",
+} as const;
+
+export type RoleId =
+  | "cio"
+  | "itops"
+  | "procurement"
+  | "cfo"
+  | "ciso"
+  | "hr"
+  | "sustainability"
+  | "countryIt"
+  | "serviceDesk";
+
+export const ROLES: { id: RoleId; label: string }[] = [
+  { id: "cio", label: "CIO" },
+  { id: "itops", label: "Head of IT Operations" },
+  { id: "procurement", label: "Head of Procurement" },
+  { id: "cfo", label: "CFO" },
+  { id: "ciso", label: "CISO" },
+  { id: "hr", label: "Head of HR" },
+  { id: "sustainability", label: "Sustainability Officer" },
+  { id: "countryIt", label: "Country IT Lead" },
+  { id: "serviceDesk", label: "Service Desk Team Lead" },
+];
+
+/** The RACI grid uses a six-role subset so it stays readable; the rest appear in trade-off ownership. */
+export const RACI_ROLES: RoleId[] = ["cio", "itops", "procurement", "ciso", "sustainability", "serviceDesk"];
+
+// ---------------------------------------------------------------------------
+// Stage 1 — strategic framing and the three guiding decisions
+// ---------------------------------------------------------------------------
+export type Driver = {
+  id: string;
+  label: string;
+  isModel: boolean;
+  /** Fires when a weaker driver is selected — a question, never a verdict. */
+  counterPrompt?: string;
+  why: string;
+};
+
+export const DRIVERS: Driver[] = [
+  {
+    id: "client",
+    label: "Client supply-chain reporting requests are already arriving",
+    isModel: true,
+    why: "Present-tense, specific to BrightPath, and attached to a revenue consequence — the strongest board driver available.",
+  },
+  {
+    id: "manufacturing",
+    label: "Manufacturing dominates device lifecycle carbon, so replacement cycles are the primary lever",
+    isModel: true,
+    why: "The technical justification for which lever to pull. Without it the proposal has no reason to prefer extension over refresh.",
+  },
+  {
+    id: "fragmented",
+    label: "Fragmented country-level cycles create uncontrolled cost and carbon variance",
+    isModel: true,
+    why: "Internal, controllable and the clearest quantifiable inefficiency in the group.",
+  },
+  {
+    id: "regulatory",
+    label: "Regulatory direction (ESRS E5, Right to Repair / ESPR) makes lifetime data a foreseeable requirement",
+    isModel: false,
+    counterPrompt:
+      "Strong — but forward-looking. Would this alone get a budget approved this year, or does it work better as reinforcement behind a present-tense driver?",
+    why: "Entirely defensible as a third choice, and a fully acceptable substitute for the fragmentation driver. Best used as reinforcement rather than lead.",
+  },
+  {
+    id: "expectations",
+    label: "Employees expect modern equipment",
+    isModel: false,
+    counterPrompt: "Is this a driver for changing how you decide, or a constraint on whatever you decide?",
+    why: "An operational constraint, not a strategic driver — it shapes implementation, not direction.",
+  },
+  {
+    id: "competitors",
+    label: "Competitors are publishing sustainability commitments",
+    isModel: false,
+    counterPrompt:
+      "Would this driver still justify the investment if no competitor had published anything? If not, is it a driver or a comparison?",
+    why: "A comparison, not a reason. A board cannot allocate budget against someone else's press release.",
+  },
+  {
+    id: "supportcost",
+    label: "IT support costs are rising",
+    isModel: false,
+    counterPrompt: "Is rising support cost the problem itself, or a symptom of the missing decision rule?",
+    why: "An operational symptom. Real, but it points at the mechanism rather than being the strategic case.",
+  },
+  {
+    id: "right",
+    label: "Sustainability is the right thing to do",
+    isModel: false,
+    counterPrompt: "True — but what would a board do differently on Monday because of it?",
+    why: "True and not board-actionable on its own. It cannot be prioritised against, budgeted against, or reviewed.",
+  },
+];
+
+export const DRIVER_PICK_COUNT = 3;
+
+export type GuidingDecision = {
+  id: string;
+  letter: string;
+  label: string;
+  isModel: boolean;
+  modelOrder?: number;
+  why: string;
+};
+
+export const GUIDING_DECISIONS: GuidingDecision[] = [
+  { id: "condition-default", letter: "A", label: "Adopt condition-based replacement as the group-wide default, replacing fixed cycles", isModel: true, modelOrder: 3, why: "The substantive change — and only executable once someone owns it and the security ceiling exists." },
+  { id: "behaviour", letter: "B", label: "Approve a group-wide behaviour and communication programme", isModel: false, why: "Worth doing eventually, but it works the 15–25% slice and changes no default." },
+  { id: "accountability", letter: "C", label: "Assign single-point accountability for workplace device lifecycle", isModel: true, modelOrder: 1, why: "First, because every other decision needs an owner — without it the rest have no one to execute them." },
+  { id: "refresh", letter: "D", label: "Fund an immediate refresh of the oldest devices", isModel: false, why: "Re-triggers the dominant manufacturing footprint and consumes the envelope. The visible-but-weak trap." },
+  { id: "reuse", letter: "E", label: "Mandate reuse-before-purchase for peripherals", isModel: false, why: "A good early proof point, but too narrow to be one of only three board-level decisions." },
+  { id: "audit", letter: "F", label: "Commission a full fleet condition audit before any policy change", isModel: false, why: "The most frequent wrong answer: it defers the decision by a full cycle, and the audit is a deliverable of A rather than a prerequisite to deciding it." },
+  { id: "baseline", letter: "G", label: "Set a group-wide security baseline that defines the hard ceiling on extension", isModel: true, modelOrder: 2, why: "Second, because it defines the hard ceiling on extension — setting it before A converts the CISO from blocker to co-author." },
+  { id: "contracts", letter: "H", label: "Renegotiate leasing and procurement contracts to permit condition-based extension", isModel: false, why: "The strongest near-miss, and a defensible substitution for A in position three — contracts are the binding constraint in practice." },
+  { id: "commitment", letter: "I", label: "Publish an external sustainability commitment on device lifetime", isModel: false, why: "Commits publicly before the capability exists — the visible-but-weak trap at board level." },
+];
+
+export const DECISION_PICK_COUNT = 3;
+export const SEQUENCE_CLUE =
+  "Does any decision you selected require another one to have already happened before it can be executed?";
+export const RESOLUTION_INSTRUCTION =
+  "Write your first-sequenced decision the way the board would minute it — a decision, not an intention. \"The board approves…\", not \"We should consider…\".";
+export const RESOLUTION_MIN_WORDS = 10;
+
+// ---------------------------------------------------------------------------
+// Stage 2 — the rule builder and its test bench
+// ---------------------------------------------------------------------------
+export type ThresholdKey = "repairCeiling" | "supportedLife" | "condition" | "security" | "peripheral";
+
+export type ThresholdDef = {
+  key: ThresholdKey;
+  label: string;
+  hint: string;
+  options: { id: string; label: string; consequence: string }[];
+  modelOption: string;
+};
+
+export const THRESHOLDS: ThresholdDef[] = [
+  {
+    key: "repairCeiling",
+    label: "Repair cost ceiling",
+    hint: "Repair is allowed while estimated repair cost stays at or below this share of current replacement cost.",
+    options: [
+      { id: "20", label: "20%", consequence: "Tight. Retires machines in good condition with years of supported life left." },
+      { id: "30", label: "30%", consequence: "Common industry setting — repairs most economically sensible cases without funding near-replacement repairs." },
+      { id: "40", label: "40%", consequence: "Generous. Keeps more devices but approaches the cost of a new machine on expensive repairs." },
+      { id: "50", label: "50%", consequence: "Very generous. Half the price of a new device is hard to defend to a CFO." },
+    ],
+    modelOption: "30",
+  },
+  {
+    key: "supportedLife",
+    label: "Minimum remaining supported life",
+    hint: "How much vendor-supported life a device must still have for a repair to be worth funding.",
+    options: [
+      { id: "6", label: "6 months", consequence: "Permits repairs on devices about to leave support — the repair is wasted within two quarters." },
+      { id: "12", label: "12 months", consequence: "One year of return on the repair. Defensible, but tight against a procurement cycle." },
+      { id: "18", label: "18 months", consequence: "Repair pays back over more than a budget cycle, and survives a support-window change." },
+      { id: "24", label: "24 months", consequence: "Conservative. Retires devices that still had usable, supported life." },
+    ],
+    modelOption: "18",
+  },
+  {
+    key: "condition",
+    label: "Minimum device condition score",
+    hint: "Composite of battery health, storage health and incident frequency.",
+    options: [
+      { id: "none", label: "None required", consequence: "The rule stops being condition-based at all — you are back to cost and age." },
+      { id: "low", label: "Low", consequence: "Repairs devices already showing degradation; expect repeat tickets on the same machines." },
+      { id: "medium", label: "Medium", consequence: "Filters out failing hardware while keeping genuinely serviceable devices." },
+      { id: "high", label: "High", consequence: "Only near-perfect devices qualify — very few repairs will pass." },
+    ],
+    modelOption: "medium",
+  },
+  {
+    key: "security",
+    label: "Security baseline compliance",
+    hint: "What happens when a device cannot meet the current security baseline.",
+    options: [
+      { id: "hard", label: "Hard requirement — non-compliant devices retire", consequence: "The CISO's veto lives inside the rule, so extension never quietly erodes the baseline." },
+      { id: "soft", label: "Soft requirement — non-compliant devices escalate", consequence: "Every non-compliant device becomes a case-by-case negotiation, and the queue grows." },
+      { id: "none", label: "Not part of the rule", consequence: "A cheap, high-condition, non-compliant device will be repaired and kept. This is erosion by attrition." },
+    ],
+    modelOption: "hard",
+  },
+  {
+    key: "peripheral",
+    label: "Reuse-before-purchase check on peripherals",
+    hint: "Whether stock must be checked before new peripherals are ordered.",
+    options: [
+      { id: "mandatory", label: "Mandatory", consequence: "Produces the reuse rate you will later report, as a by-product of ordinary work." },
+      { id: "advisory", label: "Advisory", consequence: "Complied with when convenient; produces no reliable reuse data." },
+      { id: "none", label: "Not required", consequence: "Onboarding keeps issuing new stock while usable stock sits in storage." },
+    ],
+    modelOption: "mandatory",
+  },
+];
+
+export type ConditionLevel = "low" | "medium" | "high";
+export type Outcome = "repair" | "retire" | "escalate";
+
+export type TestDevice = {
+  id: string;
+  n: number;
+  age: string;
+  repairCost: number;
+  replacementCost: number;
+  condition: ConditionLevel;
+  supportedLifeMonths: number;
+  securityCompliant: boolean;
+  userRole: string;
+  /** Why this device is in the bench — mentor-only. */
+  trap?: string;
+};
+
+export const TEST_DEVICES: TestDevice[] = [
+  { id: "d1", n: 1, age: "2 yrs", repairCost: 90, replacementCost: 1200, condition: "high", supportedLifeMonths: 36, securityCompliant: true, userRole: "Analyst" },
+  { id: "d2", n: 2, age: "5 yrs", repairCost: 480, replacementCost: 1200, condition: "low", supportedLifeMonths: 8, securityCompliant: true, userRole: "Analyst" },
+  {
+    id: "d3",
+    n: 3,
+    age: "3 yrs",
+    repairCost: 70,
+    replacementCost: 1200,
+    condition: "high",
+    supportedLifeMonths: 30,
+    securityCompliant: false,
+    userRole: "Consultant",
+    trap: "The single most important case. Cheap, high-condition, long supported life — and outside the security baseline. A rule with security set to soft or absent will say Repair, which is exactly the erosion-by-attrition the CISO warns about. If a learner's rule repairs this device, stop and unpack it.",
+  },
+  { id: "d4", n: 4, age: "4 yrs", repairCost: 310, replacementCost: 1100, condition: "medium", supportedLifeMonths: 20, securityCompliant: true, userRole: "Admin", trap: "Sits at 28% — just inside a 30% ceiling. Shows the learner where their ceiling actually bites." },
+  {
+    id: "d5",
+    n: 5,
+    age: "4 yrs",
+    repairCost: 300,
+    replacementCost: 1150,
+    condition: "high",
+    supportedLifeMonths: 30,
+    securityCompliant: true,
+    userRole: "Developer",
+    trap: "Exposes an over-tight ceiling: at 26% this device is retired by a 20% setting despite high condition and 30 months of supported life left — contradicting the purpose of the policy.",
+  },
+  {
+    id: "d6",
+    n: 6,
+    age: "6 yrs",
+    repairCost: 120,
+    replacementCost: 1200,
+    condition: "high",
+    supportedLifeMonths: 24,
+    securityCompliant: true,
+    userRole: "Analyst",
+    trap: "Exposes reflexive age-based thinking. Nothing in a well-built rule references age — age is the proxy the rule deliberately replaces with condition and supported life.",
+  },
+  { id: "d7", n: 7, age: "3 yrs", repairCost: 650, replacementCost: 1300, condition: "medium", supportedLifeMonths: 26, securityCompliant: true, userRole: "Consultant", trap: "At 50%, over any defensible ceiling despite good condition — the case that shows a condition-based rule is not a repair-everything rule." },
+  {
+    id: "d8",
+    n: 8,
+    age: "2 yrs",
+    repairCost: 95,
+    replacementCost: 1400,
+    condition: "high",
+    supportedLifeMonths: 34,
+    securityCompliant: true,
+    userRole: "Executive",
+    trap: "Exposes informal role-based exceptions. If a learner wants an executive exception it must be written into the rule and its cost owned — a silent exception destroys the rule's authority everywhere else.",
+  },
+];
+
+const CONDITION_RANK: Record<string, number> = { none: 0, low: 1, medium: 2, high: 3 };
+
+/** The learner's own rule, applied to a device. Order matters: security first, then fitness, then cost. */
+export function applyRule(
+  device: TestDevice,
+  t: Partial<Record<ThresholdKey, string>>,
+): { outcome: Outcome; reason: string } | null {
+  const { repairCeiling, supportedLife, condition, security } = t;
+  if (!repairCeiling || !supportedLife || !condition || !security) return null;
+
+  if (!device.securityCompliant) {
+    if (security === "hard") return { outcome: "retire", reason: "outside the security baseline — hard requirement" };
+    if (security === "soft") return { outcome: "escalate", reason: "outside the security baseline — soft requirement" };
+  }
+
+  if (device.supportedLifeMonths < Number(supportedLife)) {
+    return { outcome: "retire", reason: `only ${device.supportedLifeMonths} months supported life, below your ${supportedLife}-month minimum` };
+  }
+
+  if (CONDITION_RANK[device.condition] < CONDITION_RANK[condition]) {
+    return { outcome: "retire", reason: `condition ${device.condition}, below your ${condition} minimum` };
+  }
+
+  const ratio = (device.repairCost / device.replacementCost) * 100;
+  if (ratio > Number(repairCeiling)) {
+    return { outcome: "retire", reason: `repair is ${ratio.toFixed(0)}% of replacement, above your ${repairCeiling}% ceiling` };
+  }
+
+  return { outcome: "repair", reason: `repair is ${ratio.toFixed(0)}% of replacement, within all four conditions` };
+}
+
+export const EXCEPTION_INSTRUCTION =
+  "Where does a case go when the rule cannot resolve it? Name the level and the limit of its authority — specific enough that a technician knows when to stop deciding.";
+export const EXCEPTION_MIN_WORDS = 8;
+
+export const REASON_CODES: { id: string; label: string; isModel: boolean }[] = [
+  { id: "cost-band", label: "Repair cost outside band", isModel: true },
+  { id: "no-condition-data", label: "Condition data unavailable", isModel: true },
+  { id: "security-exception", label: "Security baseline exception requested", isModel: true },
+  { id: "business-critical", label: "Business-critical user timing", isModel: true },
+  { id: "no-part", label: "Spare part unavailable", isModel: false },
+  { id: "client-device", label: "Client-site device governed by client policy", isModel: false },
+  { id: "warranty", label: "Warranty dispute in progress", isModel: false },
+  { id: "user-request", label: "User requested a different model", isModel: false },
+];
+
+export const REASON_CODE_MIN = 3;
+export const REASON_CODE_MAX = 5;
+
+// ---------------------------------------------------------------------------
+// Stage 3 — accountability, trade-offs, review, board challenge
+// ---------------------------------------------------------------------------
+export type RaciLetter = "R" | "A" | "C" | "I";
+
+export const RACI_LETTERS: RaciLetter[] = ["R", "A", "C", "I"];
+
+export type RaciDecision = { id: string; label: string; modelAccountable: RoleId; note: string };
+
+export const RACI_DECISIONS: RaciDecision[] = [
+  {
+    id: "thresholds",
+    label: "Repair-vs-retire threshold values",
+    modelAccountable: "cio",
+    note: "CIO accountable, IT Operations responsible, CFO / CISO / Sustainability consulted. The CISO is only Consulted here — which works because the security baseline is a hard constraint inside the rule itself.",
+  },
+  {
+    id: "baseline",
+    label: "Security baseline definition",
+    modelAccountable: "ciso",
+    note: "CISO accountable and responsible; CIO and IT Operations consulted. This is the decision that makes the CISO a co-author of extension rather than its blocker.",
+  },
+  {
+    id: "contracts",
+    label: "Procurement and leasing contract terms",
+    modelAccountable: "procurement",
+    note: "Head of Procurement accountable, CFO and CIO consulted. Contracts are the binding constraint on extension in practice.",
+  },
+  {
+    id: "reporting",
+    label: "External reporting of lifecycle data",
+    modelAccountable: "sustainability",
+    note: "Sustainability Officer accountable for reporting only — never for device lifetime itself, which they cannot control through any contract, budget line or support default.",
+  },
+];
+
+export type TradeOff = {
+  id: string;
+  label: string;
+  modelOwner: RoleId;
+  options: { id: string; label: string; isModel: boolean; why: string }[];
+};
+
+export const TRADE_OFFS: TradeOff[] = [
+  {
+    id: "security",
+    label: "Security vs. lifetime extension",
+    modelOwner: "ciso",
+    options: [
+      { id: "security-first", label: "Security prevails; non-compliant devices retire early", isModel: true, why: "The only default that keeps the baseline intact while still permitting extension everywhere else. It is also what makes the policy defensible to a CISO." },
+      { id: "extension-first", label: "Extension prevails; compensating controls applied", isModel: false, why: "Reads as pragmatic but erodes the baseline case by case — exactly the attrition pattern security leads have seen before." },
+      { id: "case-by-case", label: "Case-by-case escalation to steering", isModel: false, why: "Turns every non-compliant device into a negotiation, which is the bottleneck the architecture exists to prevent." },
+    ],
+  },
+  {
+    id: "visibility",
+    label: "Short-term visibility vs. structural effect",
+    modelOwner: "cio",
+    options: [
+      { id: "structural", label: "Structural prevails; visible proof points engineered into the first 90 days", isModel: true, why: "Keeps the strong measure and solves its real weakness — that it gets cancelled before it works." },
+      { id: "visible", label: "Visibility prevails; deliver something reportable this quarter", isModel: false, why: "The visible-but-weak trap at board level: budget lock-in plus political closure." },
+      { id: "split", label: "Split the budget between both", isModel: false, why: "Superficially balanced, but halves the structural measure while still spending on the weak one." },
+    ],
+  },
+  {
+    id: "cost",
+    label: "Cost certainty vs. condition-based flexibility",
+    modelOwner: "cfo",
+    options: [
+      { id: "flexibility", label: "Flexibility prevails within a stated annual variance band", isModel: true, why: "Replaces cycle certainty with band certainty — more accurate than a fixed cycle that was never validated against condition." },
+      { id: "certainty", label: "Cost certainty prevails; keep fixed cycles", isModel: false, why: "Predictable is not the same as accurate. This is the inherited default the whole architecture exists to replace." },
+      { id: "pilot", label: "Pilot flexibility in one country only", isModel: false, why: "Defensible as a step, but it leaves six countries on the default it has already been concluded is wrong." },
+    ],
+  },
+];
+
+export type ReviewIndicator = { id: string; label: string; isModel: boolean; why: string };
+
+export const REVIEW_INDICATORS: ReviewIndicator[] = [
+  { id: "repair-ratio", label: "Repair-to-replace ratio", isModel: true, why: "The direct behavioural indicator of whether the default actually changed." },
+  { id: "exception-codes", label: "Exception rate by reason code", isModel: true, why: "The most diagnostic metric — a cluster on one code names the mis-set threshold for you." },
+  { id: "reuse-rate", label: "Peripheral reuse rate", isModel: true, why: "Fastest-moving and easiest to improve, which makes it the early proof point that buys the programme time." },
+  { id: "fleet-age", label: "Average fleet age and its distribution", isModel: false, why: "Genuinely useful, and a fine fourth choice — but slower-moving, and the average hides a bimodal distribution unless you read it carefully." },
+  { id: "ticket-volume", label: "Total helpdesk ticket volume", isModel: false, why: "Moves for a dozen unrelated reasons; it cannot tell you whether this policy is working." },
+  { id: "spend", label: "Total hardware spend", isModel: false, why: "Lags by a full procurement cycle and is confounded by headcount growth." },
+];
+
+export const INDICATOR_PICK_COUNT = 3;
+
+export const CADENCES: { id: string; label: string }[] = [
+  { id: "monthly", label: "Monthly" },
+  { id: "quarterly", label: "Quarterly" },
+  { id: "annual", label: "Annual" },
+];
+
+export const TRIGGER_INSTRUCTION =
+  "State the observation that would force a threshold change. Be specific enough that someone reading the quarterly report could recognise it without asking you.";
+export const TRIGGER_MIN_WORDS = 10;
+
+export type BoardChallenge = {
+  id: string;
+  role: string;
+  objection: string;
+  options: { id: string; label: string; isModel: boolean; why: string }[];
+};
+
+export const BOARD_CHALLENGES: BoardChallenge[] = [
+  {
+    id: "cfo",
+    role: "CFO",
+    objection:
+      "Condition-based extension makes our hardware spend unpredictable. Fixed cycles are budgetable. Why should I accept variance?",
+    options: [
+      { id: "band", label: "The architecture replaces cycle certainty with band certainty — a stated variance band plus a condition-driven forecast", isModel: true, why: "Concedes the real concern and answers it: fixed cycles are predictable, not accurate, because they were never validated against device condition." },
+      { id: "savings", label: "Extension saves money overall, so the variance pays for itself", isModel: false, why: "Answers a question the CFO did not ask. They objected to unpredictability, not to cost." },
+      { id: "carbon", label: "The carbon case outweighs the budgeting inconvenience", isModel: false, why: "Dismisses a legitimate finance constraint and guarantees the CFO opposes the rest of the proposal." },
+      { id: "pilot", label: "We will pilot it in one country and review the variance after a year", isModel: false, why: "Safe, but it defers the group default by a year and leaves the inherited cycles running everywhere else." },
+    ],
+  },
+  {
+    id: "ciso",
+    role: "CISO",
+    objection:
+      "I have seen sustainability programmes erode security baselines by attrition. What in your architecture stops that?",
+    options: [
+      { id: "hard-constraint", label: "The baseline is a hard constraint inside the rule, and you own its definition — non-compliant devices retire regardless of condition or cost", isModel: true, why: "Names the specific structural mechanism and hands the CISO ownership of it. Test device 3 is the demonstration." },
+      { id: "consult", label: "You will be consulted on every extension decision", isModel: false, why: "Turns a veto into a meeting invitation — and puts the CISO in the queue for every individual case." },
+      { id: "review", label: "The quarterly review will catch any drift", isModel: false, why: "Detection after the fact is not prevention, and it accepts erosion as the normal state between reviews." },
+      { id: "exception", label: "Non-compliant devices go to steering as exceptions", isModel: false, why: "Creates exactly the case-by-case negotiation in which baselines get traded away." },
+    ],
+  },
+  {
+    id: "hr",
+    role: "Head of HR",
+    objection:
+      "Our people will read \"keep your laptop longer\" as a cost cut dressed up as sustainability. How is that not a retention problem?",
+    options: [
+      { id: "top-down", label: "It is a communication design problem: the default applies visibly top-down, leadership devices included, and is framed as condition-based quality assurance", isModel: true, why: "Accepts the risk as real, locates it correctly, and points at the concrete mechanism — no executive exception in the rule (test device 8)." },
+      { id: "deny", label: "The data shows older devices perform fine, so the perception is simply wrong", isModel: false, why: "Being right about the hardware does not address how the policy is read. Perception is the actual risk here." },
+      { id: "optout", label: "Employees who object can request a replacement", isModel: false, why: "Creates an opt-out that hollows out the default and rewards whoever complains loudest." },
+      { id: "incentive", label: "Offer a recognition scheme for teams that keep devices longest", isModel: false, why: "Gamifies the symptom and implies keeping a device is a sacrifice, reinforcing exactly the framing HR is worried about." },
+    ],
+  },
+];
+
+export const CHALLENGE_NOTE_INSTRUCTION = "One supporting line in your own words — the sentence you would actually say in the room.";
+export const COMMITMENT_INSTRUCTION =
+  "Name the decision you are asking the board to take now, despite incomplete information, and state what it would cost to wait.";
+export const COMMITMENT_MIN_WORDS = 15;
+
+// ---------------------------------------------------------------------------
+// Mentor answer keys
+// ---------------------------------------------------------------------------
+export const DRIVER_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "The three strategic drivers",
+  items: DRIVERS.map((d) => ({
+    option: d.label,
+    verdict: d.isModel ? ("pick" as const) : ("avoid" as const),
+    why: d.why,
+  })),
+  teachingNote:
+    "The regulatory driver is a fully defensible substitution for the fragmentation one — accept it when the learner can say why a forward-looking driver still moves a board today. What should not survive is a set built only from symptoms (support cost, employee expectations) or comparisons (competitors).",
+};
+
+export const SEQUENCE_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "The three guiding decisions, and their order",
+  items: [
+    { option: "1. C — assign single-point accountability", verdict: "pick", why: "Every other decision needs an owner; without it the rest have nobody to execute them." },
+    { option: "2. G — set the security baseline", verdict: "pick", why: "Defines the hard ceiling on extension. Setting it before A converts the CISO from blocker to co-author and means the policy is born compliant." },
+    { option: "3. A — condition-based replacement as the group default", verdict: "pick", why: "The substantive change, and executable only once C and G exist." },
+    { option: "H — renegotiate contracts", verdict: "avoid", why: "The strongest near-miss and a defensible substitution for A in third position, since contracts are the binding constraint in practice." },
+    { option: "F — commission the audit first", verdict: "avoid", why: "The most frequent error. Defers the decision by a full cycle, and the audit is a deliverable of A rather than a prerequisite to deciding it." },
+    { option: "I — publish an external commitment", verdict: "avoid", why: "Commits publicly before the capability exists. If the first data request arrives before the data does, the commitment becomes the liability." },
+    { option: "D — fund an immediate refresh", verdict: "avoid", why: "Re-triggers the dominant manufacturing footprint and consumes the envelope." },
+  ],
+  teachingNote:
+    "Judge the sequence harder than the selection. A learner who picks C, G, A but orders them A, C, G has not understood dependency — ask them who executes A on day one, and against which security ceiling.",
+};
+
+export const RULE_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "Model thresholds",
+  items: [
+    { option: "Repair ceiling 30%", verdict: "pick", why: "Repairs the economically sensible cases without funding near-replacement repairs. At 20%, test device 5 is retired despite high condition and 30 months of supported life." },
+    { option: "Minimum supported life 18 months", verdict: "pick", why: "The repair pays back over more than a budget cycle. At 6 months the repair is wasted within two quarters." },
+    { option: "Condition minimum Medium", verdict: "pick", why: "Filters failing hardware while keeping serviceable devices. 'None required' quietly turns the rule back into a cost-and-age rule." },
+    { option: "Security: hard requirement", verdict: "pick", why: "The decisive setting. Anything softer repairs test device 3 — cheap, high-condition, non-compliant — which is erosion by attrition." },
+    { option: "Peripheral reuse: mandatory", verdict: "pick", why: "Produces the reuse rate you will later report, as a by-product of ordinary work rather than as a separate data project." },
+  ],
+  teachingNote:
+    "Learners typically need two to three iterations to reach a defensible set. Zero iterations almost always means they marked unintended outcomes as intended — probe that rather than praising the speed.",
+};
+
+export const RACI_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "Accountability assignment",
+  items: [
+    ...RACI_DECISIONS.map((d) => ({
+      option: `${d.label} → ${ROLES.find((r) => r.id === d.modelAccountable)?.label}`,
+      verdict: "pick" as const,
+      why: d.note,
+    })),
+    {
+      option: "Sustainability Officer accountable for device lifetime",
+      verdict: "avoid" as const,
+      why: "The accountability-without-control failure: that officer cannot change a procurement contract, a support default or a depreciation schedule. They are accountable for reporting, not for the outcome.",
+    },
+    {
+      option: "Two Accountables on a cross-functional decision",
+      verdict: "avoid" as const,
+      why: "Feels collaborative and politically safe, and guarantees a stall the first time the two disagree. Split the decision or name the tie-breaker.",
+    },
+  ],
+  teachingNote:
+    "The CISO being merely Consulted on the repair threshold is only honest because the security baseline is a hard constraint inside the rule. If a learner softened that threshold in Stage 2, this RACI row becomes a lie — connect the two out loud.",
+};
+
+export const ESCALATION_NOTE =
+  "Escalation volume should be low but non-zero. Zero escalations means the rule is being bypassed rather than followed; a high volume means the thresholds are mis-set. With the model thresholds the bench produces no escalations at all — which is the teaching point: a hard security requirement converts what would have been escalations into decided outcomes, so the escalation path exists for genuinely novel cases rather than for a category you already knew about.";
+
+export const COMMITMENT_ANSWER_NOTE =
+  "Model: \"We ask the board to adopt condition-based replacement as the group default now, before any condition data exists, because the condition assessment is the first operational deliverable of that decision rather than a prerequisite to it. Waiting for the audit costs a full procurement cycle across seven countries — during which roughly a quarter of the fleet will be replaced under the inherited fixed cycles we have already concluded are wrong.\" A strong answer names the decision, the missing information, and the quantified cost of delay.";
+
+export const MISCONCEPTIONS: { wrong: string; why: string; redirect: string }[] = [
+  { wrong: "Commission the audit first, then decide", why: "Feels rigorous and low-risk", redirect: "Ask what the audit is a deliverable of, and what happens to the fleet during the waiting period." },
+  { wrong: "Make the Sustainability Officer accountable for device lifetime", why: "Topic ownership confused with decision control", redirect: "Ask which contract, budget line or support default that officer can actually change." },
+  { wrong: "Two Accountables for cross-functional decisions", why: "Feels collaborative and politically safe", redirect: "Ask what happens the first time they disagree." },
+  { wrong: "Age should be in the rule", why: "Fixed cycles are the inherited mental model", redirect: "Point at test device 6 and ask what age is a proxy for — and whether the rule already measures that directly." },
+  { wrong: "Give executives an exception, it's politically necessary", why: "Realistic instinct, badly executed", redirect: "Not forbidden — but write it into the rule and own its cost. A silent exception destroys the rule's authority everywhere else." },
+  { wrong: "Security and sustainability are in permanent conflict", why: "Both framed as absolutes", redirect: "Show that a hard security constraint inside the rule enables extension by making it defensible, rather than blocking it." },
+];
+
+// ---------------------------------------------------------------------------
+// Task copy
 // ---------------------------------------------------------------------------
 export const TASK3 = {
-  kicker: "Task 3",
-  heading: "SkyBridge Diagnostic → Helix Executive Proposal",
+  kicker: "Task 1",
+  heading: "The BrightPath Decision Architecture",
   intro:
-    "A capstone task in two parts: first diagnose SkyBridge Solutions, then step into the advisor role for Helix Digital Platforms. Work through the three stages below — nothing is locked.",
-  orderBanner: "Suggested order: Stage 1 → 3. You can work in any order — the report at the end fills in as you go.",
-  group1: {
-    heading: "Stage 1 — Diagnose SkyBridge",
-    instructions: "Read the case, then map each piece of evidence onto the Decision Architecture model.",
+    "BrightPath is fictional, built so you can design an architecture rather than recommend a list. Three stages, about 15 minutes: frame the case and choose what the board decides, build the repair-vs-retire rule and test it against real devices until it does what you intended, then assign accountability, design the review, and survive three board objections. The memo on the right assembles as you go.",
+  orderBanner:
+    "Suggested order: Stage 1 → 3. Nothing is locked — the memo builds from whatever you have answered, whichever stage you start with.",
+  stage1: {
+    heading: "Stage 1 — Frame the case, choose the decisions",
+    instructions:
+      "Pick the three drivers that would actually move this board, then the three decisions it should take — and put them in the order they can be executed.",
+    material: ["architecture"] as MaterialSectionId[],
   },
-  group2: {
-    heading: "Stage 2 — Levers & Roadmap",
-    instructions: "Pick the real root-cause levers, then sequence them into a roadmap with a first move.",
-  },
-  group3: {
-    heading: "Stage 3 — Proposal & Export",
-    instructions: "Step into the advisor role for Helix, build the executive proposal, then review and export it.",
-  },
-  stage1: { heading: "SkyBridge Briefing", instructions: "Read the case and click each of the six evidence cards to expand it." },
   stage2: {
-    heading: "Map to the Decision Architecture",
-    instructions: "Drag each evidence card onto the one Decision Architecture component it fits best. Use the clue if you're unsure; undo/redo freely.",
-    material: ["architecture-model", "shift"] as MaterialSectionId[],
+    heading: "Stage 2 — Build the rule, then test it",
+    instructions:
+      "Set your thresholds and watch eight real devices run through them. Mark any outcome you did not intend, adjust, and run it again — the iteration is the exercise.",
+    material: ["rules"] as MaterialSectionId[],
   },
   stage3: {
-    heading: "Find the 4 Levers",
-    instructions: `Select exactly ${LEVERS_REQUIRED_COUNT} of the candidate actions below — the ones you judge as real root-cause levers, not symptom-level fixes — and justify each briefly.`,
-    material: ["iceberg", "architecture-model"] as MaterialSectionId[],
-  },
-  stage4: {
-    heading: "Recommend & Sequence",
-    instructions: "Drag your four chosen levers onto Short-Term, Medium-Term, or Structural. Then mark exactly one as your first move and justify why it goes first.",
-    material: ["horizons", "iceberg"] as MaterialSectionId[],
-  },
-  stage5: {
-    heading: "Bridge to Helix",
-    instructions: "You've just diagnosed SkyBridge. Now you'll advise Helix Digital Platforms — a company facing the same tensions, at a higher and more strategic level.",
-    gutcheckIntro: "Optional gut-check — not required to continue:",
-  },
-  stage6: {
-    heading: "Build the Executive Proposal",
-    instructions: "Seven sections, the same structure from Block 5 of the material. Complete each one for Helix.",
-    material: ["proposal-structure", "shift", "architecture-model"] as MaterialSectionId[],
-    s1Starter: "Sustainable cloud use matters strategically for Helix because",
-    s3Starter: "Future cloud measures should be assessed and prioritized by",
-    s7DecideStarter: "Even without complete data, Helix must decide now to",
-    s7WaitStarter: "because waiting would mean",
-  },
-  stage7: {
-    heading: "Live Report & Export",
-    instructions: "A read-only recap of everything above, and the management proposal it produces — ready to export once every stage is complete.",
+    heading: "Stage 3 — Accountability, review, and the board",
+    instructions:
+      "Assign who owns what, state your trade-off defaults, design how you will know the rule stopped working, then take three objections from the board.",
+    material: ["accountability", "review"] as MaterialSectionId[],
   },
   export: {
+    docHeading: "Management Decision Architecture",
     filenameLevel: 3,
     filenameTask: 1,
-    taskLabel: "Management Proposal",
-    docHeading: "Management Proposal — Helix Digital Platforms",
   },
 } as const;

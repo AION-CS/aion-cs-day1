@@ -198,20 +198,23 @@ Same principle in `components/chrome/TopBar.tsx`: a route only shows a lock icon
 
 ---
 
-## 7. Mentor/QA auto-fill button, passcode-gated, on every route
+## 7. Mentor/QA tools, passcode-gated, on every route
 
-**Why:** lets a mentor or QA reviewer exercise every field and every downstream feature
-(export, live reports, branching outcomes) in seconds instead of manually filling 20+
-fields by hand per route.
+Two tools, both required on every route, both behind the same passcode
+(`lib/mentorPasscode.ts`).
+
+**7a. Auto-fill.** Lets a mentor or QA reviewer exercise every field and every downstream
+feature (export, live reports, branching outcomes) in seconds instead of manually filling
+20+ fields by hand per route.
 
 **Pattern** — one shared passcode component, one `fillDemoAnswers` callback per route that
 writes straight into that route's store slice:
 
 ```ts
 // components/ui/MentorFillButton.tsx
-const PASSCODE = "muchson123";
+import { MENTOR_PASSCODE } from "@/lib/mentorPasscode";
 const submit = () => {
-  if (code === PASSCODE) { onFill(); setOpen(false); } else { setError(true); }
+  if (code === MENTOR_PASSCODE) { onFill(); setOpen(false); } else { setError(true); }
 };
 ```
 
@@ -225,10 +228,23 @@ export function MentorTools() {
 }
 ```
 
-Rendered once at the top of each route page (e.g. `app/route-1-.../page.tsx`).
-**Important:** this is auto-fill only — there is no separate read-only rubric/answer-key
-panel behind the passcode. Don't assume one exists; if a route genuinely needs a
-mentor-facing rubric view, that's a new addition, not reuse.
+**7b. Answer keys.** Because the learner-facing UI only ever gives a clue and never a verdict
+(standard #4), the full reasoning has to live somewhere a facilitator can reach it — otherwise
+they are improvising a counter-case live in front of a cohort. `AnswerKeyButton` unlocks an
+`AnswerKeyBlock` (`lib/answerKey.ts`) next to every exercise where the learner picks from fixed
+options: the expected answer, a `why` for **every** option including the rejected ones, and a
+`teachingNote` wherever more than one answer genuinely defends.
+
+```ts
+// lib/store.ts — session slice, deliberately outside partialize
+answerKeyUnlocked: boolean;   // a reload always re-locks the keys
+```
+
+Style keys in `warn`, never the accent — the accent belongs to the learner's own interactive
+surfaces, so a key can never be misread as learner content.
+
+Both tools render once at the top of each route page (e.g. `app/route-1-.../page.tsx`), via
+that route's thin `MentorTools.tsx`.
 
 ---
 

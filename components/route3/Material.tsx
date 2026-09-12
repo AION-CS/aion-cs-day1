@@ -1,49 +1,44 @@
-import { MATERIAL, materialAnchorId } from "@/lib/route3";
+import { MATERIAL, RECAP, materialAnchorId } from "@/lib/route3";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
-import { SevenDimensionHoneySvg } from "./SevenDimensionHoneySvg";
-import { DecisionArchitectureModel } from "./DecisionArchitectureModel";
-import { IcebergSvg } from "./IcebergSvg";
-import { RoadmapLanesSvg } from "./RoadmapLanesSvg";
-import { ProposalChecklistSvg } from "./ProposalChecklistSvg";
+import {
+  MeasuresVsArchitectureSvg,
+  DecisionRuleLadderSvg,
+  RaciExampleSvg,
+  RegulatoryHorizonSvg,
+} from "./MaterialSvgs";
 
-const [shift, architectureModel, iceberg, horizons, proposalStructure] = MATERIAL;
+const [architecture, rules, accountability, review] = MATERIAL;
 
 export function Material() {
   return (
     <div className="space-y-14">
       <SectionHeading
         kicker="Material"
-        title="Five ideas before the capstone task"
-        intro="About 60 minutes. The second block is the model the whole route runs on."
+        title="Four ideas before you face the board"
+        intro="About seven minutes of reading. This route stands on its own — the recap below carries the facts everything here rests on, so nothing is missing if you start at Route 3."
       />
 
-      <MaterialBlock block={shift} anchorId={materialAnchorId("shift")}>
-        <SevenDimensionHoneySvg />
+      <div className="rounded-2xl border border-accent/30 bg-accentSoft/50 p-5">
+        <p className="text-micro font-semibold uppercase tracking-wide text-accent">{RECAP.label}</p>
+        <p className="mt-2 text-body text-ink">{RECAP.text}</p>
+        <p className="mt-2 text-caption font-semibold text-ink">{RECAP.implication}</p>
+      </div>
+
+      <MaterialBlock block={architecture} anchorId={materialAnchorId("architecture")}>
+        <MeasuresVsArchitectureSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={architectureModel} anchorId={materialAnchorId("architecture-model")}>
-        <div className="mx-auto max-w-sm">
-          <DecisionArchitectureModel />
-        </div>
-        <p className="mt-2 text-center text-micro text-ash">
-          An empty shell on purpose — you'll map SkyBridge's own evidence onto this exact model in Stage 1.
-        </p>
+      <MaterialBlock block={rules} anchorId={materialAnchorId("rules")}>
+        <DecisionRuleLadderSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={iceberg} anchorId={materialAnchorId("iceberg")}>
-        <IcebergSvg />
+      <MaterialBlock block={accountability} anchorId={materialAnchorId("accountability")}>
+        <RaciExampleSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={horizons} anchorId={materialAnchorId("horizons")}>
-        <RoadmapLanesSvg />
-        <p className="mt-2 text-center text-micro text-ash">
-          Same three lanes, functional, in Stage 2 — you'll drag your chosen levers onto them.
-        </p>
-      </MaterialBlock>
-
-      <MaterialBlock block={proposalStructure} anchorId={materialAnchorId("proposal-structure")}>
-        <ProposalChecklistSvg />
+      <MaterialBlock block={review} anchorId={materialAnchorId("review")}>
+        <RegulatoryHorizonSvg />
       </MaterialBlock>
     </div>
   );

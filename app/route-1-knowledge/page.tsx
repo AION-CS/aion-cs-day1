@@ -19,12 +19,13 @@ export default function Route1Page() {
         <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
           <LeafMark className="h-4 w-4" /> {ROUTE.tag} — 1 of 3
         </p>
-        <h1 className="text-display text-ink">Route 1 · Knowledge — Is the Cloud Really Sustainable?</h1>
+        <h1 className="text-display text-ink">Route 1 · Knowledge — Why Keeping a Laptop Beats Buying a Greener One</h1>
         <p className="mt-4 text-body text-ash">
-          Before you touch a single case study, you need one mental model: cloud computing is not automatically
-          green. It can be more efficient than your own data center — or it can quietly become a bigger energy and
-          cost problem than what it replaced. In the next hour, you'll build the framework to tell the difference.
-          Then you'll apply it to a real company situation in Task 1.
+          Around 80% of a business laptop&apos;s lifetime carbon is spent before anyone switches it on. That single fact
+          decides which green-workplace measures actually matter and which ones only look busy. In the next few minutes
+          you&apos;ll build the argument — the carbon maths, the gap between what hardware can do and what policy
+          permits, and the honest counter-arguments — then walk a real-feeling office and find where that gap is costing
+          money.
         </p>
       </div>
 
@@ -33,9 +34,9 @@ export default function Route1Page() {
       <Material />
 
       <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
-        <p className="text-body font-semibold text-ink">You've built the framework. Time to apply it.</p>
+        <p className="text-body font-semibold text-ink">You have the argument. Now go find the evidence.</p>
         <a href="#task" className="btn-accent mt-3 inline-flex">
-          Start the Flexora Cloud Decision Audit
+          Start the UrbanByte walkthrough
         </a>
       </div>
 

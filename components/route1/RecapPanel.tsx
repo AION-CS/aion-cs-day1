@@ -1,11 +1,16 @@
-import { EVIDENCE_ITEMS, DIMENSIONS, STATEMENT_PROMPTS } from "@/lib/route1";
+import { ZONES, FINDINGS, CATEGORIES, DIRECTIONS, DRIVER_OPTIONS, HORIZON_OPTIONS } from "@/lib/route1";
 import type { useRoute1 } from "./useRoute1";
 
 type Route1State = ReturnType<typeof useRoute1>;
 
-const DIM_LABEL: Record<string, string> = Object.fromEntries(DIMENSIONS.map((d) => [d.id, d.label]));
+const CATEGORY_LABEL: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
+const DRIVER_LABEL: Record<string, string> = Object.fromEntries(DRIVER_OPTIONS.map((o) => [o.id, o.label]));
+const HORIZON_LABEL: Record<string, string> = Object.fromEntries(HORIZON_OPTIONS.map((o) => [o.id, o.label]));
+const DIRECTION_LABEL: Record<string, string> = Object.fromEntries(DIRECTIONS.map((d) => [d.id, d.label]));
 
-/** Left-hand raw recap — every answer as-entered, no formatting or narrative. The structured brief is the right-hand panel. */
+const letterOf = (zoneId: string) => ZONES.find((z) => z.id === zoneId)?.letter ?? "?";
+
+/** Left-hand raw recap — every answer as-entered, no narrative. The structured brief is the right-hand panel. */
 export function RecapPanel({ r1 }: { r1: Route1State }) {
   return (
     <div className="space-y-5 text-ink">
@@ -15,51 +20,63 @@ export function RecapPanel({ r1 }: { r1: Route1State }) {
       </div>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Benefit / Risk</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Zones investigated</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
-          {EVIDENCE_ITEMS.map((it) => (
-            <li key={it.id} className="flex items-baseline justify-between gap-2">
-              <span className="text-ash">{it.text}</span>
-              <span className="shrink-0 font-semibold text-ink">{r1.stage2Verdict[it.id] ?? "—"}</span>
+          {ZONES.map((z) => (
+            <li key={z.id} className="flex items-baseline justify-between gap-2">
+              <span className="text-ash">
+                {z.letter} · {z.label}
+              </span>
+              <span className="shrink-0 font-semibold text-ink">{r1.zonesSeen.includes(z.id) ? "logged" : "—"}</span>
             </li>
           ))}
         </ul>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Wheel dimension</h3>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 1 — Area</h3>
         <ul className="mt-1.5 space-y-1 text-micro">
-          {EVIDENCE_ITEMS.map((it) => (
-            <li key={it.id} className="flex items-baseline justify-between gap-2">
-              <span className="text-ash">{it.text}</span>
-              <span className="shrink-0 font-semibold text-ink">{r1.stage3Dimension[it.id] ? DIM_LABEL[r1.stage3Dimension[it.id]!] : "—"}</span>
+          {FINDINGS.map((f) => (
+            <li key={f.id} className="flex items-baseline justify-between gap-2">
+              <span className="text-ash">
+                {letterOf(f.zoneId)} · {f.short}
+              </span>
+              <span className="shrink-0 font-semibold text-ink">
+                {r1.category[f.id] ? CATEGORY_LABEL[r1.category[f.id]!] : "—"}
+              </span>
             </li>
           ))}
         </ul>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — Statements</h3>
-        <ul className="mt-1.5 space-y-1.5 text-micro">
-          {STATEMENT_PROMPTS.map((p) => (
-            <li key={p.id}>
-              <span className="text-ash">{p.starter}: </span>
-              <span className="text-ink">{r1.stage4Statement[p.id] || "—"}</span>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 2 — Diagnosis</h3>
+        <ul className="mt-1.5 space-y-1 text-micro">
+          {FINDINGS.map((f) => (
+            <li key={f.id} className="flex items-baseline justify-between gap-2">
+              <span className="text-ash">{letterOf(f.zoneId)}</span>
+              <span className="shrink-0 text-right font-semibold text-ink">
+                {r1.driver[f.id] ? DRIVER_LABEL[r1.driver[f.id]!] : "—"}
+                {" · "}
+                {r1.horizon[f.id] ? HORIZON_LABEL[r1.horizon[f.id]!] : "—"}
+              </span>
             </li>
           ))}
         </ul>
       </section>
 
       <section>
-        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Technical / Governance Tag (Stage 1)</h3>
-        {r1.stage5Items.length === 0 ? (
-          <p className="mt-1.5 text-micro text-ash">No Risk-tagged cards yet.</p>
+        <h3 className="text-caption font-semibold uppercase tracking-wide text-ash">Stage 3 — First two moves</h3>
+        {r1.priorities.length === 0 ? (
+          <p className="mt-1.5 text-micro text-ash">Nothing selected yet.</p>
         ) : (
-          <ul className="mt-1.5 space-y-1 text-micro">
-            {r1.stage5Items.map((it) => (
-              <li key={it.id} className="flex items-baseline justify-between gap-2">
-                <span className="text-ash">{it.text}</span>
-                <span className="shrink-0 font-semibold text-ink">{r1.stage5Side[it.id] ?? "—"}</span>
+          <ul className="mt-1.5 space-y-1.5 text-micro">
+            {FINDINGS.filter((f) => r1.priorities.includes(f.id)).map((f) => (
+              <li key={f.id}>
+                <span className="font-semibold text-ink">
+                  {letterOf(f.zoneId)} · {r1.direction[f.id] ? DIRECTION_LABEL[r1.direction[f.id]!] : "no direction yet"}
+                </span>
+                <span className="block text-ash">{r1.justification[f.id] || "—"}</span>
               </li>
             ))}
           </ul>

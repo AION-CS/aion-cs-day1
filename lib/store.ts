@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export const STORAGE_KEY = "aion-greenit-day8-v2";
+export const STORAGE_KEY = "aion-greenit-day9";
 
 /**
  * Deliberately generic so the next module reuses it unchanged:
@@ -44,6 +44,13 @@ type Session = {
    * ever shows regardless of what it's left pointing at.
    */
   printTarget: string | null;
+  /**
+   * Mentor-only answer keys are visible while true. Deliberately part of the
+   * session slice and left out of `partialize`, so a reload always re-locks
+   * them — a mentor who unlocked a key on a shared machine can't leave it
+   * open for the next learner who opens the page.
+   */
+  answerKeyUnlocked: boolean;
 };
 
 type Actions = {
@@ -52,6 +59,7 @@ type Actions = {
   toggleCheck: (key: string, value: boolean) => void;
   setNote: (key: string, text: string) => void;
   setPrintTarget: (sectionId: string | null) => void;
+  setAnswerKeyUnlocked: (value: boolean) => void;
   reset: () => void;
   resetSection: (sectionId: string, extraKeyPrefixes?: string[]) => void;
 };
@@ -73,6 +81,7 @@ export const useProgress = create<ProgressState & Session & Actions>()(
       resetCount: 0,
       sectionResets: {},
       printTarget: null,
+      answerKeyUnlocked: false,
 
       markSeen: (sectionId, itemId) =>
         set((s) => ({
@@ -89,6 +98,8 @@ export const useProgress = create<ProgressState & Session & Actions>()(
         set((s) => ({ notes: { ...s.notes, [key]: text } })),
 
       setPrintTarget: (sectionId) => set({ printTarget: sectionId }),
+
+      setAnswerKeyUnlocked: (value) => set({ answerKeyUnlocked: value }),
 
       reset: () =>
         set((s) => ({ ...emptyProgress, resetCount: s.resetCount + 1 })),

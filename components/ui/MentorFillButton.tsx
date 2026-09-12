@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-
-const PASSCODE = "muchson123";
+import { MENTOR_PASSCODE } from "@/lib/mentorPasscode";
 
 /**
  * Mentor-only tool: fills every field on this route with plausible demo
@@ -17,7 +16,7 @@ export function MentorFillButton({ onFill }: { onFill: () => void }) {
   const [done, setDone] = useState(false);
 
   const submit = () => {
-    if (code === PASSCODE) {
+    if (code === MENTOR_PASSCODE) {
       onFill();
       setOpen(false);
       setCode("");
@@ -30,8 +29,8 @@ export function MentorFillButton({ onFill }: { onFill: () => void }) {
   };
 
   return (
-    <div className="mb-6 flex justify-end">
-      {done && <p className="reveal-in mr-3 self-center text-micro font-semibold text-accent">Demo answers filled.</p>}
+    <div className="flex items-center gap-2">
+      {done && <p className="reveal-in self-center text-micro font-semibold text-accent">Demo answers filled.</p>}
       {!open ? (
         <button
           type="button"

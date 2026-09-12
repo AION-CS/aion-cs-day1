@@ -20,13 +20,12 @@ const slugify = (v: string) =>
   v.trim().toLowerCase().replace(/\s+/g, "-").replace(/[\\/:*?"<>|]+/g, "-");
 
 /**
- * `1-{name}-day8-l{level}task{taskNumber}` e.g. `1-muchson-day8-l2task1`. The
- * leading `1` is constant across every route (each route produces exactly
- * one export) — `l{level}` is what actually identifies which route/level it
- * came from. The `day8` segment names the curriculum day (not this repo's
- * version), so it stays `day8` even in the v2 rebuild.
+ * `{taskNumber}-{name}-day9-l{level}task{taskNumber}` e.g. `1-muchson-day9-l2task1`.
+ * The leading number is the task's number *within its route*, and every route
+ * here has exactly one task — so it reads `1` throughout, while `l{level}`
+ * identifies which route the file came from.
  */
 export function exportFilename(name: string, level: number, taskNumber: number): string {
   const who = slugify(name) || "learner";
-  return `1-${who}-day8-l${level}task${taskNumber}`;
+  return `${taskNumber}-${who}-day9-l${level}task${taskNumber}`;
 }

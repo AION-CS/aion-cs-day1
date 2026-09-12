@@ -19,6 +19,8 @@ export type MaterialBlockContent = {
    */
   reasoning: string[];
   callout: { label: string; text: string };
+  /** Named external sources for this block. Optional so older routes that cite inline still typecheck. */
+  references?: { label: string; url?: string }[];
 };
 
 /** One material block: header, deep prose, a visualizer slot, decision rules, and a callout. */
@@ -80,6 +82,30 @@ export function MaterialBlock({
       )}
 
       <IndustryCallout label={block.callout.label} text={block.callout.text} />
+
+      {block.references && block.references.length > 0 && (
+        <div className="border-t border-line pt-3">
+          <p className="text-micro font-semibold uppercase tracking-wide text-ash">Sources</p>
+          <ul className="mt-1 space-y-0.5">
+            {block.references.map((r) => (
+              <li key={r.label} className="text-micro text-ash">
+                {r.url ? (
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline decoration-dotted underline-offset-2 hover:text-ink"
+                  >
+                    {r.label}
+                  </a>
+                ) : (
+                  r.label
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </Reveal>
   );
 }

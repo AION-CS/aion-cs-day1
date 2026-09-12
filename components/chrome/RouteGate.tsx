@@ -22,12 +22,12 @@ export function RouteGate({ routeN, children }: { routeN: 2 | 3; children: React
         <div className="mb-10 flex items-start gap-3 rounded-xl border border-line bg-canvas p-4">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-ash" />
           <p className="text-caption text-ash">
-            Recommended: complete{" "}
+            Suggested order: {" "}
             <Link href={prevRoute.href} className="font-semibold text-ink underline underline-offset-2">
               {prevRoute.tag}
             </Link>{" "}
-            and submit its export first — this route is built to follow on from it. You can still read and work
-            through everything here regardless.
+            first. This route is written to stand on its own — every concept it needs is taught here, so nothing is
+            missing if you start at this one.
           </p>
         </div>
       )}

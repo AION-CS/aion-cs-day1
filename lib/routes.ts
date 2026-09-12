@@ -1,14 +1,14 @@
 /**
- * Day 8 route registry. Each route is its own case study, so unlike a
+ * Day 9 route registry. Each route is its own case study, so unlike a
  * single-case module, there is no shared "CASE" business name here — only
  * the day-level program identity. Route-specific content (e.g. Route 1's
- * Flexora case) lives in that route's own lib/routeN.ts.
+ * UrbanByte case) lives in that route's own lib/routeN.ts.
  */
 
 export const CASE = {
   company: "AION Green IT",
-  module: "Day 8",
-  moduleTitle: "Cloud Sustainability — From Knowledge to Board-Ready Decisions",
+  module: "Day 9",
+  moduleTitle: "Green Workplace & Extending Device Lifetimes",
 } as const;
 
 /** Icon keys resolved by components/icons/LineIcons.tsx. */
@@ -28,11 +28,16 @@ export type Route = {
   n: 1 | 2 | 3;
   slug: string;
   href: string;
-  tag: string; // "Route 1 — The Audit"
+  tag: string; // "Route 1 — Knowledge"
   title: string; // page H1
   cardTitle: string; // landing card title
   cardBlurb: string; // landing card one-liner
   deliverable: string; // what the route produces
+  /**
+   * Build status, not a progress lock: false only means this route's Day 9
+   * content hasn't been written yet. Every page stays reachable by URL — no
+   * route is ever gated on finishing another one.
+   */
   available: boolean;
 };
 
@@ -45,8 +50,8 @@ export const ROUTES: Route[] = [
     title: "Route 1 — Knowledge",
     cardTitle: "Knowledge",
     cardBlurb:
-      "Cloud fundamentals, the economies-of-scale efficiency argument, and the six recurring pitfalls — then audit a growing company's cloud plans against the evidence.",
-    deliverable: "Cloud Decision Audit Brief",
+      "Where a device's carbon actually sits, the gap between technical and permitted service life, and what makes longevity realistic — then walk UrbanByte's offices and build the evidence case.",
+    deliverable: "Green Workplace Diagnostic",
     available: true,
   },
   {
@@ -57,8 +62,8 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Application",
     cardTitle: "Application",
     cardBlurb:
-      "The FinOps cycle, a seven-dimension assessment model, and the case for governance as a multiplier — then score three courses of action and defend one under real uncertainty.",
-    deliverable: "Prioritization Decision Memo",
+      "Weighted scoring under contested evidence: rank three competing measures for a 1,240-person engineering firm, with one budget, a security ceiling and two industry sources that disagree.",
+    deliverable: "Prioritisation Decision Memo",
     available: true,
   },
   {
@@ -69,8 +74,8 @@ export const ROUTES: Route[] = [
     title: "Route 3 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "The Decision Architecture model, levers vs. symptoms, and horizon sequencing — then diagnose SkyBridge and build Helix's board-ready proposal.",
-    deliverable: "Management Proposal",
+      "Design the architecture, not another list: build a repair-vs-retire rule with real thresholds, test it against eight devices, assign accountability, and defend it to a board.",
+    deliverable: "Management Decision Architecture",
     available: true,
   },
 ];

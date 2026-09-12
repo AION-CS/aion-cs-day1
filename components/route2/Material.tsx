@@ -1,59 +1,51 @@
-import clsx from "clsx";
-import { MATERIAL, CRITERIA, SEVEN_DIMENSIONS, materialAnchorId } from "@/lib/route2";
+import { MATERIAL, RECAP, materialAnchorId } from "@/lib/route2";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
-import { RadarChart } from "@/components/ui/RadarChart";
-import { FinOpsCycleSvg } from "./FinOpsCycleSvg";
-import { NoRegretPyramidSvg } from "./NoRegretPyramidSvg";
-import { GovernanceMultiplierSvg } from "./GovernanceMultiplierSvg";
-import { QuickWinTimelineSvg } from "./QuickWinTimelineSvg";
+import {
+  ThreeMeasureComparisonSvg,
+  McdaFlowSvg,
+  EacCurveSvg,
+  EsuLadderSvg,
+  VisibleStructuralMatrixSvg,
+} from "./MaterialSvgs";
 
-const [finops, sevendim, uncertainty, multiplier, shorttermism] = MATERIAL;
+const [trap, mcda, economics, structural] = MATERIAL;
 
 export function Material() {
   return (
     <div className="space-y-14">
       <SectionHeading
         kicker="Material"
-        title="Five ideas before the prioritisation decision"
-        intro="About 60 minutes. Each block pairs a framework with a diagram — the second one is the working tool you'll actually use in Task 2."
+        title="Four ideas before you rank anything"
+        intro="About seven minutes of reading. This route stands on its own — the recap below carries the one number everything here rests on, so you lose nothing by starting at Route 2."
       />
 
-      <MaterialBlock block={finops} anchorId={materialAnchorId("finops")}>
-        <FinOpsCycleSvg />
+      {/* Standalone recap — Route 2 must work for a learner who never opened Route 1. */}
+      <div className="rounded-2xl border border-accent/30 bg-accentSoft/50 p-5">
+        <p className="text-micro font-semibold uppercase tracking-wide text-accent">{RECAP.label}</p>
+        <p className="mt-2 text-body text-ink">{RECAP.text}</p>
+        <p className="mt-2 text-caption font-semibold text-ink">{RECAP.implication}</p>
+      </div>
+
+      <MaterialBlock block={trap} anchorId={materialAnchorId("trap")}>
+        <ThreeMeasureComparisonSvg />
       </MaterialBlock>
 
-      <MaterialBlock block={sevendim} anchorId={materialAnchorId("sevendim")}>
-        <div>
-          <RadarChart axes={CRITERIA.map((c) => ({ id: c.id, label: c.label }))} series={[]} maxScore={3} />
-          <p className="mt-2 text-micro text-ash">
-            An empty shell on purpose — this is the exact chart, with the exact four axes, that fills in live with
-            your own answers in Stage 1 of Task 2.
-          </p>
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-            {SEVEN_DIMENSIONS.map((d, i) => (
-              <div key={d.id} className={clsx("rounded-xl border p-3", d.scoredInTask ? "border-accent/30 bg-accentSoft/30" : "border-line")}>
-                <p className="text-caption font-semibold text-ink">
-                  {i + 1}. {d.label}
-                  {d.scoredInTask && <span className="ml-1.5 text-micro font-normal text-accent">· scored in Task 2</span>}
-                </p>
-                <p className="mt-0.5 text-micro text-ash">{d.definition}</p>
-              </div>
-            ))}
+      <MaterialBlock block={mcda} anchorId={materialAnchorId("mcda")}>
+        <McdaFlowSvg />
+      </MaterialBlock>
+
+      <MaterialBlock block={economics} anchorId={materialAnchorId("economics")}>
+        <div className="space-y-6">
+          <EacCurveSvg />
+          <div className="border-t border-line pt-5">
+            <EsuLadderSvg />
           </div>
         </div>
       </MaterialBlock>
 
-      <MaterialBlock block={uncertainty} anchorId={materialAnchorId("uncertainty")}>
-        <NoRegretPyramidSvg />
-      </MaterialBlock>
-
-      <MaterialBlock block={multiplier} anchorId={materialAnchorId("multiplier")}>
-        <GovernanceMultiplierSvg />
-      </MaterialBlock>
-
-      <MaterialBlock block={shorttermism} anchorId={materialAnchorId("shorttermism")}>
-        <QuickWinTimelineSvg />
+      <MaterialBlock block={structural} anchorId={materialAnchorId("structural")}>
+        <VisibleStructuralMatrixSvg />
       </MaterialBlock>
     </div>
   );
