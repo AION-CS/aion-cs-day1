@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import type { FlowGraph, FlowPin } from "@/lib/route1";
+import type { FlowGraph, FlowPin } from "@/lib/flowDiagram";
 import { Pin as PinGlyph } from "@/components/icons/LineIcons";
 
 /**
@@ -22,6 +22,8 @@ export function FlowDiagram({
   activePinId = null,
   completePinIds = [],
   onPinClick,
+  pinTone = "hotspot",
+  pinActionLabel,
   className,
 }: {
   graph: FlowGraph;
@@ -31,9 +33,19 @@ export function FlowDiagram({
   /** Pins whose finding is fully worked up — drawn in the accent, filled. */
   completePinIds?: string[];
   onPinClick?: (pinId: string) => void;
+  /**
+   * "hotspot" (default) is Route 1's flagged-problem pin: red and breathing
+   * until inspected. "marker" is a static accent label — Route 2 uses it to
+   * tag which lifecycle stage each option acts at, where nothing is wrong and
+   * nothing needs clicking.
+   */
+  pinTone?: "hotspot" | "marker";
+  /** Screen-reader wording for an interactive pin. */
+  pinActionLabel?: (pin: FlowPin) => string;
   className?: string;
 }) {
   const interactive = typeof onPinClick === "function";
+  const marker = pinTone === "marker";
 
   return (
     <figure className={clsx("m-0", className)}>
@@ -144,14 +156,18 @@ export function FlowDiagram({
           {/* --- Hotspot pins, on top of everything --- */}
           <g>
             {pins.map((pin) => {
-              const done = completePinIds.includes(pin.id);
+              const done = marker || completePinIds.includes(pin.id);
               const active = activePinId === pin.id;
               return (
                 <g
                   key={pin.id}
                   role={interactive ? "button" : undefined}
                   tabIndex={interactive ? 0 : undefined}
-                  aria-label={interactive ? `Inspect hotspot ${pin.n}: ${pin.label}` : undefined}
+                  aria-label={
+                    interactive
+                      ? (pinActionLabel?.(pin) ?? `Inspect hotspot ${pin.n}: ${pin.label}`)
+                      : undefined
+                  }
                   aria-pressed={interactive ? active : undefined}
                   onClick={interactive ? () => onPinClick?.(pin.id) : undefined}
                   onKeyDown={
@@ -173,7 +189,7 @@ export function FlowDiagram({
                     r={active ? 21 : 18}
                     className={clsx(
                       done ? "fill-accent/15" : "fill-danger/15",
-                      !done && !active && "anim-pin-pulse",
+                      !done && !active && !marker && "anim-pin-pulse",
                     )}
                   />
                   <circle

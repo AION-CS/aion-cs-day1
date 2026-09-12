@@ -8,9 +8,9 @@ This repo began as the abandoned Day 9 scaffold and was migrated wholesale to Da
 Day 9 case content (UrbanByte Consulting, green workplace, device lifetimes) has been
 removed rather than left dormant; only genuinely shared cross-day infrastructure was kept.
 
-**Status: Route 1 is built. Routes 2 and 3 are not yet written.** Their pages do not exist
-and their registry entries are marked `available: false` — a build-status flag, not a
-progress lock. Nothing in Route 1 is gated on them.
+**Status: Routes 1 and 2 are built. Route 3 is not yet written.** Its page does not exist
+and its registry entry is marked `available: false` — a build-status flag, not a progress
+lock. Nothing already built is gated on it.
 
 ## What's here
 
@@ -27,7 +27,7 @@ progress lock. Nothing in Route 1 is gated on them.
 | Route | Case | Deliverable | Status |
 |---|---|---|---|
 | `/route-1-foundations` | AppNexa Solutions | Diagnosis Report | **built** |
-| `/route-2-application` | — | — | not written |
+| `/route-2-application` | AppNexa Solutions | Prioritization Memo | **built** |
 | `/route-3-management-decision` | — | — | not written |
 
 **Export filenames** follow `{taskNumber}-{name}-day10-l{level}task{taskNumber}` — e.g.
@@ -60,9 +60,42 @@ or Structural Fix. The Diagnosis Report assembles itself on the right as they go
 as JSON (raw answers plus correctness flags, for grading) and a standalone print-ready HTML
 document.
 
+## Route 2 — Application: Choosing Where to Spend Effort
+
+Level 2. About 60 minutes of material and 20 minutes of task. Same company as Route 1,
+continuing the narrative: Route 1 diagnosed the problems, Route 2 decides what to fund.
+
+**Material (five sections, A-E).** The real constraint - four hard edges on AppNexa's
+quarter, none of them technical, which turn this from a technical question into a
+resource-allocation question under incomplete information. A self-contained recap of SCI
+and the six inefficiency areas, so the route stands alone for a learner who skipped Route 1.
+Three competing measures mapped onto the Green Software Patterns lifecycle stages
+(Requirements / Development / Operations), because the stage predicts how fast a measure
+shows a result and how long the result lasts. The seven decision dimensions, written as
+questions a consultant has to answer rather than as labels. And how to argue a call you
+cannot fully prove - the three things a complete recommendation does, with Cynefin's
+complex-domain treatment as the reference point.
+
+**Task 2 - AppNexa Prioritization Room.** For each of the three options the learner answers
+a situational question, predicts the option's profile across the seven dimensions on
+sliders, then reveals the real profile - which renders as a solid polygon overlaid on their
+dashed prediction, so the gap is visible without anyone being told they were wrong. Options
+can be explored in any order and revisited freely. The learner then commits to one and
+defends it: strategic rationale, feasibility argument, two follow-up decisions the choice
+forces, and two risks of the road not taken. The Prioritization Memo assembles alongside and
+exports as JSON (including per-dimension prediction gaps, for grading) plus a print-ready
+HTML memo.
+
+The ground-truth profiles are built so no option dominates: A wins on leverage and long-term
+effect but is weak on immediate impact and team acceptance; B wins on immediate measurable
+impact but is weak on leverage and carries execution risk; C wins on feasibility and
+measurability but shows nothing visible this quarter. Risk is the one inverted axis - higher
+is worse - and the material says so explicitly, because a radar chart otherwise implies a
+bigger polygon is a better option.
+
 ### Diagram reuse
 
-`components/route1/FlowDiagram.tsx` takes a graph and renders it. Section A passes
+`components/ui/FlowDiagram.tsx` takes a graph and renders it. Section A passes
 `ENERGY_CHAIN` (code → compute → data centre → grid → CO₂e, plus the network branch) with no
 pins; Task 1 passes `APPNEXA_TRACE` through the same component with six interactive hotspot
 pins. The task's trace is the material's diagram extended — not a second hand-built SVG that
@@ -72,12 +105,26 @@ could drift away from it. Both graphs are data in `lib/route1.ts`.
 renders Section E's legend grid and the headers of Task 1's six drop-bins, so a bin can never
 drift from the material block that taught it.
 
-## Standards this route implements
+Route 2 reuses the same `FlowDiagram` for its Green Software Patterns lifecycle strip, with
+`pinTone="marker"` for static lettered stage tags instead of Route 1's clickable hotspots.
+
+### Components built for Route 2, shared from the start
+
+- `components/ui/RadarChart.tsx` - inline-SVG radar that overlays a dashed "ghost"
+  (predicted) polygon on a solid "real" one. No chart library.
+- `components/ui/Slider.tsx` - a native `<input type="range">` on the brand tokens. Value 0
+  means "not set" rather than a real answer, so an untouched slider is never recorded as a
+  deliberate prediction of 3 - and there is no dead case where clicking the default position
+  fires no change event.
+- `lib/flowDiagram.ts` - the flow-graph types, lifted out of `lib/route1.ts` once a second
+  route needed them.
+
+## Standards both routes implement
 
 Interaction standards come from [`../CLAUDE.md`](../CLAUDE.md); content standards from
 [`../CURRICULUM-GUIDE.md`](../CURRICULUM-GUIDE.md).
 
-- **Itemized missing items, never a generic message.** `useRoute1().missing` derives one
+- **Itemized missing items, never a generic message.** Each route's `useRouteN().missing` derives one
   named entry per concretely-missing thing ("Justification for Hotspot 3 — The Triple-Send
   Notification"), rendered through the shared `MissingList`. Every entry is a button that
   scrolls to and flashes the exact field.

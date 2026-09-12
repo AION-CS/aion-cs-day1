@@ -263,6 +263,64 @@
   box-shadow: theme("boxShadow.lift");
 }
 
+/* --- Native range slider, wearing the brand tokens ------------------------
+ * Track and thumb can only be painted through vendor pseudo-elements, which
+ * Tailwind cannot reach without a plugin — so the slider's own paint lives
+ * here while everything around it stays utility classes. No UI library.
+ */
+.range-accent {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+.range-accent::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: theme("colors.mist");
+  border: 1px solid theme("colors.line");
+}
+.range-accent::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: theme("colors.mist");
+  border: 1px solid theme("colors.line");
+}
+.range-accent::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -6px;
+  height: 18px;
+  width: 18px;
+  border-radius: 999px;
+  background: theme("colors.accent");
+  border: 2px solid theme("colors.paper");
+  box-shadow: 0 1px 3px rgba(22, 25, 29, 0.25);
+  transition: transform 0.12s ease;
+}
+.range-accent::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 999px;
+  background: theme("colors.accent");
+  border: 2px solid theme("colors.paper");
+  box-shadow: 0 1px 3px rgba(22, 25, 29, 0.25);
+}
+.range-accent:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+/* Value 0 is "not set", not a prediction — the thumb reads as muted until the
+   learner actually commits to a number. */
+.range-unset::-webkit-slider-thumb {
+  background: theme("colors.line");
+  border-color: theme("colors.paper");
+}
+.range-unset::-moz-range-thumb {
+  background: theme("colors.line");
+  border-color: theme("colors.paper");
+}
+
 /* No-op feedback when Undo/Redo is clicked at a stack boundary — still clickable, just nothing to do. */
 @keyframes shakeNoop {
   0%,

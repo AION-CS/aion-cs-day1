@@ -5,7 +5,7 @@ import { MaterialBlock } from "@/components/ui/MaterialBlock";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowRight } from "@/components/icons/LineIcons";
 import { ENERGY_CHAIN, FURTHER_READING, MATERIAL, materialAnchorId } from "@/lib/route1";
-import { FlowDiagram } from "./FlowDiagram";
+import { FlowDiagram } from "@/components/ui/FlowDiagram";
 import { SixCategoryGrid } from "./CategoryGrid";
 import { CorrectnessMatrix, SciFormulaBreakdown, ThreePrinciplesTriad } from "./MaterialSvgs";
 

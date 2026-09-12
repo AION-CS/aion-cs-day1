@@ -69,9 +69,9 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Application",
     cardTitle: "Application",
     cardBlurb:
-      "Not yet written. Day 10's Route 2 content is built in a later pass — nothing here is gated on it, and Route 1 stands complete on its own.",
-    deliverable: "To be defined",
-    available: false,
+      "One quarter, limited capacity, three defensible places to spend it and no telemetry to prove which is best — predict each option's profile across seven decision dimensions, then commit and defend the call.",
+    deliverable: "Prioritization Memo",
+    available: true,
   },
   {
     n: 3,

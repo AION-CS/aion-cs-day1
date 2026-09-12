@@ -9,6 +9,7 @@
 
 import type { IconKey } from "@/lib/routes";
 import type { AnswerKeyBlock } from "@/lib/answerKey";
+import type { FlowGraph, FlowPin } from "@/lib/flowDiagram";
 
 export const LEARNER_NAME_KEY = "learner:name";
 
@@ -495,46 +496,6 @@ export const FURTHER_READING = {
 // `FlowDiagram` renders any of these; Section A passes ENERGY_CHAIN with no
 // pins, Task 1 passes APPNEXA_TRACE with six.
 // ---------------------------------------------------------------------------
-export type FlowNodeTone = "solid" | "outline" | "aside";
-
-export type FlowNode = {
-  id: string;
-  label: string;
-  sub?: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  tone: FlowNodeTone;
-};
-
-export type FlowEdge = {
-  id: string;
-  d: string;
-  /** 3 for the triple-send: the same path drawn as parallel lanes. */
-  lanes?: number;
-  laneGap?: number;
-  /** Pulsing dotted overlay marking an active data path. */
-  flow?: boolean;
-};
-
-export type FlowPin = {
-  id: string;
-  x: number;
-  y: number;
-  n: number;
-  label: string;
-};
-
-export type FlowGraph = {
-  id: string;
-  title: string;
-  caption: string;
-  viewBox: string;
-  nodes: FlowNode[];
-  edges: FlowEdge[];
-};
-
 /** Section A — `energy-flow-diagram`. Code → compute → facility → grid → CO2e, plus the network branch. */
 export const ENERGY_CHAIN: FlowGraph = {
   id: "energy-flow-diagram",

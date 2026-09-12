@@ -15,7 +15,7 @@ import {
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { materialRefs } from "@/lib/route1";
 import { Close, DragHandle, Redo, Undo } from "@/components/icons/LineIcons";
-import { FlowDiagram } from "./FlowDiagram";
+import { FlowDiagram } from "@/components/ui/FlowDiagram";
 import { CategoryGlyph } from "./CategoryGrid";
 import { useFindingSortStore, type SortPlacements } from "./useFindingSortStore";
 import { useRoute1, domId } from "./useRoute1";
