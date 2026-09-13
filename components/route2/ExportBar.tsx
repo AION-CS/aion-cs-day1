@@ -8,11 +8,15 @@ import { exportFilename, downloadTextFile } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
 import { MissingList } from "@/components/ui/MissingList";
 import { ChevronDown } from "@/components/icons/LineIcons";
-import { TASK2 } from "@/lib/route2";
+import { EXPORT, MAP_MEASURES, RANK_SLOTS } from "@/lib/route2";
 import { useRoute2, domId } from "./useRoute2";
-import { buildMemoJson, buildMemoHtml } from "./exportDocuments";
+import { buildMemoHtml, buildMemoJson } from "./exportDocuments";
 
-/** Sticky export bar. Never disabled — an incomplete click jumps to the first gap (CLAUDE.md #3). */
+/**
+ * Sticky export bar. Never disabled (CLAUDE.md #3): an incomplete click opens
+ * the itemized missing list and jumps to the first gap, opening a collapsed
+ * measure card on the way if that is where the gap is.
+ */
 export function ExportBar() {
   const r2 = useRoute2();
   const toggleCheck = useProgress((s) => s.toggleCheck);
@@ -21,10 +25,14 @@ export function ExportBar() {
   const handleExport = () => {
     if (!r2.allComplete) {
       setShowMissing(true);
-      if (r2.missing[0]) scrollToAndFlash(r2.missing[0].id);
+      const first = r2.missing[0];
+      if (first) {
+        first.before?.();
+        window.setTimeout(() => scrollToAndFlash(first.id), first.before ? 40 : 0);
+      }
       return;
     }
-    const filename = exportFilename(r2.name, TASK2.export.filenameLevels, TASK2.export.filenameTask);
+    const filename = exportFilename(r2.name, EXPORT.filenameLevels, EXPORT.filenameTask);
     downloadTextFile(`${filename}.json`, buildMemoJson(r2, filename), "application/json");
     downloadTextFile(`${filename}.html`, buildMemoHtml(r2), "text/html");
     markRouteExported(toggleCheck, 2);
@@ -45,23 +53,26 @@ export function ExportBar() {
         <button
           type="button"
           onClick={() => setShowMissing((v) => !v)}
-          className="flex items-center gap-1.5 text-caption text-ash hover:text-ink"
+          className="flex flex-wrap items-center gap-x-1.5 text-caption text-ash hover:text-ink"
         >
-          <span className="tabular-nums font-semibold text-ink">{r2.placedCards.length}</span> /{" "}
-          {r2.totalCards} measures mapped
+          <span>
+            <span className="tabular-nums font-semibold text-ink">{r2.ranking.length}</span> / {RANK_SLOTS} decisions
+          </span>
+          <span>·</span>
+          <span>
+            <span className="tabular-nums font-semibold text-ink">{r2.placedCount}</span> / {MAP_MEASURES.length} measures mapped
+          </span>
           {r2.missing.length > 0 && (
             <>
-              <span className="text-ash">
+              <span>
                 · {r2.missing.length} item{r2.missing.length === 1 ? "" : "s"} still needed
               </span>
-              <ChevronDown
-                className={clsx("h-3.5 w-3.5 transition-transform duration-150", showMissing && "rotate-180")}
-              />
+              <ChevronDown className={clsx("h-3.5 w-3.5 transition-transform duration-150", showMissing && "rotate-180")} />
             </>
           )}
         </button>
         <button type="button" onClick={handleExport} className="btn-accent">
-          {TASK2.export.buttonLabel}
+          {EXPORT.buttonLabel}
         </button>
       </div>
     </div>

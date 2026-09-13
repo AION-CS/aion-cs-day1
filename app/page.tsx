@@ -22,11 +22,11 @@ export default function DayLanding() {
         </p>
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
-          Software has a physical energy cost. Every executed instruction, stored byte and transmitted byte draws real
-          electricity somewhere — and almost none of it is visible to the engineer who caused it. Route 1 is a single
-          engagement at AppNexa Solutions that runs the way the real thing does: learn to see the waste, diagnose it on
-          a live system trace, then decide what one quarter of capacity actually buys and defend the call. Route 2
-          steps up a level, to the structure that makes good decisions the default after you leave the room.
+          Module 7, day two. A platform can be stable, fast and permanently wasteful at the same time — and classic
+          performance monitoring will never report it. Route 1 teaches the efficiency lens, the four load bands and the
+          architecture levers, then puts you inside DataWeave Applications to diagnose six signals and spend one quarter
+          of capacity. Route 2 steps up to the board: who decides, what becomes binding, and how a recommendation holds
+          before the data is in — worked through MetricFlow, then led at NexLayer.
         </p>
       </div>
 

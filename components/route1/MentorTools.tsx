@@ -3,7 +3,7 @@
 import { useProgress } from "@/lib/store";
 import { MentorFillButton } from "@/components/ui/MentorFillButton";
 import { AnswerKeyButton } from "@/components/ui/AnswerKeyButton";
-import { DIMENSIONS, HOTSPOTS, OPTIONS, R1, STAGE1, STAGE2 } from "@/lib/route1";
+import { COMMIT, DIMENSIONS, MEASURES, PREDICT_MAX, R1, SIGNALS } from "@/lib/route1";
 
 /**
  * The route's mentor bar: one demo auto-fill for the whole engagement plus the
@@ -11,10 +11,10 @@ import { DIMENSIONS, HOTSPOTS, OPTIONS, R1, STAGE1, STAGE2 } from "@/lib/route1"
  * out of the way — a convenience gate against accidental clicks, not a security
  * boundary.
  *
- * One fill, both stages (CLAUDE.md #12): a mentor demonstrating a merged route
- * should not have to hunt for a second button halfway down the page to see the
- * export work. It calls the store's raw actions for every persisted field the
- * route writes, so it exercises the same code path a learner does.
+ * One fill, both parts (CLAUDE.md #12): a mentor demonstrating the export
+ * should not have to hunt for a second button halfway down the page. It calls
+ * the store's raw actions for every persisted field the route writes, so it
+ * exercises exactly the code path a learner does.
  */
 export function MentorTools() {
   const setNote = useProgress((s) => s.setNote);
@@ -24,44 +24,43 @@ export function MentorTools() {
   const fill = () => {
     setNote(R1.name, "Muchson");
 
-    // -- Stage 1: the diagnosis, filled with the correct answers -------------
-    for (const h of HOTSPOTS) {
-      markSeen(R1.inspected, h.id);
-      markSeen(R1.order, h.id);
-      choose(R1.category(h.id), h.correctCategory);
-      choose(R1.lever(h.id), h.correctLever);
-      choose(R1.fixType(h.id), h.correctFixType);
-      setNote(R1.justification(h.id), h.sampleJustification);
+    // -- Part 1: the six signals, filled with the expected answers -----------
+    for (const s of SIGNALS) {
+      markSeen(R1.processed, s.id);
+      choose(R1.area(s.id), s.area);
+      choose(R1.rootCause(s.id), s.rootCause);
+      choose(R1.horizon(s.id), s.horizon);
+      setNote(R1.approach(s.id), s.sampleApproach);
     }
-    setNote(R1.reflection, STAGE1.reflection.sample);
 
-    // -- Stage 2: the decision ----------------------------------------------
-    // The predictions are deliberately *offset* from ground truth rather than
-    // equal to it — the point of the reveal is the ghost-versus-real gap, and a
-    // fill that matched perfectly would leave a mentor demonstrating a feature
-    // that renders as a single polygon.
-    const offsets: Record<string, number> = { A: 1, B: -1, C: 2 };
+    // -- Part 2: the three measures -----------------------------------------
+    // Predictions are deliberately *offset* from ground truth rather than equal
+    // to it: the point of the reveal is the ghost-versus-real gap, and a fill
+    // that matched perfectly would leave a mentor demonstrating a feature that
+    // renders as a single polygon.
+    const offsets: Record<string, number> = { A: 2, B: -3, C: 3 };
 
-    for (const o of OPTIONS) {
-      choose(R1.situational(o.id), o.situational.options[1].id);
-      const shift = offsets[o.id] ?? 1;
+    for (const m of MEASURES) {
+      const correct = m.situational.options.find((o) => o.correct) ?? m.situational.options[0];
+      choose(R1.situational(m.id), correct.id);
+      const shift = offsets[m.id] ?? 2;
       DIMENSIONS.forEach((d, i) => {
         // Alternate the direction so the ghost polygon crosses the real one.
         const delta = i % 2 === 0 ? shift : -shift;
-        const guess = Math.max(1, Math.min(5, o.profile[d.key] + delta));
-        choose(R1.predict(o.id, d.key), String(guess));
+        const guess = Math.max(1, Math.min(PREDICT_MAX, m.profile[d.key] + delta));
+        choose(R1.predict(m.id, d.key), String(guess));
       });
-      markSeen(R1.revealed, o.id);
+      markSeen(R1.revealed, m.id);
     }
 
-    const c = STAGE2.commit;
-    choose(R1.pick, "C");
-    setNote(R1.rationale, c.rationale.sample);
-    setNote(R1.feasibility, c.feasibility.sample);
-    setNote(R1.followUp(1), c.followUp.samples[0]);
-    setNote(R1.followUp(2), c.followUp.samples[1]);
-    setNote(R1.risk(1), c.risk.samples[0]);
-    setNote(R1.risk(2), c.risk.samples[1]);
+    choose(R1.tab, "A");
+    choose(R1.pick, "A");
+    setNote(R1.rationale, COMMIT.rationale.sample);
+    setNote(R1.feasibility, COMMIT.feasibility.sample);
+    setNote(R1.followUp(1), COMMIT.followUp.samples[0]);
+    setNote(R1.followUp(2), COMMIT.followUp.samples[1]);
+    setNote(R1.risk(1), COMMIT.risk.samples[0]);
+    setNote(R1.risk(2), COMMIT.risk.samples[1]);
   };
 
   return (

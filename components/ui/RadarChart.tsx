@@ -60,16 +60,27 @@ export function RadarChart({
   axes,
   series,
   max = 5,
+  ringCount,
+  showGrid = true,
   className,
   title,
 }: {
   axes: RadarAxis[];
   series: RadarSeries[];
   max?: number;
+  /** Grid rings to draw. Defaults to one per scale step, which is too dense above ~5. */
+  ringCount?: number;
+  /**
+   * Draw rings, spokes, axis labels and the scale hint. Set false for a chart
+   * stacked on top of another one as a fade-in overlay, so the grid is not
+   * drawn twice.
+   */
+  showGrid?: boolean;
   className?: string;
   title: string;
 }) {
-  const rings = Array.from({ length: max }, (_, i) => (i + 1) / max);
+  const ringN = ringCount ?? max;
+  const rings = Array.from({ length: ringN }, (_, i) => (i + 1) / ringN);
 
   return (
     <svg
@@ -81,7 +92,7 @@ export function RadarChart({
       <title>{title}</title>
 
       {/* Grid rings */}
-      {rings.map((f, ri) => (
+      {showGrid && rings.map((f, ri) => (
         <polygon
           key={ri}
           points={axes
@@ -96,7 +107,7 @@ export function RadarChart({
       ))}
 
       {/* Spokes */}
-      {axes.map((ax, i) => {
+      {showGrid && axes.map((ax, i) => {
         const [x, y] = pointAt(i, axes.length, R);
         return <line key={ax.key} x1={CX} y1={CY} x2={x} y2={y} className="stroke-line" strokeWidth={1} />;
       })}
@@ -132,7 +143,7 @@ export function RadarChart({
       })}
 
       {/* Axis labels */}
-      {axes.map((ax, i) => {
+      {showGrid && axes.map((ax, i) => {
         const [x, y] = pointAt(i, axes.length, LABEL_R);
         const cos = Math.cos(angleFor(i, axes.length));
         const anchor = cos > 0.15 ? "start" : cos < -0.15 ? "end" : "middle";
@@ -151,12 +162,16 @@ export function RadarChart({
       })}
 
       {/* Scale hint on the vertical spoke */}
-      <text x={CX + 5} y={CY - R + 4} className="fill-ash" style={{ fontSize: 9.5 }}>
-        {max}
-      </text>
-      <text x={CX + 5} y={CY - 3} className="fill-ash" style={{ fontSize: 9.5 }}>
-        0
-      </text>
+      {showGrid && (
+        <>
+          <text x={CX + 5} y={CY - R + 4} className="fill-ash" style={{ fontSize: 11 }}>
+            {max}
+          </text>
+          <text x={CX + 5} y={CY - 3} className="fill-ash" style={{ fontSize: 11 }}>
+            0
+          </text>
+        </>
+      )}
     </svg>
   );
 }

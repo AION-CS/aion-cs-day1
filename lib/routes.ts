@@ -12,7 +12,7 @@
 export const CASE = {
   company: "AION Green IT",
   module: "Day 11",
-  moduleTitle: "Energy-Efficient Software & Green Coding Principles",
+  moduleTitle: "Monitoring Software Efficiency & Sustainable Software Architecture",
 } as const;
 
 /** Icon keys resolved by components/icons/LineIcons.tsx. */
@@ -27,7 +27,7 @@ export type IconKey =
   | "certificate"
   | "link"
   | "layers"
-  // One glyph per inefficiency category (Route 1, Section E).
+  // Material section and area glyphs used by both routes.
   | "blueprint"
   | "database"
   | "drive"
@@ -65,10 +65,10 @@ export const ROUTES: Route[] = [
     title: "Route 1 — Diagnose & Decide",
     cardTitle: "Diagnose & Decide",
     cardBlurb:
-      "One engagement at AppNexa Solutions, end to end: learn to see where software wastes energy, diagnose six flagged behaviours on the live system trace, then spend the one quarter of capacity you are given — and defend the call you make.",
-    deliverable: "AppNexa Engagement Report",
+      "Monitoring read with an efficiency lens, the four bands a load curve divides into, and the architecture levers that move consumption — then one engagement at DataWeave Applications: six signals to diagnose, and one quarter of capacity to spend and defend.",
+    deliverable: "DataWeave Engagement Report",
     levels: [1, 2],
-    minutes: 40,
+    minutes: 90,
     available: true,
   },
   {
@@ -79,10 +79,10 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "Read how SoftPulse solved it, then lead: rank CodeVista's guiding decisions, map them for momentum cost against structural impact, assign a RACI that survives contact with a board, and make a call before the data is in.",
+      "Why efficiency reaches a board, RACI in full, and deciding before the data is in — then, after the MetricFlow worked example, lead at NexLayer Digital Platforms: rank the guiding decisions, map what they cost, assign ownership, and name the call that cannot wait.",
     deliverable: "Board Memo",
     levels: [3],
-    minutes: 20,
+    minutes: 80,
     available: true,
   },
 ];

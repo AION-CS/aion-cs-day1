@@ -2,16 +2,15 @@
 
 import { useProgress, useHydrated } from "@/lib/store";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
-import { ENGAGEMENT, NAME_FIELD, R1, materialRefs } from "@/lib/route1";
+import { BRIEF_REFS, ENGAGEMENT, NAME_FIELD, R1, materialRefs } from "@/lib/route1";
 import { useRoute1, domId } from "./useRoute1";
 
 /**
  * The case and the learner's name, stated once for the whole route.
  *
- * Both stages used to open with their own copy of this — company brief, name
- * field, "same company as Route 1". That repetition is exactly the seam the
- * two-route merge removes (CLAUDE.md #12): one engagement, introduced once,
- * and one name that labels the one report that leaves at the end.
+ * Both parts of the task run on this one engagement, so neither of them
+ * re-introduces the company (CLAUDE.md #12). The name is collected here and is
+ * what the single export filename is built from.
  */
 export function CaseBrief() {
   return (
@@ -20,8 +19,9 @@ export function CaseBrief() {
         <p className="text-micro font-semibold uppercase tracking-wide text-ash">
           {ENGAGEMENT.heading}
         </p>
-        <p className="mt-1 max-w-prose text-caption text-ash">{ENGAGEMENT.brief}</p>
-        <p className="mt-2 max-w-prose text-caption text-ink">{ENGAGEMENT.deliverable}</p>
+        <p className="mt-1.5 max-w-prose text-body text-ash">{ENGAGEMENT.brief}</p>
+        <p className="mt-2 max-w-prose text-body font-semibold text-ink">{ENGAGEMENT.mandate}</p>
+        <p className="mt-2 max-w-prose text-caption text-ash">{ENGAGEMENT.deliverable}</p>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3">
           <p className="text-micro text-ash">
             Your role: <span className="font-semibold text-ink">{ENGAGEMENT.role}</span>
@@ -30,7 +30,7 @@ export function CaseBrief() {
             Client: <span className="font-semibold text-ink">{ENGAGEMENT.company}</span>
           </p>
         </div>
-        <MaterialRefs refs={materialRefs(["footprint", "correctness"])} lead="Grounded in" />
+        <MaterialRefs refs={materialRefs(BRIEF_REFS)} lead="Grounded in" />
       </div>
 
       <NameField />

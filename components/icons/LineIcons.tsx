@@ -325,7 +325,7 @@ export function Redo({ className }: P) {
   );
 }
 
-/** The pin dropped on a flagged component in the AppNexa system trace. */
+/** A location pin — kept in the shared icon set for diagrams that mark a place. */
 export function Pin({ className }: P) {
   return (
     <svg {...base} className={className ?? "h-4 w-4"}>

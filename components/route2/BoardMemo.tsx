@@ -1,16 +1,16 @@
 "use client";
 
 import { useHydrated } from "@/lib/store";
-import {
-  CODEVISTA,
-  RACI_LETTERS,
-  RACI_ROLES,
-  TASK2,
-  quadrantById,
-} from "@/lib/route2";
+import { EXPORT, NEXLAYER, RACI_ROWS, decisionById } from "@/lib/route2";
+import { TradeoffMapSvg } from "./TradeoffMapSvg";
 import { useRoute2 } from "./useRoute2";
 
-/** The live-building Board Memo, mirroring the established AION Green IT memo shape. */
+/**
+ * The NexLayer Board Memo, assembling live beside the four exercises — ranked
+ * decisions, the trade-off map, the ownership grid in one line per row, and the
+ * decision that cannot wait. It is a view of the learner's answers, never a
+ * second copy of them.
+ */
 export function BoardMemo() {
   const r2 = useRoute2();
   const hydrated = useHydrated();
@@ -18,124 +18,98 @@ export function BoardMemo() {
     ? new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
     : "";
 
-  const roleName = (id: string) => RACI_ROLES.find((r) => r.id === id)?.name ?? id;
+  const bets = r2.mapStates.filter((s) => s.placed === "bet");
 
   return (
-    <aside className="rounded-2xl border border-line bg-paper p-5">
-      <p className="text-micro font-semibold uppercase tracking-wide text-accent">
-        {TASK2.export.docHeading}
-      </p>
+    <div className="rounded-2xl border border-line bg-paper p-5">
+      <p className="text-micro font-semibold uppercase tracking-wide text-accent">{EXPORT.docHeading}</p>
       <p className="mt-1 text-caption text-ash">
         <span className="font-semibold text-ink">{r2.name.trim() || "[your name]"}</span>
-        {date ? ` · ${date}` : ""} · Case: {CODEVISTA.company}
+        {date ? ` · ${date}` : ""} · {NEXLAYER.company}
       </p>
-      <p className="text-micro text-ash">Role: {CODEVISTA.role} / CTO</p>
 
       {/* Guiding decisions */}
-      <div className="mt-4">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          Guiding decisions (ranked)
-        </p>
-        {r2.rankedDecisions.length === 0 ? (
-          <p className="mt-1.5 text-micro text-ash">Nothing ranked yet.</p>
+      <MemoSection title="Guiding decisions">
+        {r2.ranking.length === 0 ? (
+          <Empty text="Rank your first guiding decision and it appears here." />
         ) : (
-          <ol className="mt-1.5 space-y-1.5">
-            {r2.rankedDecisions.map((d, i) => (
-              <li key={d.id} className="flex gap-2 text-micro">
-                <span className="font-semibold tabular-nums text-accent">{i + 1}.</span>
-                <span className="min-w-0">
-                  <span className="text-ink">{d.text}</span>
-                  {i === 0 && r2.rankRationale && (
-                    <span className="mt-1 block italic text-ash">&ldquo;{r2.rankRationale}&rdquo;</span>
-                  )}
-                </span>
+          <ol className="space-y-1.5">
+            {r2.ranking.map((id, i) => (
+              <li key={id} className="flex gap-2 text-caption text-ink">
+                <span className="font-semibold text-accent tabular-nums">{i + 1}.</span>
+                <span>{decisionById(id).label}</span>
               </li>
             ))}
           </ol>
         )}
-      </div>
+        {r2.rankWhy && <p className="mt-2 text-micro italic text-ink">&ldquo;{r2.rankWhy}&rdquo;</p>}
+      </MemoSection>
 
       {/* Trade-off map */}
-      <div className="mt-5 border-t border-line pt-4">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          Trade-off map summary
-        </p>
-        {r2.placedCards.length === 0 ? (
-          <p className="mt-1.5 text-micro text-ash">Nothing placed yet.</p>
-        ) : (
-          <table className="mt-1.5 w-full text-micro">
-            <thead>
-              <tr className="border-b border-line text-ash">
-                <th className="py-1 text-left font-semibold">Measure</th>
-                <th className="w-14 py-1 text-center font-semibold">Momentum</th>
-                <th className="w-14 py-1 text-center font-semibold">Structural</th>
-              </tr>
-            </thead>
-            <tbody>
-              {r2.placedCards.map((c) => {
-                const q = quadrantById(r2.placements[c.id]!);
-                return (
-                  <tr key={c.id} className="border-b border-line/60">
-                    <td className="py-1 pr-2 text-ink">{c.short}</td>
-                    <td className="py-1 text-center text-ash">{q.momentum}</td>
-                    <td className="py-1 text-center text-ash">{q.structural}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      <MemoSection title="Trade-off assessment">
+        <TradeoffMapSvg states={r2.mapStates} compact />
+        {bets.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {bets.map((s) => (
+              <li key={s.measure.id} className="text-micro text-ink">
+                <span className="font-semibold">{s.measure.id.toUpperCase()}: </span>
+                {s.bet || <span className="text-ash">strategic-bet line not written</span>}
+              </li>
+            ))}
+          </ul>
         )}
-        {r2.unplacedCards.length > 0 && (
-          <p className="mt-1 text-micro text-ash">
-            {r2.unplacedCards.length} measure{r2.unplacedCards.length === 1 ? "" : "s"} not yet placed.
-          </p>
-        )}
-      </div>
+      </MemoSection>
 
-      {/* RACI */}
-      <div className="mt-5 border-t border-line pt-4">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          Governance model (RACI)
-        </p>
-        <dl className="mt-1.5 space-y-1">
-          {RACI_LETTERS.map((l) => {
-            const roles = r2.raci[l.id];
-            const bad = l.id === "A" && roles.length !== 1;
+      {/* Ownership */}
+      <MemoSection title="Ownership">
+        <ul className="space-y-1">
+          {RACI_ROWS.map((row) => {
+            const a = r2.accountableFor(row.id);
             return (
-              <div key={l.id} className="flex gap-2 text-micro">
-                <dt className={bad ? "w-20 shrink-0 font-semibold text-danger" : "w-20 shrink-0 text-ash"}>
-                  {l.name}
-                </dt>
-                <dd className="min-w-0 flex-1 text-ink">
-                  {roles.length === 0 ? (
-                    <span className="text-ash">— none assigned</span>
-                  ) : (
-                    roles.map(roleName).join(", ")
-                  )}
-                  {bad && roles.length > 1 && (
-                    <span className="ml-1 text-danger">(RACI allows exactly one)</span>
-                  )}
-                </dd>
-              </div>
+              <li key={row.id} className="flex gap-2 text-micro">
+                <span className="w-24 shrink-0 font-semibold text-ink">
+                  {a.length === 1 ? a[0].short : a.length > 1 ? "2+ Accountable" : "—"}
+                </span>
+                <span className="text-ash">{row.label}</span>
+              </li>
             );
           })}
-        </dl>
-      </div>
-
-      {/* Decision under uncertainty */}
-      <div className="mt-5 border-t border-line pt-4">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          Decision under uncertainty
-        </p>
-        {r2.decideNow || r2.decideWhy ? (
-          <div className="mt-1.5 space-y-1.5 text-micro text-ink">
-            {r2.decideNow && <p>{r2.decideNow}</p>}
-            {r2.decideWhy && <p className="italic text-ash">{r2.decideWhy}</p>}
-          </div>
-        ) : (
-          <p className="mt-1.5 text-micro text-ash">Not written yet.</p>
+        </ul>
+        {(r2.raciStructuralIssues.length > 0 || r2.raciAuthorityWarnings.length > 0) && (
+          <p className="mt-1.5 text-micro text-warn">
+            {r2.raciStructuralIssues.length} structural issue{r2.raciStructuralIssues.length === 1 ? "" : "s"} ·{" "}
+            {r2.raciAuthorityWarnings.length} authority question{r2.raciAuthorityWarnings.length === 1 ? "" : "s"}
+          </p>
         )}
-      </div>
-    </aside>
+      </MemoSection>
+
+      {/* Decision now */}
+      <MemoSection title="Decision required now">
+        {r2.decideNow.decision ? (
+          <p className="text-caption font-semibold text-ink">{r2.decideNow.decision}</p>
+        ) : (
+          <Empty text="Not written yet." />
+        )}
+        {r2.decideNow.signal && (
+          <p className="mt-1 text-micro text-ash">
+            <span className="font-semibold text-ink">Would be proven wrong if: </span>
+            {r2.decideNow.signal}
+          </p>
+        )}
+      </MemoSection>
+    </div>
   );
+}
+
+function MemoSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-4 border-t border-line pt-3">
+      <p className="mb-1.5 text-micro font-semibold uppercase tracking-wide text-ash">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return <p className="rounded-lg border border-dashed border-line bg-canvas p-2 text-micro text-ash">{text}</p>;
 }

@@ -1,194 +1,256 @@
 import {
-  CODEVISTA,
-  QUADRANT_CARDS,
-  RACI_LETTERS,
-  RACI_ROLES,
-  RACI_SUBJECT,
-  TASK2,
+  DECIDE_NOW_FIELDS,
+  EXPORT,
+  MAP_QUESTIONS,
+  NEXLAYER,
+  QUADRANTS,
+  RACI_ROWS,
+  TASK_RACI_ROLES,
+  decisionById,
   quadrantById,
 } from "@/lib/route2";
+import { MAP, MID_X, MID_Y, quadrantRect, slotPosition } from "./mapLayout";
 import type { Route2State } from "./useRoute2";
 
-const roleName = (id: string) => RACI_ROLES.find((r) => r.id === id)?.name ?? id;
+/**
+ * Route 2's export: a JSON for grading and a print-ready board memo — not a
+ * worksheet dump. The memo reads top-down the way a board would: the
+ * recommendation, the guiding decisions behind it, what it costs, who owns it,
+ * and what cannot wait.
+ */
 
-/** Raw structured answers plus correctness flags, for grading and QA. */
 export function buildMemoJson(r2: Route2State, filename: string): string {
   const payload = {
     meta: {
       day: 11,
       route: 2,
-      levels: TASK2.export.filenameLevels,
-      task: TASK2.export.filenameTask,
+      levels: EXPORT.filenameLevels,
+      task: EXPORT.filenameTask,
+      schemaVersion: EXPORT.schemaVersion,
       filename,
       name: r2.name,
-      case: CODEVISTA.company,
-      role: CODEVISTA.role,
+      case: NEXLAYER.company,
+      role: NEXLAYER.role,
       exportedAt: new Date().toISOString(),
     },
-    guidingDecisions: {
-      ranking: r2.rankedDecisions.map((d, i) => ({ rank: i + 1, id: d.id, text: d.text })),
-      topPickRationale: r2.rankRationale,
+    rankedDecisions: {
+      order: r2.ranking,
+      labels: r2.ranking.map((id) => decisionById(id).label),
+      justificationOfFirst: r2.rankWhy,
+      diagnosticAnswer: r2.rankCheck,
     },
-    tradeOffMap: QUADRANT_CARDS.map((c) => {
-      const placed = r2.placements[c.id];
-      const q = placed ? quadrantById(placed) : null;
-      const ref = quadrantById(c.correct);
-      return {
-        id: c.id,
-        measure: c.text,
-        placed: placed
-          ? { quadrant: placed, momentumCost: q!.momentum, structuralImpact: q!.structural }
-          : null,
-        reference: {
-          quadrant: c.correct,
-          momentumCost: ref.momentum,
-          structuralImpact: ref.structural,
-        },
-        matched: placed === c.correct,
-      };
-    }),
-    governance: {
-      subject: RACI_SUBJECT,
-      assignments: Object.fromEntries(
-        RACI_LETTERS.map((l) => [l.name, r2.raci[l.id].map(roleName)]),
-      ),
-      accountableCount: r2.accountableCount,
-      // The one rule the exercise actually enforces.
-      oneAccountableRuleSatisfied: r2.accountableValid,
+    tradeOffMap: r2.mapStates.map((s) => ({
+      id: s.measure.id,
+      measure: s.measure.label,
+      momentumCostAnswer: s.q1,
+      momentumCostCorrect: s.q1Correct,
+      structuralImpactAnswer: s.q2,
+      structuralImpactCorrect: s.q2Correct,
+      quadrant: s.placed,
+      expectedQuadrant: s.measure.quadrant,
+      retries: s.retries,
+      strategicBetJustification: s.placed === "bet" ? s.bet : null,
+    })),
+    raci: {
+      grid: RACI_ROWS.map((row) => ({
+        row: row.id,
+        decisionObject: row.label,
+        assignments: Object.fromEntries(TASK_RACI_ROLES.map((role) => [role.id, r2.raciValue(row.id, role.id) || null])),
+      })),
+      validation: {
+        structuralIssues: r2.raciStructuralIssues.map((v) => ({ row: v.rowId, kind: v.kind })),
+        authorityQuestions: r2.raciAuthorityWarnings.map((v) => ({ row: v.rowId, kind: v.kind })),
+        valid: r2.raciStructuralIssues.length === 0 && RACI_ROWS.every((row) => r2.raciTouched(row.id)),
+      },
     },
-    decisionUnderUncertainty: {
-      decideNow: r2.decideNow,
-      costOfWaiting: r2.decideWhy,
-    },
-    summary: {
-      quadrantScore: QUADRANT_CARDS.filter((c) => r2.placements[c.id] === c.correct).length,
-      quadrantTotal: QUADRANT_CARDS.length,
-      placed: r2.placedCards.length,
-    },
+    decisionNow: Object.fromEntries(DECIDE_NOW_FIELDS.map((f) => [f.key, r2.decideNow[f.key] ?? ""])),
   };
   return JSON.stringify(payload, null, 2);
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** Standalone, print-ready HTML memo — no external stylesheet. */
-export function buildMemoHtml(r2: Route2State): string {
-  const date = new Date().toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+/** The trade-off map as an inline SVG string, drawn from the same geometry as the live map. */
+function mapSvg(r2: Route2State): string {
+  const quadrants = QUADRANTS.map((q) => {
+    const r = quadrantRect(q.id);
+    const warm = q.id === "quick" || q.id === "bet";
+    return `<rect x="${r.x + 2}" y="${r.y + 2}" width="${r.w - 4}" height="${r.h - 4}" rx="10" fill="${warm ? "#E7F2EC" : "#EEF1F3"}" stroke="#E2E5E9" />
+      <text x="${r.x + 12}" y="${r.y + 24}" font-size="14" font-weight="700" fill="${warm ? "#0E7A5A" : "#5E6670"}">${esc(q.label)}</text>`;
+  }).join("");
 
-  const ranked = r2.rankedDecisions.length
-    ? `<ol>${r2.rankedDecisions
-        .map(
-          (d, i) =>
-            `<li><strong>${esc(d.text)}</strong>${
-              i === 0 && r2.rankRationale
-                ? `<div class="why">&ldquo;${esc(r2.rankRationale)}&rdquo;</div>`
-                : ""
-            }</li>`,
-        )
-        .join("")}</ol>`
-    : `<p class="muted">Nothing ranked.</p>`;
-
-  const mapRows = r2.placedCards
-    .map((c) => {
-      const q = quadrantById(r2.placements[c.id]!);
-      return `<tr><td>${esc(c.text)}</td><td class="num">${esc(q.momentum)}</td><td class="num">${esc(
-        q.structural,
-      )}</td></tr>`;
+  const dots = r2.mapStates
+    .filter((s) => s.placed)
+    .map((s) => {
+      const p = slotPosition(s.placed!, s.slotIndex, s.slotCount);
+      return `<circle cx="${p.x}" cy="${p.y}" r="18" fill="#0E7A5A" stroke="#fff" stroke-width="2.5" />
+        <text x="${p.x}" y="${p.y + 5}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${s.measure.id.toUpperCase()}</text>`;
     })
     .join("");
 
-  const raciRows = RACI_LETTERS.map((l) => {
-    const roles = r2.raci[l.id];
-    const bad = l.id === "A" && roles.length !== 1;
-    return `<tr><td class="${bad ? "bad" : ""}"><strong>${esc(l.name)}</strong></td><td>${
-      roles.length ? esc(roles.map(roleName).join(", ")) : '<span class="muted">— none assigned</span>'
-    }${bad && roles.length > 1 ? ' <span class="bad">(RACI allows exactly one)</span>' : ""}</td></tr>`;
+  return `<svg viewBox="0 0 ${MAP.w} ${MAP.h}" width="100%" style="max-width:520px;display:block;margin:8px auto" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+    ${quadrants}
+    <text x="${MAP.x0}" y="${MAP.h - 12}" font-size="12.5" fill="#5E6670">low</text>
+    <text x="${MID_X}" y="${MAP.h - 12}" text-anchor="middle" font-size="13" font-weight="600" fill="#16191D">Momentum cost →</text>
+    <text x="${MAP.x1}" y="${MAP.h - 12}" text-anchor="end" font-size="12.5" fill="#5E6670">high</text>
+    <text x="18" y="${MID_Y}" text-anchor="middle" transform="rotate(-90 18 ${MID_Y})" font-size="13" font-weight="600" fill="#16191D">Structural impact →</text>
+    ${dots}
+  </svg>`;
+}
+
+export function buildMemoHtml(r2: Route2State): string {
+  const date = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const first = r2.ranking[0] ? decisionById(r2.ranking[0]) : null;
+
+  const ranked = r2.ranking.length
+    ? `<ol>${r2.ranking
+        .map((id, i) => {
+          const d = decisionById(id);
+          return `<li><strong>${esc(d.label)}</strong> — <span class="muted">${esc(d.detail)}</span>${
+            i === 0 && r2.rankWhy ? `<div class="why">${esc(r2.rankWhy)}</div>` : ""
+          }</li>`;
+        })
+        .join("")}</ol>`
+    : `<p class="muted">No guiding decisions ranked.</p>`;
+
+  const mapRows = r2.mapStates
+    .map(
+      (s) => `<tr>
+        <td><strong>${esc(s.measure.label)}</strong></td>
+        <td class="nowrap">${s.q1 ? (s.q1 === "yes" ? "High" : "Low") : "—"}</td>
+        <td class="nowrap">${s.q2 ? (s.q2 === "yes" ? "High" : "Low") : "—"}</td>
+        <td class="nowrap">${s.placed ? esc(quadrantById(s.placed).label) : "Not placed"}</td>
+      </tr>${
+        s.placed === "bet"
+          ? `<tr class="why-row"><td colspan="4"><span class="muted">If only one bet is funded — </span>${
+              s.bet ? esc(s.bet) : '<span class="muted">not written</span>'
+            }</td></tr>`
+          : ""
+      }`,
+    )
+    .join("");
+
+  const raciHead = TASK_RACI_ROLES.map((r) => `<th class="num">${esc(r.short)}</th>`).join("");
+  const raciRows = RACI_ROWS.map((row) => {
+    const issues = r2.raciViolations.filter((v) => v.rowId === row.id);
+    return `<tr>
+      <td>${esc(row.label)}${
+        issues.length
+          ? `<div class="flag">${issues.map((v) => esc(v.text)).join("<br/>")}</div>`
+          : ""
+      }</td>
+      ${TASK_RACI_ROLES.map((role) => {
+        const v = r2.raciValue(row.id, role.id);
+        return `<td class="num${v === "A" ? " acc" : ""}">${v || "·"}</td>`;
+      }).join("")}
+    </tr>`;
   }).join("");
+
+  const decide = DECIDE_NOW_FIELDS.map(
+    (f) => `<div class="field"><p class="label">${esc(f.label)}</p><p>${
+      r2.decideNow[f.key] ? esc(r2.decideNow[f.key]) : '<span class="muted">Not written.</span>'
+    }</p></div>`,
+  ).join("");
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${esc(TASK2.export.docHeading)} — ${esc(r2.name.trim() || "learner")}</title>
+<title>${esc(EXPORT.docHeading)} — ${esc(r2.name.trim() || "learner")}</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 40px 24px; background: #F5F6F7; color: #16191D;
          font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.6; }
-  .sheet { max-width: 860px; margin: 0 auto; background: #fff; border: 1px solid #E2E5E9;
-           border-radius: 16px; padding: 40px; }
-  .kicker { margin: 0 0 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
-            font-weight: 700; color: #0E7A5A; }
-  h1 { margin: 0 0 4px; font-size: 27px; line-height: 1.2; }
-  h2 { margin: 32px 0 10px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
-       color: #5E6670; border-top: 1px solid #E2E5E9; padding-top: 16px; }
-  .meta { margin: 0; color: #5E6670; font-size: 13px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
-  th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
-       color: #5E6670; border-bottom: 1px solid #E2E5E9; padding: 8px 10px 8px 0; font-weight: 700; }
-  th.num, td.num { text-align: center; width: 96px; padding-right: 0; }
-  td { vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid #EEF1F3; }
-  ol { margin: 8px 0 0; padding-left: 20px; }
+  .sheet { max-width: 860px; margin: 0 auto; background: #fff; border: 1px solid #E2E5E9; border-radius: 16px; padding: 40px; }
+  .memohead { border-bottom: 2px solid #16191D; padding-bottom: 14px; }
+  .kicker { margin: 0 0 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: #0E7A5A; }
+  h1 { margin: 0 0 6px; font-size: 27px; line-height: 1.2; }
+  .meta { display: grid; grid-template-columns: 90px 1fr; gap: 2px 12px; margin: 10px 0 0; font-size: 13px; }
+  .meta dt { color: #5E6670; text-transform: uppercase; letter-spacing: .05em; font-size: 11px; padding-top: 2px; }
+  .meta dd { margin: 0; }
+  h2 { margin: 30px 0 10px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: #5E6670; border-top: 1px solid #E2E5E9; padding-top: 16px; }
+  .rec { padding: 16px 18px; border: 1px solid #E2E5E9; border-left: 4px solid #0E7A5A; border-radius: 10px; background: #E7F2EC; }
+  .rec strong { display: block; font-size: 17px; margin-bottom: 4px; }
+  ol { margin: 6px 0 0; padding-left: 22px; }
   li { margin-bottom: 8px; }
-  .why { margin-top: 4px; font-style: italic; color: #16191D; }
-  .muted { color: #5E6670; font-size: 12px; }
-  .bad { color: #B23B3B; }
-  .callout { margin-top: 10px; padding: 14px 16px; border: 1px solid #E2E5E9;
-             border-left: 3px solid #0E7A5A; border-radius: 10px; background: #E7F2EC; }
-  .callout p { margin: 0 0 8px; }
-  .callout p:last-child { margin: 0; font-style: italic; color: #5E6670; }
-  footer { margin-top: 32px; border-top: 1px solid #E2E5E9; padding-top: 14px;
-           color: #5E6670; font-size: 11px; }
+  .why { margin-top: 4px; font-style: italic; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #5E6670; border-bottom: 1px solid #E2E5E9; padding: 8px 10px 8px 0; font-weight: 700; }
+  th.num, td.num { text-align: center; width: 62px; padding-right: 0; }
+  td { vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid #EEF1F3; }
+  td.acc { font-weight: 700; color: #0E7A5A; background: #E7F2EC; }
+  tr.why-row td { padding-top: 0; font-style: italic; }
+  .flag { margin-top: 4px; font-size: 11.5px; color: #B87514; }
+  .muted { color: #5E6670; font-size: 12px; font-style: normal; }
+  .nowrap { white-space: nowrap; }
+  .field { margin-top: 10px; }
+  .field .label { margin: 0; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #5E6670; font-weight: 700; }
+  .field p { margin: 2px 0 0; }
+  footer { margin-top: 32px; border-top: 1px solid #E2E5E9; padding-top: 14px; color: #5E6670; font-size: 11px; }
+  @media (max-width: 560px) {
+    body { padding: 12px 8px; }
+    .sheet { padding: 18px 14px; border-radius: 12px; }
+    th.num, td.num { width: 44px; }
+  }
   @media print {
     body { background: #fff; padding: 0; }
     .sheet { border: 0; border-radius: 0; padding: 0; max-width: none; }
-    @page { margin: 16mm; }
+    .rec, td.acc { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h2, table, svg { break-inside: avoid; }
+    @page { size: A4; margin: 16mm; }
   }
 </style>
 </head>
 <body>
 <div class="sheet">
-  <p class="kicker">AION Green IT · Day 11 · Route 2 · Level 3</p>
-  <h1>${esc(TASK2.export.docHeading)}</h1>
-  <p class="meta">${esc(r2.name.trim() || "learner")} · ${esc(date)} · Case: ${esc(CODEVISTA.company)}</p>
-  <p class="meta">Role: ${esc(CODEVISTA.role)} / CTO</p>
-
-  <h2>Guiding decisions (ranked)</h2>
-  ${ranked}
-
-  <h2>Trade-off map summary</h2>
-  ${
-    mapRows
-      ? `<table>
-    <thead><tr><th>Measure</th><th class="num">Momentum cost</th><th class="num">Structural impact</th></tr></thead>
-    <tbody>${mapRows}</tbody>
-  </table>`
-      : `<p class="muted">Nothing placed.</p>`
-  }
-  ${
-    r2.unplacedCards.length
-      ? `<p class="muted">Not placed: ${r2.unplacedCards.map((c) => esc(c.short)).join(", ")}.</p>`
-      : ""
-  }
-
-  <h2>Governance model (RACI)</h2>
-  <p class="muted">Subject: ${esc(RACI_SUBJECT)}</p>
-  <table><tbody>${raciRows}</tbody></table>
-
-  <h2>Decision under uncertainty</h2>
-  <div class="callout">
-    <p>${esc(r2.decideNow) || '<span class="muted">No decision named.</span>'}</p>
-    <p>${esc(r2.decideWhy) || '<span class="muted">Cost of waiting not stated.</span>'}</p>
+  <div class="memohead">
+    <p class="kicker">AION Green IT · Day 11 · Route 2 · Level 3 · Board memo</p>
+    <h1>${esc(EXPORT.docHeading)}</h1>
+    <dl class="meta">
+      <dt>To</dt><dd>Management board, ${esc(NEXLAYER.company)}</dd>
+      <dt>From</dt><dd>${esc(r2.name.trim() || "learner")} — ${esc(NEXLAYER.role)}</dd>
+      <dt>Date</dt><dd>${esc(date)}</dd>
+    </dl>
   </div>
 
+  <h2>Recommendation</h2>
+  <div class="rec">
+    <strong>${
+      r2.decideNow.decision
+        ? esc(r2.decideNow.decision)
+        : first
+          ? esc(first.label)
+          : "No recommendation written."
+    }</strong>
+    ${first ? `Anchored in the first guiding decision: ${esc(first.label)}.` : ""}
+    ${r2.decideNow.assumption ? `<br/><span class="muted">Rests on: ${esc(r2.decideNow.assumption)}</span>` : ""}
+  </div>
+
+  <h2>Guiding decisions, ranked</h2>
+  ${ranked}
+
+  <h2>Trade-off assessment</h2>
+  ${mapSvg(r2)}
+  <table>
+    <thead><tr><th>Measure</th><th>${esc(MAP_QUESTIONS.q1.label)}</th><th>${esc(MAP_QUESTIONS.q2.label)}</th><th>Quadrant</th></tr></thead>
+    <tbody>${mapRows}</tbody>
+  </table>
+
+  <h2>Ownership</h2>
+  <table>
+    <thead><tr><th>Decision object</th>${raciHead}</tr></thead>
+    <tbody>${raciRows}</tbody>
+  </table>
+  <p class="muted">R Responsible · A Accountable · C Consulted · I Informed. Exactly one A per row.</p>
+
+  <h2>Decision required now</h2>
+  ${decide}
+
   <footer>
-    AION Green IT — Day 11, Route 2 (Management Decision). CodeVista Digital Platforms is a fictional case
-    for training use. Prepared by the learner named above.
+    AION Green IT — Day 11, Route 2 (Management Decision), level 3.
+    ${esc(NEXLAYER.company)} is a fictional case for training use. Prepared by the learner named above.
   </footer>
 </div>
 </body>

@@ -1,79 +1,90 @@
+import type { MaterialSection } from "@/lib/materialSection";
 import { Icon } from "@/components/icons/LineIcons";
 import { Reveal } from "@/components/ui/Reveal";
 import { IndustryCallout } from "./IndustryCallout";
-import type { IconKey } from "@/lib/routes";
 
-export type MaterialBlockContent = {
-  id: string;
-  icon: IconKey;
-  kicker: string;
-  title: string;
-  definition: string;
-  insight: string;
-  takeaway: string;
-  /**
-   * Standard #11a: the decision rules this section hands the learner, phrased
-   * the way the task will need them — including the rule that rules out the
-   * plausible wrong option. Prose explains a concept; these tell someone how to
-   * actually answer.
-   */
-  reasoning: string[];
-  callout: { label: string; text: string };
-  /** Named external sources for this block. Optional so older routes that cite inline still typecheck. */
-  references?: { label: string; url?: string }[];
-};
-
-/** One material block: header, deep prose, a visualizer slot, decision rules, and a callout. */
+/**
+ * One material section, in the order the day standard fixes: heading → the
+ * diagram → the written explanation → the decision rules → the callout →
+ * sources.
+ *
+ * The diagram comes before the prose deliberately. It is the primary teaching
+ * artifact rather than an illustration of a paragraph the learner has already
+ * read, and in a facilitator-led block it is what the room looks at while the
+ * explanation is being given.
+ */
 export function MaterialBlock({
-  block,
+  section,
   anchorId,
   children,
 }: {
-  block: MaterialBlockContent;
-  /** DOM id a task step's MaterialRefs chip scrolls to. Defaults to the block id. */
-  anchorId?: string;
+  section: MaterialSection;
+  /** DOM id the mini-nav and MaterialRefs chips scroll to. */
+  anchorId: string;
+  /** The section's diagram. */
   children: React.ReactNode;
 }) {
   return (
-    <Reveal as="section" id={anchorId ?? block.id} className="scroll-mt-24 space-y-5">
+    <Reveal as="section" id={anchorId} className="scroll-mt-24 space-y-5">
+      {/* Heading */}
       <div className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accentSoft text-accent">
-          <Icon name={block.icon} className="h-5 w-5" />
+          <Icon name={section.icon} className="h-5 w-5" />
         </span>
-        <div>
-          <p className="text-micro font-semibold uppercase tracking-wide text-accent">
-            {block.kicker}
-          </p>
-          <h2 className="text-h2 text-ink">{block.title}</h2>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p className="text-micro font-semibold uppercase tracking-wide text-accent">
+              {section.kicker}
+            </p>
+            <span className="rounded-full border border-line px-2 py-0.5 text-micro text-ash">
+              ~{section.minutes} min
+            </span>
+          </div>
+          <h2 className="text-h2 text-ink">{section.title}</h2>
+          <p className="mt-1 max-w-prose text-body text-ash">{section.standfirst}</p>
         </div>
       </div>
 
+      {/* The diagram — the primary teaching artifact */}
+      <div className="card overflow-hidden p-5">{children}</div>
+
+      {/* The written explanation */}
       <div className="max-w-prose space-y-3 text-body text-ash">
         <p>
           <span className="font-semibold text-ink">Definition. </span>
-          {block.definition}
+          {section.definition}
         </p>
         <p>
           <span className="font-semibold text-ink">Insight. </span>
-          {block.insight}
+          {section.insight}
         </p>
         <p>
           <span className="font-semibold text-ink">Practical takeaway. </span>
-          {block.takeaway}
+          {section.takeaway}
         </p>
       </div>
 
-      <div className="card p-5">{children}</div>
+      {section.body.map((block) => (
+        <div key={block.heading} className="max-w-prose space-y-2">
+          <h3 className="text-h3 text-ink">{block.heading}</h3>
+          {block.paragraphs.map((p, i) => (
+            <p key={i} className="text-body text-ash">
+              {p}
+            </p>
+          ))}
+        </div>
+      ))}
 
-      {block.reasoning.length > 0 && (
-        <div className="rounded-2xl border border-accent/30 bg-accentSoft/50 p-4">
+      {/* Decision rules — what makes the section operational */}
+      {section.reasoning.length > 0 && (
+        <div className="rounded-2xl border-l-4 border-l-accent border-y border-r border-accent/25 bg-accentSoft/50 p-4">
           <p className="text-micro font-semibold uppercase tracking-wide text-accent">
             How to decide when this comes up in the task
           </p>
           <ul className="mt-2 space-y-1.5">
-            {block.reasoning.map((rule, i) => (
+            {section.reasoning.map((rule, i) => (
               <li key={i} className="flex gap-2 text-caption text-ink">
-                <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                <span className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
                 <span>{rule}</span>
               </li>
             ))}
@@ -81,31 +92,31 @@ export function MaterialBlock({
         </div>
       )}
 
-      <IndustryCallout label={block.callout.label} text={block.callout.text} />
+      <IndustryCallout label={section.callout.label} text={section.callout.text} />
 
-      {block.references && block.references.length > 0 && (
-        <div className="border-t border-line pt-3">
-          <p className="text-micro font-semibold uppercase tracking-wide text-ash">Sources</p>
-          <ul className="mt-1 space-y-0.5">
-            {block.references.map((r) => (
-              <li key={r.label} className="text-micro text-ash">
-                {r.url ? (
-                  <a
-                    href={r.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline decoration-dotted underline-offset-2 hover:text-ink"
-                  >
-                    {r.label}
-                  </a>
-                ) : (
-                  r.label
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/* Sources */}
+      <div className="border-t border-line pt-3">
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Sources</p>
+        <ul className="mt-1.5 space-y-1">
+          {section.references.map((r) => (
+            <li key={r.label} className="text-micro text-ash">
+              {r.url ? (
+                <a
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-ink underline decoration-dotted underline-offset-2 hover:text-accent"
+                >
+                  {r.label}
+                </a>
+              ) : (
+                <span className="font-semibold text-ink">{r.label}</span>
+              )}
+              {r.detail ? <span> — {r.detail}</span> : null}
+            </li>
+          ))}
+        </ul>
+      </div>
     </Reveal>
   );
 }

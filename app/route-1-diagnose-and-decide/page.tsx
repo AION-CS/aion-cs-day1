@@ -3,10 +3,10 @@ import { ROUTES } from "@/lib/routes";
 import { PAGE_INTRO } from "@/lib/route1";
 import { LeafMark } from "@/components/chrome/Icons";
 import { CaseBrief } from "@/components/route1/CaseBrief";
-import { FoundationsMaterial, DecisionMaterial } from "@/components/route1/Material";
-import { StageOne } from "@/components/route1/StageOne";
-import { Bridge } from "@/components/route1/Bridge";
-import { StageTwo } from "@/components/route1/StageTwo";
+import { Material } from "@/components/route1/Material";
+import { PartOne } from "@/components/route1/PartOne";
+import { Handover } from "@/components/route1/Handover";
+import { PartTwo } from "@/components/route1/PartTwo";
 import { ExportBar } from "@/components/route1/ExportBar";
 import { MentorTools } from "@/components/route1/MentorTools";
 
@@ -15,16 +15,15 @@ const ROUTE = ROUTES[0];
 export const metadata: Metadata = {
   title: `AION Green IT — Day 11 · ${ROUTE.tag}`,
   description:
-    "The AppNexa engagement, end to end: why software has a carbon footprint, how SCI measures it, a live system trace to diagnose — then one quarter of capacity to spend across three competing lines of measures, and a call to defend.",
+    "Monitoring software efficiency and sustainable software architecture: the efficiency lens, the four load bands, the architecture levers and the five-way trade-off — then the DataWeave engagement, six signals to diagnose and one quarter to spend.",
 };
 
 /**
  * Route 1 — levels 1 and 2 as one continuous engagement (CLAUDE.md #12).
  *
- * The page order is the whole point: the case is introduced once, the material
- * arrives in two halves either side of the work that uses it, the bridge hands
- * the learner's own diagnosis into the decision, and one export bar at the
- * bottom covers everything above it.
+ * The page order is the whole design: the case once, then the entire material
+ * block, then one task whose two parts run on a single scroll with an inline
+ * handover between them, then one export bar covering everything above it.
  */
 export default function Route1Page() {
   return (
@@ -43,33 +42,22 @@ export default function Route1Page() {
 
       <hr className="border-line" />
 
-      <FoundationsMaterial />
+      <Material />
 
       <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
         <p className="text-body font-semibold text-ink">
-          You have the vocabulary. Now go read a system you didn&apos;t build.
+          That is the whole teaching block. Now go and read a system you didn&apos;t build.
         </p>
-        <a href="#stage-1" className="btn-accent mt-3 inline-flex">
-          Open the AppNexa system trace
+        <a href="#part-1" className="btn-accent mt-3 inline-flex">
+          Start the DataWeave engagement
         </a>
       </div>
 
-      <StageOne />
+      <PartOne />
 
-      <Bridge />
+      <Handover />
 
-      <DecisionMaterial />
-
-      <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
-        <p className="text-body font-semibold text-ink">
-          You have the dimensions. Now spend the quarter.
-        </p>
-        <a href="#stage-2" className="btn-accent mt-3 inline-flex">
-          Enter the prioritization room
-        </a>
-      </div>
-
-      <StageTwo />
+      <PartTwo />
 
       <ExportBar />
     </div>

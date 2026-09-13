@@ -13,13 +13,12 @@ import { useRoute1, domId } from "./useRoute1";
 import { buildEngagementJson, buildEngagementHtml } from "./exportDocuments";
 
 /**
- * The route's one sticky export bar, covering both stages (CLAUDE.md #12).
+ * The route's one sticky export bar, covering both parts (CLAUDE.md #12).
  *
  * Never disabled (CLAUDE.md #3): clicking while incomplete opens the itemized
- * missing list and jumps to the first gap — which may be four screens up in
- * stage 1 — rather than doing nothing and leaving the learner to guess why.
- * The readout counts both stages for the same reason: one route, one sense of
- * how far along you are.
+ * missing list and jumps to the first gap — which may be several screens up in
+ * Part 1, inside a collapsed signal card that the missing entry opens on its
+ * way there.
  */
 export function ExportBar() {
   const r1 = useRoute1();
@@ -29,7 +28,11 @@ export function ExportBar() {
   const handleExport = () => {
     if (!r1.allComplete) {
       setShowMissing(true);
-      if (r1.missing[0]) scrollToAndFlash(r1.missing[0].id);
+      const first = r1.missing[0];
+      if (first) {
+        first.before?.();
+        window.setTimeout(() => scrollToAndFlash(first.id), first.before ? 40 : 0);
+      }
       return;
     }
     const filename = exportFilename(r1.name, EXPORT.filenameLevels, EXPORT.filenameTask);
@@ -57,12 +60,12 @@ export function ExportBar() {
         >
           <span>
             <span className="tabular-nums font-semibold text-ink">{r1.completeCount}</span> /{" "}
-            {r1.totalHotspots} findings
+            {r1.totalSignals} findings filed
           </span>
           <span className="text-ash">·</span>
           <span>
             <span className="tabular-nums font-semibold text-ink">{r1.revealedCount}</span> /{" "}
-            {r1.totalOptions} options compared
+            {r1.totalMeasures} measures compared
           </span>
           {r1.missing.length > 0 && (
             <>

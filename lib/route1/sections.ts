@@ -1,66 +1,47 @@
 /**
- * Route 1's material sections, as one continuous run.
+ * Route 1's material sections: one continuous block of five, S1–S5, all of it
+ * taught before the task begins.
  *
- * Stage 1 (diagnosis) contributes A–F and stage 2 (decision) contributes G–J,
- * but the learner meets them as a single lettered sequence on a single page —
- * two runs that both start at "A" are the clearest tell that a route was glued
- * together from two smaller ones (CLAUDE.md #12). The ids, labels and anchor
- * ids therefore live here, above both halves, rather than in either of them.
+ * The ids, labels and anchor ids live above the content so the mini-nav, the
+ * MaterialRefs chips on both task parts, and the material itself can never
+ * disagree about what a section is called.
  */
 
-import type { IconKey } from "@/lib/routes";
-
 export type MaterialSectionId =
-  // A–F — stage 1: seeing the waste (./diagnosis.ts)
-  | "footprint"
-  | "correctness"
-  | "sci"
-  | "principles"
-  | "categories"
-  | "profession"
-  // G–J — stage 2: choosing what to do about it (./decision.ts)
-  | "constraint"
-  | "measures"
-  | "dimensions"
-  | "defensible";
+  | "monitoring"
+  | "load"
+  | "architecture"
+  | "tradeoff"
+  | "coupling";
 
-export type MaterialSection = {
-  id: MaterialSectionId;
-  n: number;
-  letter: string;
-  icon: IconKey;
-  kicker: string;
-  title: string;
-  definition: string;
-  insight: string;
-  takeaway: string;
-  /**
-   * Standard #11a — the decision rules this block hands the task, phrased the
-   * way the task will need them, including the rule that rules out the
-   * plausible wrong answer. Rendered as "How to decide when this comes up in
-   * the task".
-   */
-  reasoning: string[];
-  callout: { label: string; text: string };
-  references: { label: string; url?: string }[];
-};
+export const SECTION_ORDER: MaterialSectionId[] = [
+  "monitoring",
+  "load",
+  "architecture",
+  "tradeoff",
+  "coupling",
+];
 
-/** DOM anchor a task step's MaterialRefs chip scrolls to. */
+/** DOM anchor a MaterialRefs chip or the mini-nav scrolls to. */
 export function materialAnchorId(id: MaterialSectionId): string {
   return `r1-material-${id}`;
 }
 
 export const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  footprint: "A · Why software has a footprint",
-  correctness: "B · Correct vs. efficient",
-  sci: "C · Measuring it (SCI)",
-  principles: "D · Three GSF principles",
-  categories: "E · The six categories",
-  profession: "F · Not just a developer's problem",
-  constraint: "G · The real constraint",
-  measures: "H · Three measures, three stages",
-  dimensions: "I · The seven dimensions",
-  defensible: "J · Making a defensible call",
+  monitoring: "S1 · The efficiency lens",
+  load: "S2 · The four load bands",
+  architecture: "S3 · Architecture levers",
+  tradeoff: "S4 · The five-way trade-off",
+  coupling: "S5 · Coupling the two",
+};
+
+/** Short label for the sticky mini-nav dots. */
+export const MATERIAL_NAV: Record<MaterialSectionId, { code: string; label: string }> = {
+  monitoring: { code: "S1", label: "Monitoring with an efficiency lens" },
+  load: { code: "S2", label: "Not all load is a problem" },
+  architecture: { code: "S3", label: "Sustainable architecture and its four levers" },
+  tradeoff: { code: "S4", label: "The five-way trade-off" },
+  coupling: { code: "S5", label: "Deciding monitoring and architecture together" },
 };
 
 /** Chips for a task step: which material sections it draws on. */

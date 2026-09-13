@@ -341,34 +341,48 @@ Ref: `lib/route1/sections.ts` (`materialAnchorId` / `materialRefs`),
 
 ---
 
-## 12. Two routes per day, and a merged route must read as one — new in Day 11
+## 12. Two routes per day, material first, one task per route — new in Day 11
 
-**Why:** three routes meant the learner met the same company three times, with three
-intros, three name fields and three exports. Analysing a situation and deciding what to do
-about it are one job, and splitting them across two routes made the seam visible.
+**Why:** three routes meant the learner met the same company three times, with three intros,
+three name fields and three exports. A first merge kept the material split either side of a
+stage, which still read as two lessons stapled together. Day 11 settles on one facilitator-led
+material block followed by one task, which reads as one engagement.
 
-**From Day 11 on, a day ships exactly two routes:** Route 1 carries levels 1 and 2 as one
-continuous engagement, Route 2 carries level 3. The objectives do not change — only the
-delivery merges.
+**Shape** (every route, from Day 11 on):
 
-**What "merged" actually requires** (each item is a seam a learner would otherwise notice):
+```
+case brief + learner name (once)
+  → MATERIAL — all teaching, one block (Route 1: S1–S5, Route 2: A–D)
+  → TASK — one continuous scroll
+       Route 1: Part 1 — Diagnose → inline handover → Part 2 — Decide
+       Route 2: four exercises + the board memo assembling beside them
+  → ONE EXPORT
+```
 
-- One case, one company, introduced **once**. "Same company as Route 1" is the tell.
-- One learner-name field per route.
-- Material as one continuous lettered run (A–J), split either side of the work that uses
-  it — never two runs that both start at A, never all ten sections front-loaded.
-- A bridge between the stages that consumes the learner's own stage-1 output, so stage 2
-  reads as caused by stage 1 (`components/route1/Bridge.tsx`).
-- Any "standalone recap" section written so the old second route could be entered cold is
-  deleted; what it carried moves into the bridge.
-- One export bar, one deliverable, one `missing` list spanning both stages
-  (`components/route1/useRoute1.ts`). The document carries a part per stage; the JSON keeps
-  `partOne` / `partTwo` separate so both levels stay gradable from one file.
-- "Stage 1 — …" / "Stage 2 — …", not "Task 1" / "Task 2" with their own framings.
-- One `MentorFillButton` per route, filling both stages in one click.
+**What it requires:**
 
-Export filename lists every level the route covers: `1-jane-day11-l1l2task1` for Route 1,
-`1-jane-day11-l3task1` for Route 2 (`lib/downloadFile.ts`).
+- No material between Part 1 and Part 2. The handover (`components/route1/Handover.tsx`) is a
+  small inline panel that reads the learner's own tally back to them, with a two-bar SVG — and it
+  is never a gate: Part 2 is reachable with Part 1 unfinished.
+- One case brief and one name field per route. Route 2's worked example (MetricFlow) is read-only
+  and styled unlike any learner surface; the task case (NexLayer) is briefed once, directly above
+  the task.
+- One export bar and one `missing` list spanning the whole task. Entries pointing into a collapsed
+  signal card, a closed measure card or a hidden tab carry `before`, which opens the container
+  before scrolling (`MissingItem` in `components/ui/MissingList.tsx`).
+- The JSON keeps one block per level: Route 1 exports `partOne` / `partTwo`.
+- Material layout: `MiniNav` (sticky dots + progress bar) and `MaterialBlock` in the order
+  *title → SVG → explanation → reasoning → callout → sources*. SVGs use `viewBox` +
+  `preserveAspectRatio`, are legible at 380 px, and every hover has a tap equivalent.
+- The live deliverable panel is `LivePanel`: a sticky column on desktop, a tap-to-expand strip on
+  mobile.
+- Completed cards stay editable with their text intact.
+- Checks over yes/no answers report per item, not per question — on a binary question, "this one
+  is wrong" is the answer.
+- One `MentorFillButton` per route, filling everything in one click.
 
-Canonical wording lives in the parent `../CLAUDE.md` §12 and `../CURRICULUM-GUIDE.md` §2 —
-this file is the day-local copy and Days 1–10 are not retrofitted.
+Export filenames list every level a route covers: `1-jane-day11-l1l2task1` (Route 1),
+`1-jane-day11-l3task1` (Route 2) — `lib/downloadFile.ts`.
+
+Canonical wording lives in `../CLAUDE.md` §12 and `../CURRICULUM-GUIDE.md` §2–§3. Days 1–10
+are not retrofitted.

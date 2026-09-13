@@ -1,171 +1,182 @@
 # AION Green IT — Day 11
 
-**Energy-Efficient Software & Green Coding Principles** — the interactive working companion
-for Day 11. The content was carried over from Day 10; what changed here is the **shape**:
-Day 11 is the first day built on the two-route standard.
+**Module 7 (Day 2 of 2): Monitoring Software Efficiency & Sustainable Software Architecture** —
+the interactive working companion for Day 11.
 
-## The two-route standard (new here, and from now on)
+Day 11 is the first day built on the two-route standard: **Route 1 carries levels 1 and 2** as one
+engagement, **Route 2 carries level 3**. Every route has the same shape — the case once, one
+material block with all of the teaching, one task, one export.
 
-Days 1–10 shipped three routes, one per curriculum level. A learner met the same company
-three times, with three intros, three name fields and three exports — and the seam showed
-most between L1 and L2, because "work out what is wrong" and "decide what to do about it"
-are one job, not two.
+## Routes
 
-From Day 11 on a day ships **exactly two routes**:
+| Route | Levels | Case | Material | Task | Export |
+|---|---|---|---|---|---|
+| `/route-1-diagnose-and-decide` | 1 + 2 | DataWeave Applications | S1–S5, ~60 min | Part 1 Diagnose (~15 min) → handover → Part 2 Decide (~15 min) | `1-{name}-day11-l1l2task1.json` + `.html` |
+| `/route-2-management-decision` | 3 | MetricFlow Digital Systems GmbH (worked example) → NexLayer Digital Platforms (task) | A–D, ~60 min | Four exercises, ~20 min | `1-{name}-day11-l3task1.json` + `.html` |
 
-| Route | Carries | Case | Deliverable |
-|---|---|---|---|
-| `/route-1-diagnose-and-decide` | **Levels 1 + 2**, as one continuous engagement (~40 min) | AppNexa Solutions | AppNexa Engagement Report |
-| `/route-2-management-decision` | **Level 3** (~20 min) | SoftPulse (worked example) → CodeVista | Board Memo |
+Neither route gates the other. Route 2 shows a soft order-suggestion banner until Route 1 has been
+exported, and nothing more.
 
-The learning objectives are unchanged. Only the delivery merges. The rules that make the
-merge invisible are written up in [`../CLAUDE.md`](../CLAUDE.md) §12 and
-[`../CURRICULUM-GUIDE.md`](../CURRICULUM-GUIDE.md) §2, with a day-local copy in
-[`UX-STANDARDS.md`](UX-STANDARDS.md) §12.
-
-## Route 1 — Diagnose & Decide
-
-One engagement at AppNexa Solutions, in the order the real thing happens.
+## The shape of a route
 
 ```
-intro → the engagement (case + name, stated once)
-      → material A–F        (seeing where software wastes energy)
-      → STAGE 1             diagnose the live system trace
-      → the bridge          "two weeks later" — their own findings, handed forward
-      → material G–J        (a defensible way to compare the options)
-      → STAGE 2             spend the quarter, and defend the call
-      → one export          AppNexa Engagement Report
+case brief + learner name (stated once)
+      ↓
+MATERIAL — one continuous block, all teaching, facilitator-led
+      ↓
+TASK — one continuous scroll
+      Route 1: Part 1 — Diagnose → inline handover → Part 2 — Decide
+      Route 2: four exercises, the board memo assembling beside them
+      ↓
+ONE EXPORT
 ```
 
-**Material (A–J, one continuous run).** A–F: why every instruction, stored byte and
-transmitted byte is a physical electricity draw (IEA 2024: data centres ≈415 TWh, ~1.5% of
-global electricity); functionally correct versus energy-efficient as two orthogonal
-questions; the Software Carbon Intensity specification (ISO/IEC 21031:2024) and its
-`C = ((E × I) + M) per R` formula as a rate rather than a total; the three Green Software
-Foundation principles; the six categories where inefficiency hides; and why the lever for
-most of them sits at the standards layer, with iSAQB's CPSA Advanced Level Module GREEN as
-the professional reference point. G–J: the four hard edges on AppNexa's quarter, none of
-them technical; three competing measures mapped onto the Green Software Patterns lifecycle
-stages; the seven decision dimensions written as questions a consultant has to answer; and
-how to argue a call you cannot fully prove, with Cynefin's complex domain as the reference.
+There is no material between the two parts of Route 1: the handover is a small inline panel built
+from the learner's own answers. Standards: `../CLAUDE.md` §12, `../CURRICULUM-GUIDE.md` §2–§3, and
+the day-local copy in [`UX-STANDARDS.md`](UX-STANDARDS.md) §12.
 
-Every section carries a `reasoning[]` block ("How to decide when this comes up in the task")
-and at least one real external source.
+## Route 1 — Diagnose & Decide (DataWeave Applications)
 
-**Stage 1 — diagnose the trace.** Six flagged components on AppNexa's live system trace.
-For each: inspect it, sort the symptom into one of six categories, pick an improvement lever
-from four options, justify it against the original behaviour, and mark it Quick Fix or
-Structural Fix. Part 1 of the Engagement Report assembles on the right as the learner works.
+**Material, five sections.**
 
-**The bridge.** A "two weeks later" panel that hands the learner their own numbers back —
-*"You filed 6 findings: 4 needing a structural standard, 2 fixable as a one-off patch"* —
-and turns the question from "what is wrong with this system" into "what do we fund". It also
-carries the one genuinely load-bearing line from the standalone recap the merge deleted:
-which of the six categories each option actually attacks.
+- **S1 — Monitoring with an efficiency lens.** The same telemetry asked a different question. A
+  radial diagram of eight observation channels (CPU, memory, I/O, network, database access,
+  background processes, scaling behaviour, idle resources), each tap-revealing what you look for
+  once the question is efficiency and what a problematic pattern looks like; two posture cards
+  (classic performance vs. efficiency monitoring). Sources: Google SRE Four Golden Signals, IEA
+  *Energy and AI* (2025: ≈415 TWh, ≈1.5%), Koomey & Taylor / Anthesis (2015: ≈30% comatose
+  servers), NRDC (2014: 12–18% utilisation), OpenTelemetry, Kepler.
+- **S2 — Not all load is a problem.** An animated 24-hour load curve with four clickable bands —
+  necessary (leave it), unnecessary (remove it), poorly designed (redesign it), permanently
+  inefficient (re-architect or decommission it). Sources: Cunningham's technical debt, GSF
+  principles, ISO/IEC 21031:2024 (SCI, named once as background).
+- **S3 — Sustainable architecture and its four levers.** A grown-vs-designed architecture SVG that
+  cross-fades on scroll-into-view, with a manual toggle; four lever pills (modularity, decoupling,
+  right-sized scaling, efficient data flows), each with definition, failure mode, example, and the
+  S1 channel that proves it moved. Sources: Lehman's laws, ISO/IEC 25010, iSAQB CPSA Module GREEN.
+- **S4 — The five-way trade-off.** A pentagon radar with two toggleable profiles, five worked
+  trade-off pairs, and the inverted-Risk convention introduced before Part 2 uses it. Sources: SEI
+  ATAM, ISO/IEC 25010.
+- **S5 — Why monitoring and architecture are decided together.** The closing rule: a finding that
+  does not reach a decision is a ticket; a decision that is not measured is a belief.
 
-**Stage 2 — spend the quarter.** For each of three options the learner answers a situational
-question, predicts the option's profile across the seven dimensions on sliders, then reveals
-the real profile — which renders as a solid polygon over their dashed prediction, so the gap
-is visible without anyone being told they were wrong. Then they commit to one and defend it:
-strategic rationale, feasibility argument, two follow-up decisions the choice forces, and two
-risks of the road not taken.
+**Part 1 — Diagnose.** Six signals in a signal bank. Each card opens inline into four steps: assign
+the area (Monitoring · Scaling · Data Flows · Architectural Principles · Management Logic · Team
+Priorities) with an on-demand Check that only says the area does not hold up and puts a directional
+clue behind one more click; tag the root cause (Measurement Gap / Architecture Decision); tag the
+horizon (Short-term visible / Structural); write the first concrete step. The report assembles on
+the right, and every line has an Edit button that reopens the card with its values intact. Ground
+truth, clues and a mentor answer key per signal (correct area, strongest wrong answer, load band,
+tag reasoning) live in `lib/route1/partOne.ts`.
 
-The ground-truth profiles are built so no option dominates: A wins on leverage and long-term
-effect but is weak on immediate impact and team acceptance; B wins on immediate measurable
-impact but is weak on leverage and carries execution risk; C wins on feasibility and
-measurability but shows nothing visible this quarter. Risk is the one inverted axis — higher
-is worse — and the material says so explicitly, because a radar chart otherwise implies a
-bigger polygon is a better option.
+**Handover.** Inline, never a gate: the learner's own tally ("You filed 6 findings: 3 measurement
+gaps, 3 architecture decisions — 2 fixable in the short term, 4 needing structural anchoring"),
+two SVG split bars, and one carried line of teaching.
 
-**One export.** `1-{name}-day11-l1l2task1.json` + `.html`. The HTML is a single print-ready
-report with a banner per part; the JSON keeps `partOne` (level 1: findings, correctness
-flags, reflection, summary) and `partTwo` (level 2: per-dimension prediction gaps,
-recommendation) as separate blocks, so a grader can still score the two levels independently
-out of one file.
+**Part 2 — Decide.** Five constraints stated once, then three measures as tabs (A expand
+monitoring, B architecture review, C targeted optimisation). Per measure: a situational question
+with explanatory feedback on every option; seven 1–10 prediction sliders drawing a dashed polygon
+live; Reveal fades the solid ground truth in over it (600 ms) and lists every dimension where the
+gap is three or more, with the reasoning behind the real value. The ground truth is built so no
+option dominates. Then the commit: three radio cards, strategic rationale, feasibility argument,
+two follow-up decisions, two risks of the road not taken. The mentor key gives the curriculum model
+answer (A coupled to a following architecture review) and states that a defended B or C is not
+marked wrong.
 
-## Route 2 — Management Decision
+**Export.** One JSON with `meta` (day, route, levels `[1,2]`, schema version), `partOne` (per
+signal: selected and expected area and tags, approach, check attempts, clue use; plus the tally)
+and `partTwo` (per measure: situational answer and correctness, prediction, ground truth, gaps,
+reveal state; plus the commit). One print-ready HTML report with a banner per part.
 
-Level 3, unchanged in substance from Day 10 and renumbered from Route 3. Two companies on
-purpose: **SoftPulse Digital Products GmbH** is a read-only worked example in the material,
-and **CodeVista Digital Platforms** is the case the learner actually works — CodeVista
-appears nowhere else in the course, so the task tests whether the reasoning transfers rather
-than whether AppNexa's specifics were memorised.
+## Route 2 — Management Decision (MetricFlow → NexLayer)
 
-**Material (A–D).** Why this reaches a board at all; RACI in full, with its one structural
-rule (exactly one Accountable) and the two ways it fails; the regulatory and professional
-backdrop (CSRD / ESRS E1, iSAQB CPSA Module GREEN, and the SOFT framework as the cautionary
-case of pilots that succeed technically and never scale); then the SoftPulse worked example.
+**Material, four sections.**
 
-**The task — CodeVista Board Memo.** Rank three of six guiding decisions and justify the top
-one; place five measures on a 2×2 trade-off map (momentum cost against structural impact);
-assign a RACI for ownership of the green coding standard; and name one decision that must be
-made now plus what waiting would cost. Exports as `1-{name}-day11-l3task1.json` + `.html`.
+- **A — Why this reaches a board at all.** A two-layer SVG: engineering symptoms below, six
+  management levers above (controllability, scaling, quality, investment, architecture principles,
+  long-term product responsibility), with no arrow terminating in the lower layer. Sources: CSRD /
+  ESRS E1, EU Energy Efficiency Directive (EU/2023/1791), ISO 50001, IEA *Energy and AI*.
+- **B — RACI in full.** A sandbox RACI grid (click to cycle blank → R → A → C → I) that live-validates
+  exactly one A per row, flags a missing R, and asks the authority question when an Accountable
+  cannot bind capacity; plus the two failure modes (diffused accountability, accountability without
+  authority). Sources: RACI in IT governance / COBIT, iSAQB Module GREEN.
+- **C — Holding a decision together under incomplete information.** A clickable 2×2 of four
+  decision postures (information available × cost of delay), the five-part recommendation, and the
+  three anchors against pilot purgatory. Sources: Snowden & Boone (HBR 2007), ISO 50001, SEI ATAM.
+- **D — Worked example: MetricFlow Digital Systems GmbH.** Read-only and dark-bannered: situation,
+  initial position, a reasoning SVG, the four levers, the prioritised first measure and the option
+  deliberately not taken, and the short / medium / structural sequence.
 
-## What's here
+**The NexLayer case** is briefed once, directly above the task, with the name field.
 
-- **Static export.** `output: "export"` — `npm run build` writes a plain static site to
-  `out/`, servable by anything. No backend, no auth, no runtime.
-- **Local-only state.** Zustand + `persist` to `localStorage` under the key
-  `aion-greenit-day11`, distinct from every other day's storage so several days can be open
-  in one browser without colliding.
-- **No extra libraries.** Native HTML5 drag events, CSS-only keyframe animation, inline SVG,
-  and a Blob download for export. Dependencies: `next`, `react`, `zustand`, `clsx`.
+**Task — four exercises**, with the NexLayer Board Memo assembling beside them:
+
+1. **Rank the guiding decisions** — three of seven: click to add, click to remove, arrows to
+   reorder, full undo/redo, then justify #1. "Test my ranking" never grades the order; it asks
+   whether the learner's own #1 changes what teams are required to do, with a clue behind a second
+   click.
+2. **The trade-off map** — five measures, two yes/no diagnostics each (momentum cost, structural
+   impact). The pair of answers places the measure, which then slides into its quadrant. The check
+   reports per measure, not per question, because naming which yes/no answer is wrong would be the
+   answer. Undo/redo on every change, remove-and-retry on every placed measure, and a required
+   one-line justification for every measure that lands in Strategic bets.
+3. **RACI** for ownership of the efficiency and architecture standard — the same grid component,
+   persisted, reporting structure only.
+4. **The decision that cannot wait** — decision, assumption, falsifier, cost of waiting.
+
+**Export.** JSON with `rankedDecisions`, `tradeOffMap` (answers, correctness, derived quadrant,
+retries, bet line), `raci` (full grid plus validation state) and `decisionNow`; HTML as a real
+board memo — recommendation, ranked decisions, the map as inline SVG plus a table, the RACI table,
+and the decision required now — printable to A4.
+
+## Shared components introduced on Day 11
+
+- `lib/materialSection.ts` — the section type both routes use (adds `code`, `standfirst`, `body`,
+  `minutes`, and a reference `detail`).
+- `components/ui/MaterialBlock.tsx` — rewritten to render the diagram before the prose.
+- `components/ui/MiniNav.tsx` — sticky section dots and the top progress bar.
+- `components/ui/LivePanel.tsx` — a sticky deliverable column on desktop, an expandable strip on
+  mobile.
+- `components/ui/RaciGrid.tsx` — the interactive, structure-only-validating RACI grid.
+- `components/ui/MissingList.tsx` — `MissingItem.before` opens a closed container before scrolling.
+- `components/ui/RadarChart.tsx` — `ringCount` for 0–10 scales and `showGrid` for fade-in overlays.
+
+## Standards both routes implement
+
+- **Itemized missing items**, every one a button that scrolls to and flashes the exact field —
+  opening a collapsed card or hidden tab on the way when needed.
+- **Export buttons are never disabled.** From an empty state they open the missing list and jump
+  to the first gap.
+- **Check on demand, clue not answer.**
+- **Undo/redo and retry** on every placement; completed cards stay editable.
+- **No hard locks** between routes or parts.
+- **Mentor tools once per route** — one auto-fill for everything, answer keys per exercise, shared
+  passcode `muchson123` in plaintext on purpose. The unlock flag is session-only, so a reload
+  re-locks the keys.
+- **Field instructions below the label**, never only in a placeholder.
+- **Material traceability** — `MaterialRefs` chips on every task step.
 
 ## Layout
 
 ```
 app/
-  page.tsx                          two route cards, each labelled with the levels it covers
-  route-1-diagnose-and-decide/      the merged engagement
-  route-2-management-decision/      level 3
+  page.tsx                          two route cards, labelled with the levels they cover
+  route-1-diagnose-and-decide/      DataWeave
+  route-2-management-decision/      MetricFlow → NexLayer
 lib/
-  routes.ts                         CASE identity + the two-entry ROUTES registry (with `levels`)
-  route1/
-    index.ts                        route identity: store keys, case, name field, bridge, export
-    sections.ts                     the A–J section ids, labels and anchor ids — one run
-    diagnosis.ts                    stage 1: material A–F, categories, flow graphs, six hotspots
-    decision.ts                     stage 2: material G–J, dimensions, three options, commit copy
-  route2.ts                         all of route 2's content
-  downloadFile.ts                   `exportFilename(name, levels[], taskNumber)` + Blob download
-  store.ts                          the generic Zustand + localStorage store, plus `useHydrated()`
+  routes.ts                         day identity + the two-entry registry
+  materialSection.ts                shared material section type
+  route1/  index · sections · material · partOne · partTwo
+  route2/  index · sections · material · task
+  downloadFile.ts                   exportFilename(name, levels[], taskNumber) + Blob download
+  store.ts                          Zustand + localStorage (key aion-greenit-day11), useHydrated()
 components/
-  route1/                           the merged route: CaseBrief, Material, StageOne, Bridge,
-                                    StageTwo, DiagnosisPanel, DecisionPanel, ExportBar, …
-  route2/                           route 2's own components
-  ui/                               cross-day shared components
+  route1/   CaseBrief · Material · MaterialDiagrams · PartOne · SignalCard · ReportPanel ·
+            Handover · PartTwo · MeasurePanel · CommitPanel · ExportBar · MentorTools · …
+  route2/   Material · MaterialDiagrams · CaseBrief · Task · RankExercise · MapExercise ·
+            RaciExercise · DecideNow · BoardMemo · ExportBar · MentorTools · …
+  ui/       cross-day shared components
 ```
-
-`lib/route1/` is a folder rather than one file because the route spans two levels: the two
-halves stay separately readable, while `index.ts` owns everything that must only be said
-once. Nothing outside the folder imports the halves directly — `@/lib/route1` is the module.
-
-## Standards both routes implement
-
-Interaction standards come from [`../CLAUDE.md`](../CLAUDE.md); content standards from
-[`../CURRICULUM-GUIDE.md`](../CURRICULUM-GUIDE.md).
-
-- **Itemized missing items, never a generic message.** `useRoute1().missing` derives one named
-  entry per concretely-missing thing ("Justification for Hotspot 3 — The Triple-Send
-  Notification"), across both stages, rendered through the shared `MissingList`. Every entry
-  is a button that scrolls to and flashes the exact field.
-- **The export button is never disabled.** Clicking it while incomplete opens the missing list
-  and jumps to the first gap — which may be four screens up, in stage 1.
-- **Check on demand, clue not answer.** The Check button speaks only to the category
-  placement, tells the learner only that it is wrong, and puts a directional hint behind one
-  more click. It never reveals the category, the lever or the fix type.
-- **Undo/redo and retry on placements.** Full history via `useFindingSortStore`, plus a
-  remove-and-retry affordance on every placed card that re-arms it for immediate replacement.
-- **No hard locks.** Either route is reachable regardless of the other's state; Route 2 shows
-  a soft order-suggestion banner only.
-- **Mentor tools, both of them, once per route.** `MentorFillButton` fills every persisted
-  field of the whole route — both stages — in one click; `AnswerKeyButton` unlocks a
-  per-exercise key giving the expected answer and a reason for *every* option including the
-  rejected ones. Shared passcode `muchson123`, in client-side plaintext on purpose — a gate
-  against accidental clicks, not security. The unlock flag lives in the store's non-persisted
-  session slice, so a reload re-locks it.
-- **Field instructions below the label**, never only in a placeholder.
-- **Every task step traces back to the material** via `MaterialRefs` chips that scroll to the
-  cited section and flash it in the accent (not the red missing-item flash).
 
 ## Running it
 
@@ -174,26 +185,17 @@ npm ci
 npm run dev
 ```
 
-The parent [`../.claude/launch.json`](../.claude/launch.json) has a `day11-dev` entry
-(`npm --prefix day11 run dev`) — `preview_start` reads the parent config, not this folder's.
-
-To produce the static site:
+The parent `../.claude/launch.json` has a `day11-dev` entry — `preview_start` reads the parent
+config, not this folder's.
 
 ```bash
 npm run build
 ```
 
-Output lands in `out/`. **Never run the build while the dev server is running** — both write
-to `.next`, after which the dev server serves 404s for `main-app.js` and nothing hydrates.
-The page still server-renders, so it looks fine while every click is dead.
-
-Typecheck on its own:
+Static output lands in `out/`. **Never run the build while the dev server is running** — both
+write to `.next`, after which the dev server serves 404s for `main-app.js` and nothing hydrates
+while the page still looks fine.
 
 ```bash
 npm run typecheck
 ```
-
-## Repository note
-
-This folder was cloned from the Day 10 repository, so `git remote origin` still points at
-`aion-green-it-day10.git`. Point it at a Day 11 repository before pushing.
