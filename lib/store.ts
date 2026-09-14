@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export const STORAGE_KEY = "aion-greenit-day11";
+export const STORAGE_KEY = "aion-greenit-day12";
 
 /**
  * Deliberately generic so the next module reuses it unchanged:
@@ -62,6 +62,12 @@ type Actions = {
   setAnswerKeyUnlocked: (value: boolean) => void;
   reset: () => void;
   resetSection: (sectionId: string, extraKeyPrefixes?: string[]) => void;
+  /**
+   * Clears every key that starts with one of `prefixes`, across all four maps
+   * (including `checks` and every `seen` bucket, which resetSection leaves
+   * alone), and bumps resetCount so component-local state remounts too.
+   */
+  resetPrefixes: (prefixes: string[]) => void;
 };
 
 const emptyProgress: ProgressState = {
@@ -130,6 +136,20 @@ export const useProgress = create<ProgressState & Session & Actions>()(
               ...s.sectionResets,
               [sectionId]: (s.sectionResets[sectionId] ?? 0) + 1,
             },
+          };
+        }),
+
+      resetPrefixes: (prefixes) =>
+        set((s) => {
+          const keep = (k: string) => !prefixes.some((p) => k.startsWith(p));
+          const strip = <V,>(rec: Record<string, V>) =>
+            Object.fromEntries(Object.entries(rec).filter(([k]) => keep(k))) as Record<string, V>;
+          return {
+            seen: strip(s.seen),
+            choices: strip(s.choices),
+            checks: strip(s.checks),
+            notes: strip(s.notes),
+            resetCount: s.resetCount + 1,
           };
         }),
     }),

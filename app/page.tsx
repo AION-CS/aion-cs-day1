@@ -22,11 +22,11 @@ export default function DayLanding() {
         </p>
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
-          Module 7, day two. A platform can be stable, fast and permanently wasteful at the same time — and classic
-          performance monitoring will never report it. Route 1 teaches the efficiency lens, the four load bands and the
-          architecture levers, then puts you inside DataWeave Applications to diagnose six signals and spend one quarter
-          of capacity. Route 2 steps up to the board: who decides, what becomes binding, and how a recommendation holds
-          before the data is in — worked through MetricFlow, then led at NexLayer.
+          Module 8. A network is capacity that has to be provisioned, powered, maintained, replaced and disposed of —
+          whether or not anyone is using it. Route 1 teaches what actually drives network energy, the levers and the
+          measurement standard behind them, IoT impact across a device&apos;s whole life, and the rebound mechanism behind
+          5G&apos;s efficiency claim — then puts you inside SmartLink Operations to diagnose six signals and commit to one
+          line of measures. Route 2, the management decision, is written next.
         </p>
       </div>
 

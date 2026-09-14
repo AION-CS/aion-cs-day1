@@ -29,7 +29,7 @@ export function TopBar() {
             </span>
           </Link>
 
-          <nav aria-label="Day 11 routes" className="ml-auto">
+          <nav aria-label={`${CASE.module} routes`} className="ml-auto">
             <ol className="flex items-center gap-1.5">
               {ROUTES.map((rt) => {
                 const active = pathname.includes(`/${rt.slug}`);
@@ -58,7 +58,7 @@ export function TopBar() {
                         {inner}
                       </Link>
                     ) : (
-                      <span className={cls} aria-disabled="true" title="Day 11 content for this route is not written yet">
+                      <span className={cls} aria-disabled="true" title={`${CASE.module} content for this route is not written yet`}>
                         {inner}
                       </span>
                     )}

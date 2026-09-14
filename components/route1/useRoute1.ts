@@ -3,264 +3,264 @@
 import { useProgress, useHydrated } from "@/lib/store";
 import type { MissingItem } from "@/components/ui/MissingList";
 import {
-  DIMENSIONS,
-  MEASURES,
+  APPROACH_FIELD,
+  COMMIT,
+  CRITERIA,
+  OPTION_IDS,
   R1,
   SIGNALS,
-  areaById,
-  measureById,
-  type AreaId,
-  type DimensionKey,
+  ZONES,
+  analyseJustification,
+  isOptionId,
+  isZoneId,
+  signalExcerpt,
+  type CriterionId,
   type Horizon,
-  type Measure,
-  type MeasureId,
+  type OptionId,
+  type Rank,
+  type Reading,
   type RootCause,
   type Signal,
+  type ZoneId,
 } from "@/lib/route1";
+import { parseSlots, type Slots } from "./ranking";
 
-/** DOM ids the missing-item list scrolls to and flashes. */
+/** DOM ids the missing list, the clues and the reference chips scroll to. */
 export const domId = {
   name: "r1-name",
 
   // Part 1
   partOne: "part-1",
+  board: "r1-board",
+  routingCheck: "r1-routing-check",
   signal: (id: string) => `r1-signal-${id}`,
-  area: (id: string) => `r1-signal-${id}-area`,
+  /** The Step B wrapper — present whether the questions are open or folded into the routed summary. */
+  stepB: (id: string) => `r1-signal-${id}-stepb`,
+  reading: (id: string) => `r1-signal-${id}-reading`,
+  bothWhy: (id: string) => `r1-signal-${id}-bothwhy`,
+  zone: (id: string) => `r1-signal-${id}-zone`,
+  /** Placeholder shown where Step D will open once the signal is routed. */
+  stepD: (id: string) => `r1-signal-${id}-stepd`,
+  approach: (id: string) => `r1-signal-${id}-approach`,
   rootCause: (id: string) => `r1-signal-${id}-root`,
   horizon: (id: string) => `r1-signal-${id}-horizon`,
-  approach: (id: string) => `r1-signal-${id}-approach`,
 
   handover: "r1-handover",
 
   // Part 2
   partTwo: "part-2",
-  measure: (id: MeasureId) => `r1-measure-${id}`,
-  situational: (id: MeasureId) => `r1-measure-${id}-situational`,
-  predict: (id: MeasureId) => `r1-measure-${id}-predict`,
-  reveal: (id: MeasureId) => `r1-measure-${id}-reveal`,
-  commit: "r1-commit",
-  pick: "r1-commit-pick",
-  rationale: "r1-commit-rationale",
-  feasibility: "r1-commit-feasibility",
-  followUp: (n: 1 | 2) => `r1-commit-followup-${n}`,
-  risk: (n: 1 | 2) => `r1-commit-risk-${n}`,
+  matrix: "r1-matrix",
+  criterion: (id: CriterionId) => `r1-rank-${id}`,
+  chosen: "r1-chosen",
+  justification: "r1-justification",
+  followUp: (n: 1 | 2) => `r1-followup-${n}`,
+  risks: "r1-risks",
+  risk: (n: 1 | 2) => `r1-risk-${n}`,
+  reasoningCheck: "r1-reasoning-check",
 
   export: "r1-export",
 };
 
-export type Finding = {
+export type SignalState = {
   signal: Signal;
-  area: AreaId | null;
+  reading: Reading | null;
+  bothWhy: string;
+  zone: ZoneId | null;
+  /** Both diagnostic questions answered — the card has left the intake. */
+  routed: boolean;
+  approach: string;
+  approachLength: number;
   rootCause: RootCause | null;
   horizon: Horizon | null;
-  approach: string;
-  checkAttempts: number;
-  clueUsed: boolean;
-  /** All four answers present — a finished line in Part 1 of the report. */
   complete: boolean;
 };
 
-export type MeasureState = {
-  measure: Measure;
-  situational: string | null;
-  situationalCorrect: boolean;
-  prediction: Partial<Record<DimensionKey, number>>;
-  predictedCount: number;
-  predictionComplete: boolean;
-  missingDimensions: string[];
-  revealed: boolean;
-};
+export type RiskTarget = { option: OptionId; mode: "notChosen" | "chosen" };
+
+const NO_STRINGS: Record<string, string> = {};
+const NO_BOOLS: Record<string, boolean> = {};
+
+const asReading = (v?: string): Reading | null => (v === "potential" || v === "risk" || v === "both" ? v : null);
+const asRoot = (v?: string): RootCause | null => (v === "technology" || v === "governance" ? v : null);
+const asHorizon = (v?: string): Horizon | null => (v === "short" || v === "structural" ? v : null);
 
 /**
  * Joins the shared progress store to Route 1's content — both parts, one hook.
  *
- * One route has one `missing` list and one definition of done (CLAUDE.md #12),
- * because one export button at the bottom has to be able to point at any gap
- * anywhere above it. Entries that live inside a collapsed signal card or a
- * hidden measure tab carry a `before` callback that opens the right container
- * first, so a missing item can never be a dead click.
+ * Until the store has hydrated it reads as empty, so the first client render
+ * matches the statically exported HTML. One route has one `missing` list and
+ * one definition of done (CLAUDE.md #12); entries pointing into a collapsed
+ * signal card carry a `before` that opens it first.
  */
 export function useRoute1() {
   const hydrated = useHydrated();
-  const notes = useProgress((s) => s.notes);
-  const choices = useProgress((s) => s.choices);
-  const seen = useProgress((s) => s.seen);
+  const rawNotes = useProgress((s) => s.notes);
+  const rawChoices = useProgress((s) => s.choices);
+  const rawChecks = useProgress((s) => s.checks);
   const choose = useProgress((s) => s.choose);
+
+  const notes = hydrated ? rawNotes : NO_STRINGS;
+  const choices = hydrated ? rawChoices : NO_STRINGS;
+  const checks = hydrated ? rawChecks : NO_BOOLS;
 
   const name = notes[R1.name] ?? "";
 
   // -- Part 1 ---------------------------------------------------------------
-  const cluesUsed = seen[R1.clues] ?? [];
-  const processedOrder = seen[R1.processed] ?? [];
-
-  const findings: Finding[] = SIGNALS.map((signal) => {
-    const rawArea = choices[R1.area(signal.id)];
-    const rawRoot = choices[R1.rootCause(signal.id)];
-    const rawHorizon = choices[R1.horizon(signal.id)];
-    const approach = (notes[R1.approach(signal.id)] ?? "").trim();
-    const area = rawArea ? (rawArea as AreaId) : null;
-    const rootCause =
-      rawRoot === "measurement" || rawRoot === "architecture" ? (rawRoot as RootCause) : null;
-    const horizon = rawHorizon === "short" || rawHorizon === "structural" ? (rawHorizon as Horizon) : null;
-    return {
-      signal,
-      area,
-      rootCause,
-      horizon,
-      approach,
-      checkAttempts: Number(notes[R1.checks(signal.id)] ?? "0") || 0,
-      clueUsed: cluesUsed.includes(signal.id),
-      complete: !!area && !!rootCause && !!horizon && approach.length > 0,
-    };
+  const signals: SignalState[] = SIGNALS.map((signal) => {
+    const reading = asReading(choices[R1.reading(signal.id)]);
+    const zoneRaw = choices[R1.zone(signal.id)];
+    const zone = isZoneId(zoneRaw) ? zoneRaw : null;
+    const bothWhy = notes[R1.bothWhy(signal.id)] ?? "";
+    const approach = notes[R1.approach(signal.id)] ?? "";
+    const approachLength = approach.trim().length;
+    const rootCause = asRoot(choices[R1.rootCause(signal.id)]);
+    const horizon = asHorizon(choices[R1.horizon(signal.id)]);
+    const routed = !!reading && !!zone;
+    const complete =
+      routed &&
+      approachLength >= APPROACH_FIELD.min &&
+      !!rootCause &&
+      !!horizon &&
+      (reading !== "both" || bothWhy.trim().length > 0);
+    return { signal, reading, bothWhy, zone, routed, approach, approachLength, rootCause, horizon, complete };
   });
 
-  const findingById = (id: string) => findings.find((f) => f.signal.id === id)!;
+  const routedSignals = signals.filter((s) => s.routed);
+  const zoneCounts = Object.fromEntries(
+    ZONES.map((z) => [z.id, routedSignals.filter((s) => s.zone === z.id).length]),
+  ) as Record<ZoneId, number>;
+  const countRouted = (pred: (s: SignalState) => boolean) => routedSignals.filter(pred).length;
 
-  /** Report lines in the order the learner first assigned an area to them. */
-  const reportRows = [
-    ...processedOrder.filter((id) => findings.find((f) => f.signal.id === id)?.area).map(findingById),
-    ...findings.filter((f) => f.area && !processedOrder.includes(f.signal.id)),
-  ];
-
-  const assignedCount = findings.filter((f) => f.area).length;
-  const completeCount = findings.filter((f) => f.complete).length;
-  const areaCorrectCount = findings.filter((f) => f.area === f.signal.area).length;
-  const measurementCount = findings.filter((f) => f.complete && f.rootCause === "measurement").length;
-  const architectureCount = findings.filter((f) => f.complete && f.rootCause === "architecture").length;
-  const shortCount = findings.filter((f) => f.complete && f.horizon === "short").length;
-  const structuralCount = findings.filter((f) => f.complete && f.horizon === "structural").length;
+  const tally = {
+    total: SIGNALS.length,
+    routed: routedSignals.length,
+    complete: signals.filter((s) => s.complete).length,
+    zonesUsed: ZONES.filter((z) => zoneCounts[z.id] > 0).length,
+    technology: countRouted((s) => s.rootCause === "technology"),
+    governance: countRouted((s) => s.rootCause === "governance"),
+    short: countRouted((s) => s.horizon === "short"),
+    structural: countRouted((s) => s.horizon === "structural"),
+    potential: countRouted((s) => s.reading === "potential"),
+    risk: countRouted((s) => s.reading === "risk"),
+    both: countRouted((s) => s.reading === "both"),
+  };
 
   // -- Part 2 ---------------------------------------------------------------
-  const revealedIds = seen[R1.revealed] ?? [];
-  const rawTab = choices[R1.tab];
-  const activeMeasure: MeasureId =
-    rawTab === "A" || rawTab === "B" || rawTab === "C" ? (rawTab as MeasureId) : "A";
+  const slots = Object.fromEntries(CRITERIA.map((c) => [c.id, parseSlots(choices[R1.rank(c.id)])])) as Record<
+    CriterionId,
+    Slots
+  >;
+  const ranks = Object.fromEntries(
+    CRITERIA.map((c) => [
+      c.id,
+      Object.fromEntries(
+        OPTION_IDS.map((o) => {
+          const i = slots[c.id].indexOf(o);
+          return [o, i >= 0 ? ((i + 1) as Rank) : null];
+        }),
+      ),
+    ]),
+  ) as Record<CriterionId, Record<OptionId, Rank | null>>;
 
-  const measureStates: MeasureState[] = MEASURES.map((measure) => {
-    const prediction: Partial<Record<DimensionKey, number>> = {};
-    const missingDimensions: string[] = [];
-    for (const d of DIMENSIONS) {
-      const raw = choices[R1.predict(measure.id, d.key)];
-      const v = raw ? Number(raw) : 0;
-      if (v >= 1) prediction[d.key] = v;
-      else missingDimensions.push(d.name);
-    }
-    const situational = choices[R1.situational(measure.id)] || null;
-    return {
-      measure,
-      situational,
-      situationalCorrect: !!measure.situational.options.find((o) => o.id === situational)?.correct,
-      prediction,
-      predictedCount: DIMENSIONS.length - missingDimensions.length,
-      predictionComplete: missingDimensions.length === 0,
-      missingDimensions,
-      revealed: revealedIds.includes(measure.id),
-    };
-  });
+  const placedIn = (c: CriterionId) => slots[c].filter(Boolean).length;
+  const rankedRows = CRITERIA.filter((c) => placedIn(c.id) === 3).length;
+  const rankSums = Object.fromEntries(
+    OPTION_IDS.map((o) => [o, CRITERIA.reduce((sum, c) => sum + (ranks[c.id][o] ?? 0), 0)]),
+  ) as Record<OptionId, number>;
+  const rankedFor = Object.fromEntries(
+    OPTION_IDS.map((o) => [o, CRITERIA.filter((c) => ranks[c.id][o] !== null).length]),
+  ) as Record<OptionId, number>;
+  const firstPlaces = Object.fromEntries(
+    OPTION_IDS.map((o) => [o, CRITERIA.filter((c) => ranks[c.id][o] === 1).length]),
+  ) as Record<OptionId, number>;
 
-  const measureStateById = (id: MeasureId) => measureStates.find((m) => m.measure.id === id)!;
-  const revealedCount = measureStates.filter((m) => m.revealed).length;
-  const allRevealed = revealedCount === MEASURES.length;
+  const chosenRaw = choices[R1.chosen];
+  const chosen: OptionId | null = isOptionId(chosenRaw) ? chosenRaw : null;
+  const justification = notes[R1.justification] ?? "";
+  const justificationLength = justification.trim().length;
+  const justificationSignals = analyseJustification(justification);
+  const followUps: [string, string] = [notes[R1.followUp(1)] ?? "", notes[R1.followUp(2)] ?? ""];
+  const risks: [string, string] = [notes[R1.risk(1)] ?? "", notes[R1.risk(2)] ?? ""];
 
-  const rawPick = choices[R1.pick];
-  const pick: MeasureId | null =
-    rawPick === "A" || rawPick === "B" || rawPick === "C" ? (rawPick as MeasureId) : null;
+  // The short-term-attractive option: lowest combined rank on Innovation + Feasibility.
+  let riskTarget: RiskTarget | null = null;
+  if (placedIn("innovation") === 3 && placedIn("feasibility") === 3) {
+    const score = (o: OptionId) => (ranks.innovation[o] ?? 3) + (ranks.feasibility[o] ?? 3);
+    const best = [...OPTION_IDS].sort(
+      (a, b) => score(a) - score(b) || (ranks.innovation[a] ?? 3) - (ranks.innovation[b] ?? 3) || a.localeCompare(b),
+    )[0];
+    riskTarget = { option: best, mode: chosen === best ? "chosen" : "notChosen" };
+  }
 
-  const rationale = (notes[R1.rationale] ?? "").trim();
-  const feasibility = (notes[R1.feasibility] ?? "").trim();
-  const followUp: [string, string] = [
-    (notes[R1.followUp(1)] ?? "").trim(),
-    (notes[R1.followUp(2)] ?? "").trim(),
-  ];
-  const risks: [string, string] = [
-    (notes[R1.risk(1)] ?? "").trim(),
-    (notes[R1.risk(2)] ?? "").trim(),
-  ];
-
-  // -- Missing list ---------------------------------------------------------
-  // Standard #1: one entry per concretely-missing thing, named, in page order.
+  // -- Missing list (standard #1: one entry per concrete gap, in page order) --
   const openSignal = (id: string) => () => choose(R1.openSignal, id);
-  const openTab = (id: MeasureId) => () => choose(R1.tab, id);
-
   const missingPartOne: MissingItem[] = [];
-  for (const f of findings) {
-    const who = `Signal ${f.signal.n} — ${f.signal.title}`;
-    if (!f.area) {
+
+  for (const s of signals) {
+    const who = `Signal ${s.signal.n} — "${signalExcerpt(s.signal)}"`;
+    const before = openSignal(s.signal.id);
+    if (!s.reading) {
+      missingPartOne.push({ id: domId.reading(s.signal.id), label: `${who}: potential/risk reading not selected`, before });
+    }
+    if (s.reading === "both" && !s.bothWhy.trim()) {
       missingPartOne.push({
-        id: domId.area(f.signal.id),
-        label: `Area for ${who}`,
-        before: openSignal(f.signal.id),
+        id: domId.bothWhy(s.signal.id),
+        label: `${who}: "Both" was selected but no one-line justification given`,
+        before,
       });
     }
-    if (!f.rootCause) {
+    if (!s.zone) {
+      missingPartOne.push({ id: domId.zone(s.signal.id), label: `${who}: area not selected, card still in Intake`, before });
+    }
+    const stepTarget = (field: string) => (s.routed ? field : domId.stepD(s.signal.id));
+    if (s.approachLength < APPROACH_FIELD.min) {
       missingPartOne.push({
-        id: domId.rootCause(f.signal.id),
-        label: `Root-cause tag for ${who}`,
-        before: openSignal(f.signal.id),
+        id: stepTarget(domId.approach(s.signal.id)),
+        label: `${who}: improvement approach is ${s.approachLength} characters, needs at least ${APPROACH_FIELD.min}`,
+        before,
       });
     }
-    if (!f.horizon) {
-      missingPartOne.push({
-        id: domId.horizon(f.signal.id),
-        label: `Horizon tag for ${who}`,
-        before: openSignal(f.signal.id),
-      });
+    if (!s.rootCause) {
+      missingPartOne.push({ id: stepTarget(domId.rootCause(s.signal.id)), label: `${who}: root cause not tagged`, before });
     }
-    if (!f.approach) {
-      missingPartOne.push({
-        id: domId.approach(f.signal.id),
-        label: `Improvement approach for ${who}`,
-        before: openSignal(f.signal.id),
-      });
+    if (!s.horizon) {
+      missingPartOne.push({ id: stepTarget(domId.horizon(s.signal.id)), label: `${who}: time horizon not tagged`, before });
     }
   }
 
   const missingPartTwo: MissingItem[] = [];
-  for (const m of measureStates) {
-    const who = `Measure ${m.measure.id} — ${m.measure.shortName}`;
-    if (!m.situational) {
+  for (const c of CRITERIA) {
+    const n = placedIn(c.id);
+    if (n < 3) {
       missingPartTwo.push({
-        id: domId.situational(m.measure.id),
-        label: `Situational question for ${who}`,
-        before: openTab(m.measure.id),
-      });
-    }
-    if (!m.predictionComplete) {
-      const n = m.missingDimensions.length;
-      missingPartTwo.push({
-        id: domId.predict(m.measure.id),
-        label: `Prediction for ${who} — ${n} dimension${n === 1 ? "" : "s"} not set (${m.missingDimensions.join(", ")})`,
-        before: openTab(m.measure.id),
-      });
-    }
-    if (!m.revealed) {
-      missingPartTwo.push({
-        id: domId.reveal(m.measure.id),
-        label: `Reveal the real profile for ${who}`,
-        before: openTab(m.measure.id),
+        id: domId.criterion(c.id),
+        label: `Criterion "${c.name}": ranking incomplete (${n} of 3 options placed)`,
       });
     }
   }
-  if (!pick) {
-    missingPartTwo.push({ id: domId.pick, label: "Your recommendation — pick one measure to commit to" });
+  if (!chosen) missingPartTwo.push({ id: domId.chosen, label: "Prioritised option not selected" });
+  if (justificationLength < COMMIT.justification.min) {
+    missingPartTwo.push({
+      id: domId.justification,
+      label: `Justification is ${justificationLength} characters, needs at least ${COMMIT.justification.min}`,
+    });
   }
-  if (!rationale) {
-    missingPartTwo.push({ id: domId.rationale, label: "Strategic rationale for your recommendation" });
-  }
-  if (!feasibility) {
-    missingPartTwo.push({ id: domId.feasibility, label: "Feasibility argument for your recommendation" });
-  }
-  if (!followUp[0]) {
-    missingPartTwo.push({ id: domId.followUp(1), label: "First follow-up decision this choice forces" });
-  }
-  if (!followUp[1]) {
-    missingPartTwo.push({ id: domId.followUp(2), label: "Second follow-up decision this choice forces" });
-  }
-  if (!risks[0]) missingPartTwo.push({ id: domId.risk(1), label: "First risk of the road not taken" });
-  if (!risks[1]) missingPartTwo.push({ id: domId.risk(2), label: "Second risk of the road not taken" });
+  ([1, 2] as const).forEach((n) => {
+    if (!followUps[n - 1].trim()) missingPartTwo.push({ id: domId.followUp(n), label: `Follow-up decision ${n} is empty` });
+  });
+  ([1, 2] as const).forEach((n) => {
+    if (!risks[n - 1].trim()) {
+      missingPartTwo.push({
+        id: domId.risk(n),
+        label: riskTarget
+          ? `Risk ${n} for Option ${riskTarget.option} is empty`
+          : `Risk ${n} is empty — rank Innovation benefit and Feasibility first so the option can be identified`,
+      });
+    }
+  });
 
   const missing: MissingItem[] = [
-    ...(name.trim() ? [] : [{ id: domId.name, label: "Your name — needed to label the export" }]),
+    ...(name.trim() ? [] : [{ id: domId.name, label: "Participant name not entered — export filename will be incomplete" }]),
     ...missingPartOne,
     ...missingPartTwo,
   ];
@@ -268,44 +268,36 @@ export function useRoute1() {
   return {
     hydrated,
     name,
+    mentorSample: !!checks[R1.mentorSample],
 
     // Part 1
-    findings,
-    reportRows,
-    assignedCount,
-    completeCount,
-    areaCorrectCount,
-    measurementCount,
-    architectureCount,
-    shortCount,
-    structuralCount,
-    totalSignals: SIGNALS.length,
+    signals,
+    signalState: (id: string) => signals.find((s) => s.signal.id === id)!,
+    zoneCounts,
+    tally,
     openSignalId: choices[R1.openSignal] || null,
 
     // Part 2
-    measureStates,
-    measureStateById,
-    activeMeasure,
-    revealedCount,
-    allRevealed,
-    totalMeasures: MEASURES.length,
-    pick,
-    pickedMeasure: pick ? measureById(pick) : null,
-    rationale,
-    feasibility,
-    followUp,
+    slots,
+    ranks,
+    placedIn,
+    rankedRows,
+    rankSums,
+    rankedFor,
+    firstPlaces,
+    chosen,
+    justification,
+    justificationLength,
+    justificationSignals,
+    followUps,
     risks,
+    riskTarget,
 
-    // route-wide
+    // Route-wide
     missingPartOne,
     missingPartTwo,
     missing,
-    partOneComplete: missingPartOne.length === 0,
-    partTwoComplete: missingPartTwo.length === 0,
     allComplete: missing.length === 0,
-
-    // helpers components need
-    areaName: (id: AreaId | null) => (id ? areaById(id).name : "— not assigned"),
   };
 }
 

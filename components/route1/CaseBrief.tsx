@@ -6,20 +6,21 @@ import { BRIEF_REFS, ENGAGEMENT, NAME_FIELD, R1, materialRefs } from "@/lib/rout
 import { useRoute1, domId } from "./useRoute1";
 
 /**
- * The case and the learner's name, stated once for the whole route.
- *
- * Both parts of the task run on this one engagement, so neither of them
- * re-introduces the company (CLAUDE.md #12). The name is collected here and is
- * what the single export filename is built from.
+ * The case and the learner's name, stated once for the whole route
+ * (CLAUDE.md #12). Both parts of the task run on this one engagement, so
+ * neither re-introduces the company. The name collected here is what the
+ * single export filename is built from.
  */
 export function CaseBrief() {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-line bg-mist p-5">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          {ENGAGEMENT.heading}
-        </p>
-        <p className="mt-1.5 max-w-prose text-body text-ash">{ENGAGEMENT.brief}</p>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">{ENGAGEMENT.heading}</p>
+        {ENGAGEMENT.brief.map((p, i) => (
+          <p key={i} className="mt-1.5 max-w-prose text-body text-ash">
+            {p}
+          </p>
+        ))}
         <p className="mt-2 max-w-prose text-body font-semibold text-ink">{ENGAGEMENT.mandate}</p>
         <p className="mt-2 max-w-prose text-caption text-ash">{ENGAGEMENT.deliverable}</p>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3">

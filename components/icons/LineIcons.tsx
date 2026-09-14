@@ -187,6 +187,32 @@ function Gauge({ className }: P) {
   );
 }
 
+// --- Day 12: network, IoT and 5G glyphs ------------------------------------
+
+/** A radio mast with two pairs of emission arcs — 5G and mobile radio access. */
+function Antenna({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 10.5 8 21M12 10.5 16 21M9.4 17.2h5.2" />
+      <circle cx="12" cy="8.8" r="1.6" />
+      <path d="M8.3 5.2a5.2 5.2 0 0 0 0 7.2M15.7 5.2a5.2 5.2 0 0 1 0 7.2" />
+      <path d="M5.6 2.8a8.8 8.8 0 0 0 0 12M18.4 2.8a8.8 8.8 0 0 1 0 12" />
+    </svg>
+  );
+}
+
+/** A small housed sensor transmitting — one connected IoT device. */
+function Sensor({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="11" width="10" height="9.5" rx="2" />
+      <circle cx="8" cy="15.75" r="1.8" />
+      <path d="M16 8.6a3.4 3.4 0 0 1 3.4 3.4" />
+      <path d="M15.5 5.5a6.5 6.5 0 0 1 6.5 6.5" />
+    </svg>
+  );
+}
+
 const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   coins: Coins,
   factory: Factory,
@@ -204,6 +230,8 @@ const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   network: Network,
   cycle: Cycle,
   gauge: Gauge,
+  antenna: Antenna,
+  sensor: Sensor,
 };
 
 export function Icon({ name, className }: { name: IconKey; className?: string }) {

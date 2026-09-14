@@ -1,3 +1,5 @@
+import { CASE } from "@/lib/routes";
+
 /**
  * Every route's export is a real file download (JSON + HTML) rather than a
  * window.print() flow — deliberately, per the "raw data for grading, formatted
@@ -20,13 +22,14 @@ const slugify = (v: string) =>
   v.trim().toLowerCase().replace(/\s+/g, "-").replace(/[\\/:*?"<>|]+/g, "-");
 
 /**
- * `{taskNumber}-{name}-day11-{levels}task{taskNumber}` e.g. `1-muchson-day11-l1l2task1`.
+ * `{taskNumber}-{name}-day{day}-{levels}task{taskNumber}` e.g. `1-muchson-day12-l1l2task1`.
  *
  * The leading number is the task's number *within its route*. `levels` lists
- * every curriculum level that route covers, in order — Day 11 merged L1 and L2
- * into Route 1, so that route exports as `l1l2task1` and Route 2 (L3 alone) as
- * `l3task1`. Passing the levels rather than hardcoding the string keeps the
- * filename tied to the route's actual scope (CURRICULUM-GUIDE.md §7).
+ * every curriculum level that route covers, in order — Route 1 merges L1 and
+ * L2, so it exports as `l1l2task1`, and Route 2 (L3 alone) as `l3task1`. The
+ * day number is read from the route registry rather than hardcoded, so a day
+ * folder copied forward cannot keep exporting under the previous day's name
+ * (CURRICULUM-GUIDE.md §7).
  */
 export function exportFilename(
   name: string,
@@ -35,5 +38,5 @@ export function exportFilename(
 ): string {
   const who = slugify(name) || "learner";
   const lvl = levels.map((l) => `l${l}`).join("");
-  return `${taskNumber}-${who}-day11-${lvl}task${taskNumber}`;
+  return `${taskNumber}-${who}-day${CASE.day}-${lvl}task${taskNumber}`;
 }

@@ -1,529 +1,525 @@
 /**
- * Part 2 — Decide. Level 2, ~15 minutes.
+ * Part 2 — Decide: the Decision Scorecard. Level 2, ~15 minutes.
  *
- * Three competing measures under a fixed constraint set. Per measure the
- * learner answers a situational question first (so the prediction is reasoned
- * rather than guessed), predicts a seven-dimension profile, then reveals the
- * real one. The gap between the dashed prediction and the solid truth is the
- * teaching material; there is no score.
+ * Three competing lines of measures, one of which SmartLink can prioritise.
+ * For each of the seven criteria of the lens taught in S6, the learner ranks
+ * A, B and C as 1, 2 and 3 — no ties, no sliders — and a live radar draws the
+ * three profiles out of those ranks. Then the commit: one option, a
+ * justification written the way S7 teaches, two follow-up decisions, and two
+ * risks of whichever option the learner's *own* ranking marks as the most
+ * attractive in the short term.
+ *
+ * Nothing here is scored for the learner. The expected ranks exist for the
+ * mentor answer keys and the export; the check only compares the learner's
+ * ranking with the learner's own justification.
  */
 
 import type { AnswerKeyBlock } from "@/lib/answerKey";
 import type { MaterialSectionId } from "./sections";
 
 // ---------------------------------------------------------------------------
-// The constraint set — stated once, above the measures
+// The brief — stated once, above the scorecard
 // ---------------------------------------------------------------------------
 
-export const CONSTRAINTS = [
-  {
-    n: 1,
-    label: "The budget is limited",
-    text: "One line of measures gets funded this quarter. There is no version of this decision in which two of them run properly.",
-  },
-  {
-    n: 2,
-    label: "Teams are under delivery pressure",
-    text: "Nothing has been taken out of the roadmap to make room for this work, and product management has not moved a date.",
-  },
-  {
-    n: 3,
-    label: "The data situation is incomplete",
-    text: "Nobody at DataWeave can yet say, with evidence, which application is the most expensive to run or why.",
-  },
-  {
-    n: 4,
-    label: "Architectural change is expensive",
-    text: "Larger structural changes are time- and coordination-intensive, and touch teams that do not report to the same person.",
-  },
-  {
-    n: 5,
-    label: "Management expects visible progress",
-    text: "Without a backlog of stalled innovation. Both halves of that sentence are real, and they pull in opposite directions.",
-  },
-] as const;
+export const BRIEF = {
+  paragraphs: [
+    "SmartLink can prioritise one line of measures now. Not two. The budget is limited, management expects visible innovation progress, the data on future energy and operating effects is incomplete, departments want new applications quickly, and IT and operations fear growing complexity and long-term follow-up costs.",
+    "Assess all three options against the 7-Criteria Lens, then commit.",
+  ],
+  constraints: [
+    "The budget is limited",
+    "Management expects visible innovation progress",
+    "Data on future energy and operating effects is incomplete",
+    "Departments want new applications quickly",
+    "IT and operations fear complexity and follow-up costs",
+  ],
+} as const;
 
 // ---------------------------------------------------------------------------
-// Dimensions
+// The three options
 // ---------------------------------------------------------------------------
 
-export type DimensionKey =
-  | "leverage"
-  | "transparency"
-  | "sustainability"
-  | "feasibility"
-  | "acceptance"
-  | "longterm"
-  | "risk";
+export type OptionId = "A" | "B" | "C";
+export const OPTION_IDS: OptionId[] = ["A", "B", "C"];
+export const isOptionId = (v: string | undefined): v is OptionId => v === "A" || v === "B" || v === "C";
 
-export type Dimension = {
-  key: DimensionKey;
-  /** Short label for the radar axis. */
-  label: string;
-  /** Full name in the slider list. */
+export type ScoreOption = {
+  id: OptionId;
+  short: string;
+  /** Verbatim from the curriculum. */
   name: string;
-  question: string;
-  /** Risk is the one axis where a higher value is worse. */
-  inverted?: boolean;
-};
-
-export const DIMENSIONS: Dimension[] = [
-  {
-    key: "leverage",
-    label: "Leverage",
-    name: "Strategic leverage",
-    question: "Does this make the next decision better, or only this one?",
-  },
-  {
-    key: "transparency",
-    label: "Transparency",
-    name: "Transparency impact",
-    question: "After this, can we attribute cost to cause where we could not before?",
-  },
-  {
-    key: "sustainability",
-    label: "Sustainability",
-    name: "Sustainability impact",
-    question: "How much resource consumption does this actually remove, not defer?",
-  },
-  {
-    key: "feasibility",
-    label: "Feasibility",
-    name: "Feasibility",
-    question: "Can this be delivered with the capacity that genuinely exists this quarter?",
-  },
-  {
-    key: "acceptance",
-    label: "Acceptance",
-    name: "Team acceptance",
-    question: "Will the teams affected support it without an escalation?",
-  },
-  {
-    key: "longterm",
-    label: "Long-term",
-    name: "Long-term effect",
-    question: "Is the effect still there in two years without anyone repeating the work?",
-  },
-  {
-    key: "risk",
-    label: "Risk ▲",
-    name: "Risk",
-    question: "How likely is this to stall, overrun or be reversed? Higher is worse.",
-    inverted: true,
-  },
-];
-
-export const dimensionByKey = (key: DimensionKey): Dimension =>
-  DIMENSIONS.find((d) => d.key === key)!;
-
-/** Axis set for the radar. */
-export const RADAR_AXES = DIMENSIONS.map((d) => ({ key: d.key, label: d.label, full: d.name }));
-
-export const PREDICT_MAX = 10;
-
-// ---------------------------------------------------------------------------
-// The three measures
-// ---------------------------------------------------------------------------
-
-export type MeasureId = "A" | "B" | "C";
-
-export type SituationalOption = {
-  id: string;
-  text: string;
-  correct?: boolean;
-  /** Shown immediately after selection — explains why it does or does not follow. */
-  feedback: string;
-};
-
-export type Measure = {
-  id: MeasureId;
-  shortName: string;
-  name: string;
-  summary: string;
-  /** What the measure concretely consists of, for the tab body. */
-  detail: string[];
+  /** "What this concretely means" — scope, so the learner assesses substance rather than a label. */
+  means: string[];
   material: MaterialSectionId[];
-  situational: {
-    question: string;
-    instruction: string;
-    options: SituationalOption[];
-    answerKey: AnswerKeyBlock;
-  };
-  profile: Record<DimensionKey, number>;
-  /** One sentence per dimension, shown after reveal where the gap is large. */
-  reveal: Record<DimensionKey, string>;
 };
 
-export const MEASURES: Measure[] = [
+export const OPTIONS: ScoreOption[] = [
   {
     id: "A",
-    shortName: "Expand monitoring",
-    name: "Expand monitoring with efficiency and resource indicators",
-    summary:
-      "Extend the existing telemetry with efficiency and resource indicators across applications and services, aggregated so that cost can be attributed to cause.",
-    detail: [
-      "Define the efficiency indicators every product must expose, and the aggregation that makes them comparable between products.",
-      "Add request attribution so a load peak can be traced to a workload rather than to a time of day.",
-      "Establish the review in which the numbers are read — the indicators are the cheap half, the standing meeting is the half that decides whether this changes anything.",
+    short: "Modernise the network",
+    name: "Modernising the network infrastructure with a focus on energy-efficient technologies and load management.",
+    means: [
+      "Replace or retire the oldest always-on equipment first, and enable load-adaptive operation — sleep states, night-time link and carrier deactivation — wherever traffic visibility allows it.",
+      "Consolidate parallel legacy layers with a customer-migration plan, instead of stacking the new generation on top.",
+      "Measure energy per site and per layer against a declared boundary, so the effect can be shown.",
+      "Capital-heavy and tied to replacement cycles. It changes how the network runs, not how new IoT and 5G use cases get approved.",
     ],
-    material: ["monitoring", "coupling"],
-    situational: {
-      question:
-        "Management wants visible progress this quarter. If you fund only the monitoring expansion, what do they actually see in three months?",
-      instruction:
-        "Answer from what the measure does, not from what you hope follows it.",
-      options: [
-        {
-          id: "a1",
-          text: "A measurable drop in infrastructure cost",
-          feedback:
-            "No. Monitoring removes no load by itself. Anything saved in month three came from a change someone made after reading it — which is a different measure, and one you did not fund.",
-        },
-        {
-          id: "a2",
-          text: "Numbers that finally explain the load, but no reduction in it yet",
-          correct: true,
-          feedback:
-            "Yes. That is exactly what this measure delivers and the limit of what it delivers: attribution, not reduction. Selling it as a saving is how a monitoring quarter gets read afterwards as a wasted one.",
-        },
-        {
-          id: "a3",
-          text: "Fewer incidents",
-          feedback:
-            "No. The incident pipeline already works — that is the classic posture from S1, and it is not what is missing here. Efficiency indicators are read on a cadence, not at 3 a.m.",
-        },
-        {
-          id: "a4",
-          text: "A simplified architecture",
-          feedback:
-            "No. Nothing in this measure changes a structure. It tells you which structure to change, which is valuable and is not the same thing.",
-        },
-      ],
-      answerKey: {
-        prompt: "Measure A — situational question",
-        items: [
-          {
-            option: "Numbers that explain the load, no reduction yet (expected)",
-            verdict: "pick",
-            why: "The honest three-month outcome. Naming it up front is what protects the measure politically: a sponsor who expected a saving will call this a failed quarter.",
-          },
-          {
-            option: "A measurable drop in infrastructure cost",
-            verdict: "avoid",
-            why: "Confuses the instrument with the intervention. Monitoring removes nothing; it locates what could be removed.",
-          },
-          {
-            option: "Fewer incidents",
-            verdict: "avoid",
-            why: "Incidents are the classic posture's domain and already covered. This measure is aimed at the waste that never pages anyone.",
-          },
-          {
-            option: "A simplified architecture",
-            verdict: "avoid",
-            why: "Simplification is measure B. Assuming it follows automatically from visibility is the most expensive optimism in this exercise.",
-          },
-        ],
-        teachingNote:
-          "Participants who pick the cost answer are usually arguing that transparency always produces quick wins. It sometimes does — but the exercise is about what you can promise a board, and an unpromised quick win is a bonus while a promised one you cannot deliver is a credibility loss.",
-      },
-    },
-    profile: {
-      leverage: 7,
-      transparency: 10,
-      sustainability: 5,
-      feasibility: 8,
-      acceptance: 7,
-      longterm: 7,
-      risk: 3,
-    },
-    reveal: {
-      leverage:
-        "7 — high but not maximal: it makes every later decision better without itself changing what teams are required to do.",
-      transparency:
-        "10 — this is the only measure of the three that raises transparency at all, and raising it is its entire purpose.",
-      sustainability:
-        "5 — middling on purpose. Attribution alone removes nothing; the saving comes from what the attribution then justifies.",
-      feasibility:
-        "8 — additive work on an existing pipeline, with no live customer path modified and no other team's roadmap touched.",
-      acceptance:
-        "7 — teams rarely object to being measured better, though some will read new indicators as surveillance until the review is framed as decisions rather than scores.",
-      longterm:
-        "7 — durable if the review cadence is established with it, and close to worthless if the dashboards ship without a meeting.",
-      risk: "3 — the lowest risk of the three (remember: lower is better here). The realistic failure is not technical, it is that nobody acts on the output.",
-    },
+    material: ["levers", "infrastructure"],
   },
   {
     id: "B",
-    shortName: "Architecture review",
-    name: "Architecture review to reduce inefficient structures",
-    summary:
-      "A systematic review aimed at reducing inefficient structures and unnecessary complexity, with the authority to require rework and the principles to test against.",
-    detail: [
-      "Identify the architecturally most problematic areas in priority order, rather than the most visible ones.",
-      "Introduce binding principles for resource-friendly, scalable, maintainable systems, so the review has something to test against.",
-      "Attach the review to a gate with a named owner who can require rework — a review without that authority produces a report.",
+    short: "Governance & architecture framework",
+    name: "Introducing a governance and architecture framework for IoT and 5G applications with sustainability and lifecycle criteria.",
+    means: [
+      "Approval criteria for every new IoT and 5G use case: an evidenced requirement, device density, power supply, data needs, support period and end-of-life route.",
+      "Criteria applied at procurement and architecture review — the point at which a device decision becomes a multi-year operating commitment.",
+      "A named owner for measuring enabling claims, with a review point for each approved use case.",
+      "Low capital, but it slows some approvals and disappoints the wish for visible progress this year; its effect accumulates over every later decision.",
     ],
-    material: ["architecture", "tradeoff", "coupling"],
-    situational: {
-      question:
-        "The architecture review will surface more work than the quarter can absorb. What is the first thing that must exist for it to be more than a report?",
-      instruction: "Think about what converts a finding into a change that actually lands.",
-      options: [
-        {
-          id: "b1",
-          text: "A larger budget",
-          feedback:
-            "No. More money with no one able to bind teams to the outcome produces a better-researched report. Budget is a constraint here, not the binding one.",
-        },
-        {
-          id: "b2",
-          text: "A named owner who can bind teams to the outcome",
-          correct: true,
-          feedback:
-            "Yes. A review is only real if someone can say 'this is required' and the requirement survives contact with a product roadmap. Without that, every finding is advice.",
-        },
-        {
-          id: "b3",
-          text: "A new monitoring tool",
-          feedback:
-            "No — and note the trap: tooling is measure A. A review that waits for perfect data never starts, and one that produces findings nobody must act on never lands.",
-        },
-        {
-          id: "b4",
-          text: "Agreement from every product team",
-          feedback:
-            "No. Unanimity is not available under delivery pressure, and requiring it hands every team a veto. Consultation yes; consent from all, no.",
-        },
-      ],
-      answerKey: {
-        prompt: "Measure B — situational question",
-        items: [
-          {
-            option: "A named owner who can bind teams (expected)",
-            verdict: "pick",
-            why: "Authority is the scarce input, not insight. This is the same failure mode Route 2 names as accountability without authority.",
-          },
-          {
-            option: "A larger budget",
-            verdict: "avoid",
-            why: "Money buys analysis. It does not buy the ability to require rework in someone else's quarter.",
-          },
-          {
-            option: "A new monitoring tool",
-            verdict: "avoid",
-            why: "Conflates the two measures. Better data improves the review's targeting; it does not make its findings binding.",
-          },
-          {
-            option: "Agreement from every product team",
-            verdict: "avoid",
-            why: "Consensus as a precondition is a veto in disguise, and under delivery pressure it will always be exercised.",
-          },
-        ],
-        teachingNote:
-          "Worth naming out loud: this is the question that separates an architecture review from an architecture opinion. If a participant argues for the budget option, ask who they would send the invoice to when a team declines the rework.",
-      },
-    },
-    profile: {
-      leverage: 10,
-      transparency: 4,
-      sustainability: 9,
-      feasibility: 3,
-      acceptance: 4,
-      longterm: 10,
-      risk: 8,
-    },
-    reveal: {
-      leverage:
-        "10 — the highest of the three: it changes what teams are required to design against, which is the definition of leverage.",
-      transparency:
-        "4 — a review produces findings about specific areas, not a standing ability to attribute cost to cause.",
-      sustainability:
-        "9 — this is where the structural savings actually live: redundant flows removed, scaling rules re-owned, shapes fixed rather than symptoms.",
-      feasibility:
-        "3 — the worst of the three. It needs senior capacity, cross-team coordination and authority that may not exist yet.",
-      acceptance:
-        "4 — low, and honestly so: it creates work for teams already committed, and the work is invisible to their customers.",
-      longterm: "10 — principles and a gate keep working after the programme ends, which is what nothing else here does.",
-      risk: "8 — high (higher is worse): the most common outcome is a finished analysis and an unfunded remediation backlog.",
-    },
+    material: ["system", "iot", "uncertainty"],
   },
   {
     id: "C",
-    shortName: "Targeted optimisation",
-    name: "Targeted technical optimisation of conspicuous applications",
-    summary:
-      "Direct optimisation of the handful of individual applications and services that are most visibly expensive right now.",
-    detail: [
-      "Pick the three most conspicuous services and fix what is measurably wrong in them.",
-      "Deliver a real, attributable saving inside the quarter, with no dependency on another team's roadmap.",
-      "Change nothing about the rule, principle or review that produced the pattern in the first place.",
+    short: "Accelerated IoT & 5G expansion",
+    name: "Accelerated expansion of IoT and 5G applications to realise innovation and efficiency potentials quickly.",
+    means: [
+      "Roll out the planned sensor, battery-device and 5G use cases in production and buildings, starting with the most visible applications.",
+      "Rely on the per-bit efficiency of new equipment and on expected enabling savings to carry the sustainability case.",
+      "Departments get new applications within the year, and management sees innovation progress.",
+      "No retirement plan for existing layers and no lifecycle criteria are part of the scope.",
     ],
-    material: ["load", "architecture", "tradeoff"],
-    situational: {
-      question:
-        "Optimising the three most conspicuous services will produce a real, measurable saving. What is the structural risk of stopping there?",
-      instruction: "Assume the saving is genuine. The question is what it does not do.",
-      options: [
+    material: ["fiveg", "iot"],
+  },
+];
+
+export const optionById = (id: OptionId): ScoreOption => OPTIONS.find((o) => o.id === id)!;
+
+// ---------------------------------------------------------------------------
+// The seven criteria
+// ---------------------------------------------------------------------------
+
+export type CriterionId =
+  | "leverage"
+  | "sustainability"
+  | "innovation"
+  | "feasibility"
+  | "risk"
+  | "longterm"
+  | "controllability";
+
+export type Rank = 1 | 2 | 3;
+
+export type Criterion = {
+  id: CriterionId;
+  name: string;
+  /** One-word label for the radar axis. */
+  axis: string;
+  definition: string;
+  /** Rendered under the criterion label in the matrix — the lens taught at the point of use. */
+  question: string;
+  misuse: string;
+  /** How the learner's justification would phrase an argument from this criterion. */
+  argues: string;
+  keywords: RegExp;
+  /** Model ranking for the mentor key and the export — never shown to the learner. */
+  expected: Record<OptionId, Rank>;
+  answerKey: AnswerKeyBlock;
+};
+
+export const CRITERIA: Criterion[] = [
+  {
+    id: "leverage",
+    name: "Strategic leverage",
+    axis: "Leverage",
+    definition: "How many downstream decisions this option improves.",
+    question: "What does this make easier that we will have to do anyway?",
+    misuse: "Confused with the size of the budget.",
+    argues: "leverage",
+    keywords: /\b(leverage|downstream|every (later|future|subsequent) decision|later decisions|future decisions)\b/i,
+    expected: { B: 1, A: 2, C: 3 },
+    answerKey: {
+      prompt: "Strategic leverage — model ranking B · A · C",
+      items: [
         {
-          id: "c1",
-          text: "The saving will be reversed by the next release",
-          feedback:
-            "Possible but not the structural risk. A specific fix usually survives the next release; what does not survive is the assumption that the estate is now fine.",
+          option: "B ranked 1",
+          verdict: "pick",
+          why: "Criteria for IoT and 5G approvals improve every later connectivity decision SmartLink will take anyway — the definition of leverage.",
         },
         {
-          id: "c2",
-          text: "The same pattern will reappear elsewhere because nothing changed the rule that produced it",
-          correct: true,
-          feedback:
-            "Yes. The three services were symptoms of a design practice nobody has changed. The fourth-most conspicuous service is already being written under the same conventions.",
+          option: "A ranked 2",
+          verdict: "pick",
+          why: "Modernisation improves the base every service runs on, but decides nothing about what gets connected next.",
         },
         {
-          id: "c3",
-          text: "Teams will lose motivation",
-          feedback:
-            "No. This is the measure teams usually enjoy — visible, self-contained, quickly finished. Popularity is precisely what makes it seductive.",
-        },
-        {
-          id: "c4",
-          text: "Monitoring costs will rise",
-          feedback:
-            "No. Optimisation does not meaningfully change telemetry cost, and even if it did, that is a rounding error against the point.",
+          option: "C ranked 3",
+          verdict: "pick",
+          why: "Expansion adds applications; it makes no later decision easier. A large budget is not leverage — the misuse the lens names.",
         },
       ],
-      answerKey: {
-        prompt: "Measure C — situational question",
-        items: [
-          {
-            option: "The pattern reappears elsewhere (expected)",
-            verdict: "pick",
-            why: "The saving is real and the mechanism that produced the waste is untouched, so the estate regenerates the problem at its own pace.",
-          },
-          {
-            option: "The saving will be reversed by the next release",
-            verdict: "avoid",
-            why: "Sometimes true, but it describes a fragile fix rather than the structural gap. Do not let a participant settle here — it sounds structural and is not.",
-          },
-          {
-            option: "Teams will lose motivation",
-            verdict: "avoid",
-            why: "The opposite is the risk: this measure is popular, finishes fast and produces a number to celebrate, which is what makes it so easy to choose.",
-          },
-          {
-            option: "Monitoring costs will rise",
-            verdict: "avoid",
-            why: "Not a material effect, and it points at the wrong measure entirely.",
-          },
-        ],
-        teachingNote:
-          "C is not worthless and should never be taught as a trap. It is a real saving with no durability — the 'short-term visible but structurally weak' option the curriculum warns about. The professional error is choosing it and reporting it as if the problem were solved.",
-      },
+      teachingNote:
+        "A learner who ranks A first usually argues that load management and per-site measurement create the evidence base every later decision needs. That is a defensible leverage argument if the justification says so explicitly.",
     },
-    profile: {
-      leverage: 3,
-      transparency: 3,
-      sustainability: 4,
-      feasibility: 9,
-      acceptance: 9,
-      longterm: 2,
-      risk: 4,
+  },
+  {
+    id: "sustainability",
+    name: "Sustainability impact",
+    axis: "Sustainability",
+    definition: "Effect on energy, emissions and lifecycle burden across the boundary you declared.",
+    question: "Over what perimeter and compared to what?",
+    misuse: "Counted without a boundary.",
+    argues: "sustainability impact",
+    keywords: /\b(sustainab\w*|emissions?|energy (use|consumption|demand|saving)|footprint|lifecycle burden)\b/i,
+    expected: { A: 1, B: 2, C: 3 },
+    answerKey: {
+      prompt: "Sustainability impact — model ranking A · B · C",
+      items: [
+        {
+          option: "A ranked 1",
+          verdict: "pick",
+          why: "Directly reduces network energy inside the declared perimeter — always-on draw and legacy layers — and the reduction can be measured against a baseline.",
+        },
+        {
+          option: "B ranked 2",
+          verdict: "pick",
+          why: "Prevents device, data and layer growth that has not happened yet. Over a multi-year perimeter that includes devices it can rank first; over this year's network perimeter it ranks second.",
+        },
+        {
+          option: "C ranked 3",
+          verdict: "pick",
+          why: "Adds devices, data and 5G layers. Per-bit efficiency and enabling savings are claims until measured, and rebound works against them.",
+        },
+      ],
+      teachingNote:
+        "This is the criterion where the boundary decides the rank (S5: compared to what, over which perimeter?). B first is correct if the learner declares a device-inclusive, multi-year perimeter. Any ranking here without a stated perimeter is the misuse.",
     },
-    reveal: {
-      leverage: "3 — it changes three services and nothing about how the next three get written.",
-      transparency:
-        "3 — you learn a lot about those three services and nothing generalisable about the estate.",
-      sustainability:
-        "4 — a real saving, bounded by the size of three services and eroded as new ones are added under unchanged conventions.",
-      feasibility: "9 — the easiest of the three to deliver: self-contained, no cross-team dependency, finishes inside the quarter.",
-      acceptance: "9 — the most popular. Visible, technical, satisfying, and nobody has to renegotiate a roadmap.",
-      longterm: "2 — the lowest score in the entire matrix, and the honest one: nothing about it persists structurally.",
-      risk: "4 — low delivery risk (lower is better). The real risk is political rather than technical: a celebrated saving that closes the question for two years.",
+  },
+  {
+    id: "innovation",
+    name: "Innovation benefit",
+    axis: "Innovation",
+    definition: "New capability that creates real business options.",
+    question: "Which department can do something new on Monday?",
+    misuse: "Equated with the novelty of the technology.",
+    argues: "innovation",
+    keywords: /\b(innovat\w*|new capabilit\w*|new applications?|business options?)\b/i,
+    expected: { C: 1, A: 2, B: 3 },
+    answerKey: {
+      prompt: "Innovation benefit — model ranking C · A · B",
+      items: [
+        {
+          option: "C ranked 1",
+          verdict: "pick",
+          why: "Delivers new applications to departments within the year — someone really can do something new on Monday.",
+        },
+        {
+          option: "A ranked 2",
+          verdict: "pick",
+          why: "A modern, load-managed network creates capability later use cases build on, but no department gets a new application from it.",
+        },
+        {
+          option: "B ranked 3",
+          verdict: "pick",
+          why: "A framework filters and sequences innovation; by itself it creates no new capability.",
+        },
+      ],
+      teachingNote:
+        "B at 2 defends if the learner argues that clear approval criteria unblock use cases that currently stall. Ranking C first because 5G is new, rather than because a department gains an option, is the misuse to watch for.",
+    },
+  },
+  {
+    id: "feasibility",
+    name: "Feasibility",
+    axis: "Feasibility",
+    definition: "Can be executed with current budget, skills and organisational capacity.",
+    question: "Who executes this, and what do they stop doing?",
+    misuse: "Assessed by the vendor, not by operations.",
+    argues: "feasibility",
+    keywords: /\b(feasib\w*|budget|capacity to (execute|deliver)|skills|can be (executed|delivered))\b/i,
+    expected: { B: 1, C: 2, A: 3 },
+    answerKey: {
+      prompt: "Feasibility — model ranking B · C · A",
+      items: [
+        {
+          option: "B ranked 1",
+          verdict: "pick",
+          why: "Low capital and executable with existing architecture and procurement roles. Its demand is organisational: someone has to own the criteria.",
+        },
+        {
+          option: "C ranked 2",
+          verdict: "pick",
+          why: "Vendors can deliver quickly and departments are pulling for it, but IT and operations absorb the integration and operating complexity.",
+        },
+        {
+          option: "A ranked 3",
+          verdict: "pick",
+          why: "Capital-heavy, bound to replacement cycles and migration plans, under a limited budget.",
+        },
+      ],
+      teachingNote:
+        "A at 2 and C at 3 also defend if the learner assesses feasibility strictly from the operations side — who executes this, and what do they stop doing? What does not defend is ranking C first because the vendor says it is quick.",
+    },
+  },
+  {
+    id: "risk",
+    name: "Risk",
+    axis: "Risk",
+    definition: "Exposure if assumptions prove wrong.",
+    question: "What breaks if our traffic forecast is wrong by a factor of two?",
+    misuse: "Reduced to technical risk only.",
+    argues: "low risk",
+    keywords: /\b(low(er)? risk|least exposure|exposure|bounded|reversib\w*)\b/i,
+    expected: { B: 1, A: 2, C: 3 },
+    answerKey: {
+      prompt: "Risk (1 = least exposure) — model ranking B · A · C",
+      items: [
+        {
+          option: "B ranked 1",
+          verdict: "pick",
+          why: "If traffic or device forecasts are wrong by a factor of two, the criteria still apply and can be revised at the next review. Little is sunk.",
+        },
+        {
+          option: "A ranked 2",
+          verdict: "pick",
+          why: "Capital is committed on a dimensioning assumption, but the gains on retired and load-managed equipment hold whatever traffic does.",
+        },
+        {
+          option: "C ranked 3",
+          verdict: "pick",
+          why: "Devices, 5G layers and data flows are committed on forecast use cases. If the forecasts are wrong, the fleet and the layers stay.",
+        },
+      ],
+      teachingNote:
+        "Risk here is the exposure if assumptions prove wrong. A learner who ranks A first 'because the hardware is proven' has reduced risk to technical risk — the misuse the lens names.",
+    },
+  },
+  {
+    id: "longterm",
+    name: "Long-term effect",
+    axis: "Long-term",
+    definition: "Whether the benefit persists after the project ends.",
+    question: "Does this still help in year four?",
+    misuse: "Confused with project duration.",
+    argues: "long-term effect",
+    keywords: /\b(long[- ]term|year four|persist\w*|durable|lasting|years? to come)\b/i,
+    expected: { B: 1, A: 2, C: 3 },
+    answerKey: {
+      prompt: "Long-term effect — model ranking B · A · C",
+      items: [
+        {
+          option: "B ranked 1",
+          verdict: "pick",
+          why: "Criteria keep shaping decisions after the project ends — it still helps in year four.",
+        },
+        {
+          option: "A ranked 2",
+          verdict: "pick",
+          why: "Retired layers stay retired and efficient hardware keeps saving, but the benefit ages with the equipment and does nothing for new connectivity.",
+        },
+        {
+          option: "C ranked 3",
+          verdict: "pick",
+          why: "Leaves a larger fleet, more data and more layers to operate for years. The operating load certainly persists; the benefit is unproven.",
+        },
+      ],
+      teachingNote:
+        "Confusing long-term effect with project duration is the misuse: C is the longest-running commitment, not the longest-lasting benefit.",
+    },
+  },
+  {
+    id: "controllability",
+    name: "Controllability",
+    axis: "Control",
+    definition: "Whether the result can be measured, steered and reversed.",
+    question: "How would we know this failed, and could we stop it?",
+    misuse: "Assumed because a dashboard exists.",
+    argues: "controllability",
+    keywords: /\b(controllab\w*|measurable|steer\w*|could (stop|reverse) it)\b/i,
+    expected: { A: 1, B: 2, C: 3 },
+    answerKey: {
+      prompt: "Controllability — model ranking A · B · C",
+      items: [
+        {
+          option: "A ranked 1",
+          verdict: "pick",
+          why: "Measurable per site and per layer against a declared boundary, steerable through load settings, and partly reversible — sleep windows can be changed.",
+        },
+        {
+          option: "B ranked 2",
+          verdict: "pick",
+          why: "Measurable through approvals and exceptions, but its sustainability effect is indirect and only visible over time.",
+        },
+        {
+          option: "C ranked 3",
+          verdict: "pick",
+          why: "Enabling savings are hard to measure and deployments are hard to reverse once devices are installed and layers built.",
+        },
+      ],
+      teachingNote:
+        "B at 1 defends if the learner defines controllability over decisions rather than over energy: every approval is a visible, reversible control point. 'We will have a dashboard' is not controllability.",
     },
   },
 ];
 
-export const measureById = (id: MeasureId): Measure => MEASURES.find((m) => m.id === id)!;
+export const criterionById = (id: CriterionId): Criterion => CRITERIA.find((c) => c.id === id)!;
+
+/** Rank 1 plots on the outer ring, rank 3 on the inner. */
+export const rankToRadar = (rank: Rank | null): number => (rank ? 4 - rank : 0);
+
+/** Mentor demo ranking: plausible practitioner judgement, deliberately not the model ranking. */
+export const SAMPLE_RANKS: Record<CriterionId, [OptionId, OptionId, OptionId]> = {
+  leverage: ["B", "A", "C"],
+  sustainability: ["B", "A", "C"],
+  innovation: ["C", "A", "B"],
+  feasibility: ["B", "C", "A"],
+  risk: ["B", "A", "C"],
+  longterm: ["B", "A", "C"],
+  controllability: ["A", "B", "C"],
+};
 
 // ---------------------------------------------------------------------------
-// The commit panel
+// The matrix and the radar
 // ---------------------------------------------------------------------------
+
+export const MATRIX = {
+  title: "Rank the three options on each criterion",
+  instruction:
+    "Drag each option into a rank slot, or use its rank selector. Every row needs a 1, a 2 and a 3 — no ties. Giving an option a rank that is already taken swaps the two.",
+  rankRule:
+    "Rank 1 = the strongest option on this criterion. For Risk, strongest means the least exposure if your assumptions prove wrong.",
+  unranked: "not fully ranked",
+  tray: "Not yet ranked",
+};
+
+export const RADAR = {
+  title: "Your ranking as a profile",
+  howToRead:
+    "Rank 1 plots on the outer ring, rank 3 on the inner. Each option has its own line pattern and marker shape, so the chart does not rely on colour.",
+  caveat:
+    "Rank sum is a summary of your own judgement, not a score of correctness — a low sum does not automatically mean the right choice.",
+};
+
+// ---------------------------------------------------------------------------
+// The commit
+// ---------------------------------------------------------------------------
+
+export const JUSTIFICATION_TEMPLATE =
+  "We recommend X. This assumes Y. If [specific indicator] shows Z by [review point], we revise. The cost of being wrong is bounded because [reversibility mechanism].";
 
 export const COMMIT = {
-  pick: {
-    label: "Which measure do you recommend?",
+  chosen: {
+    label: "Prioritised option",
     instruction:
-      "There is no single correct letter. You are assessed on whether the argument below survives the constraints — not on which option you choose.",
+      "The option with the best rank sum is not automatically your answer. Weighting is a judgement you own.",
   },
-  rationale: {
-    label: "Strategic rationale",
-    instruction: "Why this one, given the constraints above. Argue from leverage, not from convenience.",
-    placeholder:
-      "e.g. DataWeave cannot currently name its most expensive workload, so any rework funded this quarter is…",
-    sample:
-      "DataWeave cannot today name which workload is most expensive or why, so any rework funded this quarter is a bet placed with someone else's money. Measure A scores 10 on transparency against B's 4, and that gap is the whole argument: it converts next quarter's decision from an argument into an evidence review. I am recommending A explicitly coupled to an architecture review in the following quarter — A on its own scores 5 on sustainability impact, and that is the number a board will eventually ask about.",
-  },
-  feasibility: {
-    label: "Feasibility argument",
+  justification: {
+    label: "Justification under incomplete information",
     instruction:
-      "How it survives contact with limited budget and delivery pressure. Name what you would not do in order to do this.",
-    placeholder: "e.g. Instrumentation runs alongside the roadmap rather than competing with it, because…",
+      "At least 250 characters. State your assumption, what would falsify it, and the review point. The S7 template is available below if you want it.",
+    placeholder: "We recommend … This assumes … If … shows … by …, we revise. The cost of being wrong is bounded because …",
+    min: 250,
     sample:
-      "Instrumentation is additive: it runs alongside the feature roadmap rather than taking sprints out of it, which is why A scores 8 on feasibility where B scores 3. What we will not do this quarter is start the consolidation of the redundant customer-record flow, even though it is the largest single structural finding — it needs cross-team capacity we do not have and would be the fastest route to a stalled programme.",
+      "We recommend Option B, the governance and architecture framework for IoT and 5G. This assumes that most of SmartLink's future energy and material burden will come from what gets connected next — sensors, battery devices and 5G layers — rather than from the existing network. If the first quarterly energy report shows that the always-on legacy network accounts for most of the measured consumption across the declared perimeter (network sites plus the first sensor fleet, compared with last year's baseline) by the Q2 review, we revise and bring modernisation forward. The cost of being wrong is bounded because the criteria cost little capital and can be amended at any quarterly review.",
   },
   followUp: {
     label: (n: number) => `Follow-up decision ${n}`,
-    instruction: "Decisions that become unavoidable the moment this is funded.",
-    placeholder: "e.g. Who owns the efficiency indicator once it exists, and what they are allowed to require…",
+    instruction: "A follow-up decision has an owner and a date. 'Monitor the situation' is not a decision.",
+    placeholder: "e.g. The CIO decides by 30 June who signs off device density per building.",
     samples: [
-      "By month three, management has to decide whether the architecture review gets funded capacity next quarter or whether the findings become a standing input to roadmap planning — A without that sequel is a dashboard.",
-      "Someone has to own the efficiency indicators the moment they exist: the architecture guild or each product lead. If nobody owns them by the first review, the review becomes a status report.",
+      "The CIO names the owner of the approval criteria by the end of Q1, including who may grant an exception for a production-critical use case.",
+      "Facilities and production IT decide by the Q2 review which already-ordered sensor rollouts are paused until they meet the new criteria.",
     ],
   },
-  risk: {
-    label: (n: number) => `Risk of the road not taken ${n}`,
+  risks: {
+    label: (n: number) => `Risk ${n}`,
+    promptNotChosen: (option: OptionId) =>
+      `You rated Option ${option} highest on short-term attractiveness. Name two risks of choosing it.`,
+    promptChosen: "You chose the option you rated most attractive in the short term. Name the two risks you are accepting.",
+    promptUnknown:
+      "Rank Innovation benefit and Feasibility first — this question is built from your own ranking of those two rows.",
+    howComputed:
+      "Short-term attractiveness is read from your own ranks on Innovation benefit plus Feasibility: the option with the lowest combined rank.",
     instruction:
-      "Specifically: what goes wrong if the short-term-visible but structurally weak option is chosen instead?",
-    placeholder: "e.g. Choosing C produces a saving and closes the question for two years, because…",
+      "Name a concrete consequence, not a general worry — a layer that stays on, a fleet that needs replacing, a saving that is never measured.",
     samples: [
-      "Choosing C produces a celebrated saving and closes the question: the three services are fixed, the conventions that produced them are not, and the fourth-most expensive service is already being written the same way.",
-      "Not funding B at all means every service built during this measurement quarter is designed under unchanged conventions — so we will be measuring a problem we are still actively adding to.",
+      "Accelerating C adds 5G layers alongside the existing network without a retirement plan, so total energy rises even though every radio unit is more efficient per bit.",
+      "Thousands of sensors and battery devices would be bought before any lifecycle criteria exist, locking SmartLink into a replacement and e-waste programme for years.",
     ],
   },
   answerKey: {
-    prompt: "Commit — which measure, and on what grounds",
+    prompt: "Commit — which option, and on what grounds",
     items: [
       {
-        option: "A, explicitly coupled to a following architecture review (curriculum model answer)",
+        option: "B — governance and architecture framework (curriculum model answer)",
         verdict: "pick",
-        why: "It creates transparency about causes rather than symptoms, improves the quality of every later architecture decision, reduces the risk of untargeted optimisation, and connects technical observation to management responsibility in one framework. The coupling is the part that matters — A on its own is a dashboard.",
+        why: "Low capital under a limited budget, the lowest exposure if the incomplete data proves wrong, and the only option that answers Signal 6 and the device, battery and 5G signals before they become commitments. It disappoints management's wish for visible innovation — a strong justification names that.",
       },
       {
-        option: "B — architecture review first",
+        option: "A — network modernisation",
         verdict: "pick",
-        why: "Defensible, and not marked wrong. It has the highest leverage and long-term effect in the matrix. A learner choosing it must handle feasibility 3, acceptance 4 and risk 8 explicitly — normally by naming the owner who can bind teams and by scoping the review to two areas rather than the estate.",
+        why: "Defensible, and not marked wrong. Strongest on controllability and on measurable near-term impact inside the network perimeter. A learner choosing A must handle the budget constraint and say what governs the IoT and 5G expansion in the meantime.",
       },
       {
-        option: "C — targeted optimisation first",
+        option: "C — accelerated expansion",
         verdict: "avoid",
-        why: "Only defensible as an explicitly temporary move: a credibility purchase that buys the political room to fund A or B next. A learner who chooses C and does not name what it fails to change has made the exact error the case is built to expose.",
+        why: "Only defensible as an explicitly bounded pilot with measurement and a retirement plan attached — at which point it borrows B's content. Chosen as written, it is the short-term-attractive, structurally weak option the task is built to expose.",
       },
     ],
     teachingNote:
-      "Assessment criteria, in order: (1) does the argument survive the stated constraints, (2) are monitoring and architecture connected rather than treated as alternatives, (3) is short-term optimisation distinguished from structural improvement, (4) does the learner name what they are giving up. A well-argued B scores higher than a weakly-argued A. The one answer that fails is any choice presented as having no cost.",
+      "Assess in this order: (1) the justification states an assumption, a falsification condition and a review point; (2) the ranking and the justification agree, or the weighting is explained; (3) sustainability impact is argued with a boundary and a comparison; (4) the two risks are concrete and belong to the auto-identified option. A well-argued A scores higher than a weakly argued B.",
   } as AnswerKeyBlock,
+};
+
+/** Heuristic read of a justification — used for the soft inline checker, the clues and the export. */
+export type JustificationSignals = {
+  assumption: boolean;
+  falsifier: boolean;
+  reviewPoint: boolean;
+  boundary: boolean;
+};
+
+export function analyseJustification(text: string): JustificationSignals {
+  return {
+    assumption: /\b(assum\w*|provided that|on the premise)\b/i.test(text),
+    falsifier:
+      /\bif\b[^.]{0,200}\b(shows?|falls?|rises?|exceeds?|drops?|stays?|remains?|misses?|fails?|below|above|does not|doesn't)\b|\bunless\b|\bwe (will )?(revise|stop|reverse|reconsider)\b|\bfalsif\w*/i.test(text),
+    reviewPoint:
+      /\b(review|revisit|re-?assess\w*|checkpoint|milestone)\b|\bby (the )?(end of )?(q[1-4]|january|february|march|april|may|june|july|august|september|october|november|december|month|quarter|year)\b|\b(in|after|within) (\d+|one|two|three|four|six|nine|twelve) (weeks?|months?|quarters?|years?)\b|\bq[1-4]\b/i.test(
+        text,
+      ),
+    boundary: /\b(perimeter|boundary|baseline|compared (to|with)|counterfactual|versus|relative to)\b/i.test(text),
+  };
+}
+
+export const REASONING_CHECK = {
+  label: "Check my reasoning",
+  recheckLabel: "Check again",
+  lead: "Clues from your ranking and your justification",
+  clean:
+    "Your ranking and your justification do not contradict each other on anything the check can read. It cannot judge the argument itself — read it once more against the stated constraints.",
+  noChoice:
+    "Choose a prioritised option first — the check reads your justification against your own ranking of that option.",
+  flat: (option: OptionId) =>
+    `No option is superior on every dimension — you ranked Option ${option} first on all seven. Re-read your Risk and Feasibility rows against the stated budget constraint.`,
+  mismatch: (argues: string) =>
+    `Your justification argues for ${argues}, but your own ranking places this option last on that criterion. One of the two needs revisiting.`,
+  noBoundary: "S5 asked 'compared to what, over which perimeter?' — your justification does not yet say.",
+  noReview: "Your justification does not yet name a review point — when would you know whether to revise?",
+  noFalsifier:
+    "Your justification does not yet say what would falsify it — which indicator, showing what, would make you change course?",
+};
+
+export const SOFT_CHECK = {
+  review: "No review point detected yet — when will you look at this again?",
+  falsifier: "No falsification condition detected yet — what result would make you revise?",
+  ok: "An assumption, a falsification condition and a review point all appear to be there.",
+  note: "A soft check that reads your wording. It never blocks the export.",
 };
 
 export const PART_TWO = {
   id: "part-2",
-  tag: "PART 2 · DECIDE",
-  title: "One quarter, three measures, one funded",
+  tag: "PART 2 · DECIDE — THE DECISION SCORECARD",
+  title: "One line of measures, not two",
   minutes: 15,
-  framing:
-    "Management will fund exactly one of these three lines of measures. For each one: answer the situational question, predict its profile across the seven decision dimensions, then reveal the real profile — the gap between your dashed prediction and the solid truth is the part worth reading. Work them in any order, compare as often as you like, then commit to one and defend it, including the two risks of the road you did not take.",
-  predictInstruction:
-    "Set all seven before you reveal — the overlay only means something if there is a guess to compare it against.",
-  revealLabel: "Reveal the real profile",
-  revealedLabel: "Real profile revealed",
-  invertedNote: "Risk is inverted — on this axis a larger value is worse.",
-  gapHeading: "Where your prediction and the real profile differ most",
-  gapEmpty: "Your prediction was within two points on every dimension. Read the profile notes anyway — the reasoning matters more than the numbers.",
+  meansLabel: "What this concretely means",
+  templateLabel: "Show the S7 justification template",
 };

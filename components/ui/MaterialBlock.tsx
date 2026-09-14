@@ -17,12 +17,15 @@ export function MaterialBlock({
   section,
   anchorId,
   children,
+  footer,
 }: {
   section: MaterialSection;
   /** DOM id the mini-nav and MaterialRefs chips scroll to. */
   anchorId: string;
   /** The section's diagram. */
   children: React.ReactNode;
+  /** Rendered after the sources — a micro-check or a read-only worked example. */
+  footer?: React.ReactNode;
 }) {
   return (
     <Reveal as="section" id={anchorId} className="scroll-mt-24 space-y-5">
@@ -117,6 +120,8 @@ export function MaterialBlock({
           ))}
         </ul>
       </div>
+
+      {footer}
     </Reveal>
   );
 }

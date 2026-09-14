@@ -1,5 +1,5 @@
 /**
- * Day 11 route registry.
+ * Day 12 route registry.
  *
  * From Day 11 on, a day ships exactly two routes (CLAUDE.md #12,
  * CURRICULUM-GUIDE.md §2): Route 1 carries levels 1 and 2 as one continuous
@@ -11,8 +11,11 @@
 
 export const CASE = {
   company: "AION Green IT",
-  module: "Day 11",
-  moduleTitle: "Monitoring Software Efficiency & Sustainable Software Architecture",
+  /** Curriculum day number. The export filename reads it (CURRICULUM-GUIDE.md §7). */
+  day: 12,
+  module: "Day 12",
+  moduleNumber: 8,
+  moduleTitle: "Energy-Efficient Networks, IoT Sustainability & 5G",
 } as const;
 
 /** Icon keys resolved by components/icons/LineIcons.tsx. */
@@ -33,7 +36,10 @@ export type IconKey =
   | "drive"
   | "network"
   | "cycle"
-  | "gauge";
+  | "gauge"
+  // Day 12: radio access and connected devices.
+  | "antenna"
+  | "sensor";
 
 export type Route = {
   n: 1 | 2;
@@ -65,10 +71,10 @@ export const ROUTES: Route[] = [
     title: "Route 1 — Diagnose & Decide",
     cardTitle: "Diagnose & Decide",
     cardBlurb:
-      "Monitoring read with an efficiency lens, the four bands a load curve divides into, and the architecture levers that move consumption — then one engagement at DataWeave Applications: six signals to diagnose, and one quarter of capacity to spend and defend.",
-    deliverable: "DataWeave Engagement Report",
+      "What actually drives network energy, the levers that move it and the standard that measures it, IoT impact across a device's whole life, and why 5G's per-bit efficiency can still raise total consumption — then SmartLink Operations: six signals to route across the Signal Board, and one line of measures to rank, choose and defend.",
+    deliverable: "SmartLink Signal Report & Decision Memo",
     levels: [1, 2],
-    minutes: 90,
+    minutes: 150,
     available: true,
   },
   {
@@ -79,11 +85,11 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "Why efficiency reaches a board, RACI in full, and deciding before the data is in — then, after the MetricFlow worked example, lead at NexLayer Digital Platforms: rank the guiding decisions, map what they cost, assign ownership, and name the call that cannot wait.",
+      "Level 3 for Module 8: the governance structure and ownership that connected infrastructure needs. This route is written next.",
     deliverable: "Board Memo",
     levels: [3],
     minutes: 80,
-    available: true,
+    available: false,
   },
 ];
 

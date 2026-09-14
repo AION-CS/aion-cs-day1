@@ -7,18 +7,15 @@ import { ArrowRight } from "@/components/icons/LineIcons";
 import { useRoute1, domId } from "./useRoute1";
 
 /**
- * The handover between the two parts.
- *
- * This is what makes the route one thing rather than two exercises printed in
- * sequence: it reads the learner's own findings back to them and turns the
- * question from "what is broken" into "what gets funded". It is never a gate —
- * Part 2 sits directly below and is reachable whether or not the six signals
- * are finished (CLAUDE.md #6); the button is convenience, not permission.
+ * The handover between the two parts (CLAUDE.md #12). It reads the learner's
+ * own board back to them — the root-cause and horizon split, drawn as two bars
+ * — and turns the question from "what is wrong" into "what gets funded". Never
+ * a gate: Part 2 sits directly below and is reachable with the board empty.
  */
 export function Handover() {
   const r1 = useRoute1();
-  const complete = r1.completeCount === r1.totalSignals;
-  const total = r1.completeCount;
+  const t = r1.tally;
+  const complete = t.complete === t.total;
 
   return (
     <section
@@ -29,56 +26,33 @@ export function Handover() {
       )}
     >
       <div className="flex items-center gap-3 bg-slate px-5 py-2.5">
-        <span
-          className={clsx(
-            "h-1.5 w-1.5 rounded-full",
-            complete ? "motif-pulse bg-accent" : "bg-paper/40",
-          )}
-        />
-        <p className="text-micro font-semibold uppercase tracking-wide text-paper/80">
-          {HANDOVER.kicker}
-        </p>
+        <span className={clsx("h-1.5 w-1.5 rounded-full", complete ? "motif-pulse bg-accent" : "bg-paper/40")} />
+        <p className="text-micro font-semibold uppercase tracking-wide text-paper/80">{HANDOVER.kicker}</p>
       </div>
 
       <div className="space-y-4 p-6">
         <h2 className="text-h2 text-ink">{HANDOVER.heading}</h2>
 
-        <div
-          className={clsx(
-            "rounded-xl border px-4 py-3",
-            complete ? "border-accent/30 bg-accentSoft" : "border-line bg-canvas",
-          )}
-        >
-          <p className="text-micro font-semibold uppercase tracking-wide text-accent">
-            From your own report
-          </p>
+        <div className={clsx("rounded-xl border px-4 py-3", complete ? "border-accent/30 bg-accentSoft" : "border-line bg-canvas")}>
+          <p className="text-micro font-semibold uppercase tracking-wide text-accent">From your own board</p>
           <p className="mt-1 text-caption text-ink">
-            {r1.hydrated
-              ? HANDOVER.tally(
-                  r1.measurementCount,
-                  r1.architectureCount,
-                  r1.shortCount,
-                  r1.structuralCount,
-                  total,
-                )
-              : HANDOVER.tally(0, 0, 0, 0, 0)}
+            {HANDOVER.tally({
+              routed: t.routed,
+              total: t.total,
+              zonesUsed: t.zonesUsed,
+              governance: t.governance,
+              technology: t.technology,
+              short: t.short,
+              structural: t.structural,
+            })}
           </p>
-
-          <SplitBars
-            measurement={r1.measurementCount}
-            architecture={r1.architectureCount}
-            short={r1.shortCount}
-            structural={r1.structuralCount}
-          />
+          <SplitBars governance={t.governance} technology={t.technology} short={t.short} structural={t.structural} />
         </div>
 
         <p className="max-w-prose text-body text-ash">{HANDOVER.body}</p>
+        <p className="max-w-prose border-l-4 border-l-accent pl-3 text-caption italic text-ink">{HANDOVER.carry}</p>
 
-        <button
-          type="button"
-          onClick={() => scrollToAndFlash(domId.partTwo, "ref")}
-          className="btn-accent inline-flex items-center gap-2"
-        >
+        <button type="button" onClick={() => scrollToAndFlash(domId.partTwo, "ref")} className="btn-accent inline-flex items-center gap-2">
           {HANDOVER.cta}
           <ArrowRight className="h-4 w-4" />
         </button>
@@ -87,28 +61,27 @@ export function Handover() {
   );
 }
 
-/** Two stacked bars: the root-cause split and the horizon split of the learner's own findings. */
 function SplitBars({
-  measurement,
-  architecture,
+  governance,
+  technology,
   short,
   structural,
 }: {
-  measurement: number;
-  architecture: number;
+  governance: number;
+  technology: number;
   short: number;
   structural: number;
 }) {
   const rows = [
     {
       label: "Root cause",
-      left: { value: measurement, label: "Measurement gap", className: "fill-ash" },
-      right: { value: architecture, label: "Architecture decision", className: "fill-ink" },
+      left: { value: governance, label: "Missing governance or architecture decision", className: "fill-ink" },
+      right: { value: technology, label: "Technology use", className: "fill-ash/60" },
     },
     {
-      label: "Horizon",
-      left: { value: short, label: "Short-term visible", className: "fill-accent/50" },
-      right: { value: structural, label: "Structural", className: "fill-accent" },
+      label: "Time horizon",
+      left: { value: short, label: "Visible short-term", className: "fill-accent/50" },
+      right: { value: structural, label: "Structurally effective", className: "fill-accent" },
     },
   ];
 
@@ -131,19 +104,11 @@ function SplitBars({
               <rect x={0} y={0} width={w} height={16} rx={8} className="fill-line" />
               {total > 0 && (
                 <>
+                  <rect x={0} y={0} width={leftW} height={16} rx={8} className={r.left.className} style={{ transition: "width 400ms ease" }} />
                   <rect
-                    x={0}
+                    x={leftW}
                     y={0}
-                    width={Math.max(leftW, 0)}
-                    height={16}
-                    rx={8}
-                    className={r.left.className}
-                    style={{ transition: "width 400ms ease" }}
-                  />
-                  <rect
-                    x={Math.max(leftW, 0)}
-                    y={0}
-                    width={Math.max(w - leftW, 0)}
+                    width={w - leftW}
                     height={16}
                     rx={8}
                     className={r.right.className}
@@ -154,10 +119,10 @@ function SplitBars({
             </svg>
             <p className="mt-0.5 flex flex-wrap justify-between gap-x-3 text-micro text-ash">
               <span>
-                {r.left.label}: <span className="font-semibold text-ink tabular-nums">{r.left.value}</span>
+                {r.left.label}: <span className="font-semibold tabular-nums text-ink">{r.left.value}</span>
               </span>
               <span>
-                {r.right.label}: <span className="font-semibold text-ink tabular-nums">{r.right.value}</span>
+                {r.right.label}: <span className="font-semibold tabular-nums text-ink">{r.right.value}</span>
               </span>
             </p>
           </div>
