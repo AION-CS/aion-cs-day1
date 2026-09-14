@@ -26,7 +26,9 @@ export default function DayLanding() {
           whether or not anyone is using it. Route 1 teaches what actually drives network energy, the levers and the
           measurement standard behind them, IoT impact across a device&apos;s whole life, and the rebound mechanism behind
           5G&apos;s efficiency claim — then puts you inside SmartLink Operations to diagnose six signals and commit to one
-          line of measures. Route 2, the management decision, is written next.
+          line of measures. Route 2 steps up to the board: a complete worked reasoning chain through NetSphere Industrial
+          Systems GmbH, then a live Board Memo built for Vertex Connected Industries, under conditions that will not let
+          you simply copy the worked example.
         </p>
       </div>
 

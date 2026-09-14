@@ -85,11 +85,11 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "Level 3 for Module 8: the governance structure and ownership that connected infrastructure needs. This route is written next.",
-    deliverable: "Board Memo",
+      "NetSphere Industrial Systems GmbH's full reasoning chain — six management dimensions, four levers, one prioritised measure, fully justified — then Vertex Connected Industries: a decision-ready Board Memo built live, section by section, under conditions NetSphere's answer does not automatically fit.",
+    deliverable: "Vertex Board Memo",
     levels: [3],
     minutes: 80,
-    available: false,
+    available: true,
   },
 ];
 

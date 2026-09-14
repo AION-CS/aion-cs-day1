@@ -3,51 +3,72 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MaterialBlock } from "@/components/ui/MaterialBlock";
 import { MiniNav } from "@/components/ui/MiniNav";
-import { MATERIAL, MATERIAL_NAV, SECTION_ORDER, materialAnchorId } from "@/lib/route2";
-import { DecisionLayers, DecisionQuadrants, RaciDemo, WorkedExample } from "./MaterialDiagrams";
+import { MATERIAL, MATERIAL_MINUTES, MATERIAL_NAV, SECTION_ORDER, TRAILING_NAV, materialAnchorId } from "@/lib/route2";
+import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
+import { RatioVsAbsolute } from "./diagrams/RatioVsAbsolute";
+import { NetSphereMap } from "./diagrams/NetSphereMap";
+import { DimensionCards, HeatStrip } from "./diagrams/HeatStrip";
+import { LeverAccordion } from "./diagrams/LeverAccordion";
+import { DecisionChain } from "./diagrams/DecisionChain";
+import { RoadmapTimeline } from "./diagrams/RoadmapTimeline";
+import { OpenerPanel, ReflectionJournal, RubricPreview } from "./diagrams/Framing";
 
 export const MATERIAL_TRACK_ID = "r2-material";
 
 /**
- * Route 2's whole teaching block, A–D, read before the task — same layout as
- * Route 1: sticky mini-nav and progress bar, and per section the diagram before
- * the prose, then the decision rules, then sources.
+ * The whole teaching block: six sections, A–F, read before the task
+ * (CLAUDE.md #12), followed by the rubric preview and the reflection journal.
  */
 export function Material() {
-  const [a, b, c, d] = MATERIAL;
+  const [a, b, c, d, e, f] = MATERIAL;
 
-  const navItems = SECTION_ORDER.map((id) => ({
-    id,
-    code: MATERIAL_NAV[id].code,
-    label: MATERIAL_NAV[id].label,
-    anchorId: materialAnchorId(id),
-  }));
+  const navItems = [
+    ...SECTION_ORDER.map((id) => ({ id, code: MATERIAL_NAV[id].code, label: MATERIAL_NAV[id].label, anchorId: materialAnchorId(id) })),
+    ...TRAILING_NAV,
+  ];
 
   return (
     <div id={MATERIAL_TRACK_ID} className="space-y-14">
       <MiniNav items={navItems} trackId={MATERIAL_TRACK_ID} />
 
       <SectionHeading
-        kicker="Material · four sections · about 60 minutes"
-        title="From a fix to a decision architecture"
-        intro="Why efficiency and architecture are board questions at all; who is allowed to decide, in full RACI detail; how a decision holds together before the data is in; and a complete worked example from MetricFlow Digital Systems. The task assumes all four."
+        kicker={`Material · six sections · about ${MATERIAL_MINUTES} minutes`}
+        title="Senior case walkthrough: NetSphere Industrial Systems GmbH"
+        intro="A complete reasoning chain on one company, including the recommended decision and why it beats the alternatives — study the structure of the argument, not the conclusion. The task afterwards belongs to a different company with different constraints."
       />
 
-      <MaterialBlock section={a} anchorId={materialAnchorId("board")}>
-        <DecisionLayers />
+      <OpenerPanel />
+
+      <MaterialBlock section={a} anchorId={materialAnchorId("management")}>
+        <RatioVsAbsolute />
       </MaterialBlock>
 
-      <MaterialBlock section={b} anchorId={materialAnchorId("raci")}>
-        <RaciDemo />
+      <MaterialBlock section={b} anchorId={materialAnchorId("map")}>
+        <NetSphereMap />
       </MaterialBlock>
 
-      <MaterialBlock section={c} anchorId={materialAnchorId("uncertainty")}>
-        <DecisionQuadrants />
+      <MaterialBlock section={c} anchorId={materialAnchorId("dimensions")}>
+        <div className="space-y-8">
+          <HeatStrip onJump={(id) => scrollToAndFlash(`r2-dimension-${id}`, "ref")} />
+          <DimensionCards />
+        </div>
       </MaterialBlock>
 
-      <MaterialBlock section={d} anchorId={materialAnchorId("worked")}>
-        <WorkedExample />
+      <MaterialBlock section={d} anchorId={materialAnchorId("levers")}>
+        <LeverAccordion />
       </MaterialBlock>
+
+      <MaterialBlock section={e} anchorId={materialAnchorId("measure")}>
+        <DecisionChain />
+      </MaterialBlock>
+
+      <MaterialBlock section={f} anchorId={materialAnchorId("roadmap")}>
+        <RoadmapTimeline />
+      </MaterialBlock>
+
+      <RubricPreview />
+
+      <ReflectionJournal />
     </div>
   );
 }

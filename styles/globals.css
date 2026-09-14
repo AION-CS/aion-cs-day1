@@ -338,6 +338,17 @@
   animation: shakeNoop 0.3s ease-in-out;
 }
 
+/* The live memo preview reads as a document, not as more app chrome (§12). */
+.memo-doc {
+  background: #fffdf8;
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+.memo-doc p,
+.memo-doc li,
+.memo-doc span {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
 /* --- Day 12 ---------------------------------------------------------------
  * Signal Board: the connector that draws itself from the intake rail to a
  * zone (~600 ms), the card token landing with a pulse, and a ring marking the

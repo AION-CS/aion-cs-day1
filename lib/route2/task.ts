@@ -1,563 +1,364 @@
 /**
- * Route 2's task — the NexLayer Board Memo, four exercises, ~20 minutes.
+ * The Level 3 task — "Board Memo Builder" for Vertex Connected Industries.
+ * Seven input sections, a live split-screen memo preview, check-on-demand,
+ * a self-assessment, and one export.
  *
- * Rank the guiding decisions · place five measures on a trade-off map by
- * answering two diagnostics each · assign a RACI for the standard · name the
- * decision that cannot wait.
+ * §6's critical design constraint governs every Vertex-specific fact here:
+ * NetSphere's answer must remain defensible but not automatic. See each
+ * field's data for where that shows up (VERTEX_SPECIFIC, the five options,
+ * the clue rules in ../../components/route2/clues.ts).
  */
 
 import type { AnswerKeyBlock } from "@/lib/answerKey";
 import type { MaterialSectionId } from "./sections";
 
 // ---------------------------------------------------------------------------
-// Exercise 1 — rank the guiding decisions
+// The brief
 // ---------------------------------------------------------------------------
 
-export type GuidingDecision = {
-  id: string;
-  n: number;
-  label: string;
-  detail: string;
+export const VERTEX = {
+  company: "Vertex Connected Industries",
+  role: "Head of Infrastructure & Connectivity Strategy — CIO/CTO advisor",
+  heading: "The brief",
+  paragraphs: [
+    "You are the head of infrastructure and connectivity strategy — CIO/CTO advisor — for Vertex Connected Industries. Vertex is expanding connected infrastructure across several business areas and wants innovation capacity, efficiency and sustainability at the same time. There are no binding criteria for how networks, IoT devices, 5G applications and data streams should be prioritised for long-term manageability.",
+    "Management has asked for a decision-ready proposal. Not a list of technology ideas — a decision architecture.",
+  ],
+  warning: "NetSphere's answer is not Vertex's answer. Read the conditions before you reuse the pattern.",
 };
 
-export const GUIDING_DECISIONS: GuidingDecision[] = [
-  {
-    id: "g1",
-    n: 1,
-    label: "Mandate a binding efficiency-monitoring standard",
-    detail:
-      "Which indicators every product must expose, in which form, reviewed on which cadence.",
-  },
-  {
-    id: "g2",
-    n: 2,
-    label: "Establish an architecture review gate",
-    detail: "For changes above a defined size, with the authority to require rework.",
-  },
-  {
-    id: "g3",
-    n: 3,
-    label: "Publish binding architectural principles",
-    detail: "Resource-friendly development rules that teams must design against.",
-  },
-  {
-    id: "g4",
-    n: 4,
-    label: "Define scaling policy thresholds and a named owner",
-    detail: "For autoscaling and capacity configuration across all products.",
-  },
-  {
-    id: "g5",
-    n: 5,
-    label: "Fund a consolidation programme for redundant data flows",
-    detail: "Aimed at the historically grown flows that duplicate work across services.",
-  },
-  {
-    id: "g6",
-    n: 6,
-    label: "Tie a share of product-team objectives to efficiency indicators",
-    detail: "Not only to feature delivery — a change to what teams are assessed on.",
-  },
-  {
-    id: "g7",
-    n: 7,
-    label: "Institute a quarterly management review",
-    detail: "In which monitoring data feeds architecture and portfolio decisions.",
-  },
+export const VERTEX_GENERAL_CONDITIONS = [
+  "High innovation and digitalisation pressure across several departments.",
+  "Conflicting interests: operations, IT, business departments, finance, management.",
+  "Incomplete transparency on energy demand, data benefit and lifecycle impact.",
+  "Budget restrictions alongside an expectation of visible innovation progress.",
+  "Risk that connectivity is judged as progress across the board and structurally overrated.",
+  "Growing requirements for operational reliability, scalability and governance.",
 ];
 
-export const decisionById = (id: string) => GUIDING_DECISIONS.find((d) => d.id === id)!;
+export type VertexSpecificId = "approval" | "estate" | "fiveg" | "pilot" | "budget";
+
+export const VERTEX_SPECIFIC: { id: VertexSpecificId; text: string }[] = [
+  { id: "approval", text: "An approval process exists on paper but is not used; two departments hold conflicting mandates." },
+  { id: "estate", text: "The network estate is uneven — two of five sites modernised recently, three not." },
+  { id: "fiveg", text: "One 5G use case has an evidenced latency requirement; three others do not." },
+  { id: "pilot", text: "An IoT pilot fleet is already deployed with no defined support period." },
+  { id: "budget", text: "Two departments have already committed budget in the current financial year." },
+];
+
+export const VERTEX_SPECIFIC_HEADING = "What is specific to Vertex";
+
+// ---------------------------------------------------------------------------
+// Section 1 — Strategic relevance
+// ---------------------------------------------------------------------------
+
+export type RelevanceId =
+  | "cost"
+  | "compliance"
+  | "reliability"
+  | "irreversibility"
+  | "innovation"
+  | "supplyChain"
+  | "dataGovernance";
+
+export const RELEVANCE_DRIVERS: { id: RelevanceId; label: string }[] = [
+  { id: "cost", label: "Operating cost exposure" },
+  { id: "compliance", label: "Compliance and reporting obligation" },
+  { id: "reliability", label: "Operational reliability" },
+  { id: "irreversibility", label: "Investment irreversibility" },
+  { id: "innovation", label: "Innovation capability" },
+  { id: "supplyChain", label: "Supply chain and lifecycle risk" },
+  { id: "dataGovernance", label: "Data governance" },
+];
+
+export const RELEVANCE_REQUIRED = 3;
+
+export const relevanceLabel = (id: RelevanceId) => RELEVANCE_DRIVERS.find((d) => d.id === id)!.label;
+
+export const SECTION_1 = {
+  n: 1,
+  title: "Strategic relevance",
+  instruction: `Choose exactly ${RELEVANCE_REQUIRED} of the seven drivers below.`,
+  helper: "Relevance is not why the topic matters in general — it is why it matters to Vertex this year.",
+  rationale: {
+    label: "Why these three, for this company?",
+    min: 150,
+    placeholder: "We selected these three because, at Vertex specifically…",
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Section 2 — Three guiding decisions
+// ---------------------------------------------------------------------------
+
+export type RoleId = "board" | "cio" | "cto" | "operations" | "finance" | "departments";
+
+export const ROLES: { id: RoleId; label: string }[] = [
+  { id: "board", label: "Management board" },
+  { id: "cio", label: "CIO" },
+  { id: "cto", label: "CTO" },
+  { id: "operations", label: "Head of Operations" },
+  { id: "finance", label: "Finance" },
+  { id: "departments", label: "Department heads" },
+];
+
+export type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
+export const QUARTERS: Quarter[] = ["Q1", "Q2", "Q3", "Q4"];
+export const isQuarter = (v: string | undefined): v is Quarter => !!v && QUARTERS.includes(v as Quarter);
+export const isRoleId = (v: string | undefined): v is RoleId => !!v && ROLES.some((r) => r.id === v);
+
+export const SECTION_2 = {
+  n: 2,
+  title: "Three guiding decisions for the next 12 months",
+  helper: "A guiding decision is one that constrains later decisions. 'Buy sensors' is a purchase. 'No connected device is approved without a defined support period' is a guiding decision.",
+  count: 3,
+  placeholder: (n: number) => `Guiding decision ${n}…`,
+};
+
+// ---------------------------------------------------------------------------
+// Section 3 — Decision logic (self-contained 7-criteria set)
+// ---------------------------------------------------------------------------
+
+export type CriterionId = "leverage" | "sustainability" | "innovation" | "feasibility" | "risk" | "longterm" | "controllability";
+
+export type Criterion = { id: CriterionId; name: string; definition: string };
+
+/**
+ * The same seven criterion names Route 1 teaches in full (S6) — repeated here
+ * with their own definitions per §13's self-containment rule, so a learner who
+ * starts at Route 2 is not disadvantaged. Deliberately not imported from
+ * lib/route1: that module is tied to Route 1's A/B/C options and is a
+ * dependency this route must not carry.
+ */
+export const CRITERIA: Criterion[] = [
+  { id: "leverage", name: "Strategic leverage", definition: "How many downstream decisions this option improves." },
+  { id: "sustainability", name: "Sustainability impact", definition: "Effect on energy, emissions and lifecycle burden across the boundary you declare." },
+  { id: "innovation", name: "Innovation benefit", definition: "New capability that creates real business options." },
+  { id: "feasibility", name: "Feasibility", definition: "Can be executed with current budget, skills and organisational capacity." },
+  { id: "risk", name: "Risk", definition: "Exposure if assumptions prove wrong." },
+  { id: "longterm", name: "Long-term effect", definition: "Whether the benefit persists after the project ends." },
+  { id: "controllability", name: "Controllability", definition: "Whether the result can be measured, steered and reversed." },
+];
+
+export const criterionById = (id: CriterionId) => CRITERIA.find((c) => c.id === id)!;
 
 export const RANK_SLOTS = 3;
 
-export const RANK_EXERCISE = {
-  id: "ex-rank",
-  n: 1,
-  minutes: 6,
-  title: "Rank the guiding decisions",
-  intro:
-    "Seven candidates. Select the three you would put in front of NexLayer's board, in order, then justify your first. Click a candidate to add it, click a ranked item to remove it, and use the arrows to reorder — nothing is auto-sorted for you.",
-  material: ["board", "worked"] as MaterialSectionId[],
-  justify: {
-    label: "Why this one first?",
-    instruction:
-      "Two or three sentences. Say what it changes about what teams are required to do — not what it improves.",
-    placeholder: "e.g. It is the only one of the three that makes information comparable across products, which…",
-    sample:
-      "Without a binding monitoring standard, every product reports something different and no comparison is possible, so the review in my #2 would have nothing to review and the principles in my #3 would have no evidence behind them. It is also the cheapest of the three in momentum terms: it adds an obligation to expose indicators rather than taking capacity out of a committed roadmap. It changes what teams must produce, which is what makes it a guiding decision rather than a measure.",
+export const SECTION_3 = {
+  n: 3,
+  title: "Decision logic",
+  instruction: `Rank the top ${RANK_SLOTS} criteria you would apply to Vertex's decision, in order. Drag to reorder, or use the rank selector.`,
+  boundary: {
+    label: "What is the boundary?",
+    helper: "State the perimeter and the comparison your sustainability assessments will use — 'compared to what, measured over what, for how long'. Without this, criterion 2 cannot be applied.",
+    min: 30,
+    placeholder: "Compared to Vertex's current baseline, over the five-site network perimeter, measured annually…",
   },
-  check: {
-    label: "Test my ranking",
-    /** Never grades the order — asks one diagnostic about the learner's own #1. */
-    question:
-      "Does your first decision change what teams are required to do, or does it improve one system once?",
-    options: [
-      { id: "required", text: "It changes what teams are required to do" },
-      { id: "once", text: "It improves one system once" },
-    ],
-    feedbackRequired:
-      "Then it is a guiding decision by the definition in section A. Check the same question against your #2 and #3 — a top three where only one entry passes is really a top one.",
-    feedbackOnce:
-      "Then by section A's definition it is a measure rather than a guiding decision. That may still be the right thing to fund, but it is not what a board is being asked to decide here.",
-    clue: "A guiding decision needs someone's approval before a team may act on it. If a single team could execute your #1 in a sprint without asking anyone, it belongs on the measure list, not the decision list.",
-  },
-  answerKey: {
-    prompt: "Exercise 1 — ranking the guiding decisions",
-    items: [
-      {
-        option: "1 — Binding efficiency-monitoring standard (strong top three)",
-        verdict: "pick",
-        why: "Creates comparable information across products. Nothing else in the list works without it: a review has nothing to review, principles have no evidence, objectives have no measure.",
-      },
-      {
-        option: "7 — Quarterly management review (strong top three)",
-        verdict: "pick",
-        why: "Creates the loop where the information is acted on. This is the ISO 50001 point: the mechanism is the review, not the metric. Without it, the standard produces a dashboard.",
-      },
-      {
-        option: "3 — Binding architectural principles (strong top three)",
-        verdict: "pick",
-        why: "Gives teams something binding to design against, and gives any future gate something to test against. It is the difference between a review with a standard and a review with an opinion.",
-      },
-      {
-        option: "2 — Architecture review gate",
-        verdict: "avoid",
-        why: "Strong, but it fails without 3: a gate with nothing to test against becomes taste, and taste does not survive a disagreement with a product deadline. Defensible in a top three only if 3 is also in it.",
-      },
-      {
-        option: "4 — Scaling policy thresholds and owner",
-        verdict: "avoid",
-        why: "A measure dressed as a decision. Valuable, narrow, and executable by one team under an existing owner — it does not change what anyone else is required to do.",
-      },
-      {
-        option: "5 — Consolidation programme for redundant data flows",
-        verdict: "avoid",
-        why: "The clearest measure in the list: a funded programme against a specific estate. It changes the system once and changes no rule that produced it.",
-      },
-      {
-        option: "6 — Efficiency objectives in product-team goals",
-        verdict: "avoid",
-        why: "Powerful and the most politically expensive item here — it changes what teams are assessed on. Defensible as a #1 only if the learner names who absorbs the delivery cost that follows.",
-      },
-    ],
-    teachingNote:
-      "There is no single correct order. Assess a top three on whether all of transparency, bindingness and the review loop are represented — not on whether it matches 1/7/3. A learner who picks 6 first and explains who pays for the lost delivery has produced a stronger answer than one who picks 1 first and cannot say what it obliges anyone to do.",
-  } as AnswerKeyBlock,
 };
 
 // ---------------------------------------------------------------------------
-// Exercise 2 — the trade-off map
+// Section 4 — Central trade-offs (the tension picker)
 // ---------------------------------------------------------------------------
 
-export type QuadrantId = "quick" | "bet" | "noise" | "symbolism";
+export type FactorId = "connectivity" | "innovation" | "energy" | "dataGrowth" | "investment" | "controllability" | "reliability" | "complexity";
 
-export type Quadrant = {
-  id: QuadrantId;
-  label: string;
-  /** Position in the 2×2. */
-  momentumCost: "low" | "high";
-  structuralImpact: "low" | "high";
-  note: string;
-};
-
-export const QUADRANTS: Quadrant[] = [
-  {
-    id: "quick",
-    label: "Quick wins",
-    momentumCost: "low",
-    structuralImpact: "high",
-    note: "Nothing has to be re-planned, and the effect outlives the sponsor. Fund these first and stop treating them as too small to decide.",
-  },
-  {
-    id: "bet",
-    label: "Strategic bets",
-    momentumCost: "high",
-    structuralImpact: "high",
-    note: "Real capacity has to be taken from committed work, and the effect persists. These are the board's actual decisions.",
-  },
-  {
-    id: "noise",
-    label: "Low-value noise",
-    momentumCost: "low",
-    structuralImpact: "low",
-    note: "Cheap and forgettable. Not worthless — a real saving with no durability — but never a board decision.",
-  },
-  {
-    id: "symbolism",
-    label: "Expensive symbolism",
-    momentumCost: "high",
-    structuralImpact: "low",
-    note: "Costly to deliver and gone once its sponsor moves on. The quadrant to recognise before you are in it.",
-  },
+export const FACTORS: { id: FactorId; label: string }[] = [
+  { id: "connectivity", label: "Connectivity" },
+  { id: "innovation", label: "Innovation speed" },
+  { id: "energy", label: "Energy demand" },
+  { id: "dataGrowth", label: "Data growth" },
+  { id: "investment", label: "Investment" },
+  { id: "controllability", label: "Controllability" },
+  { id: "reliability", label: "Reliability" },
+  { id: "complexity", label: "Complexity" },
 ];
 
-export const quadrantFor = (momentumHigh: boolean, structuralHigh: boolean): QuadrantId =>
-  structuralHigh ? (momentumHigh ? "bet" : "quick") : momentumHigh ? "symbolism" : "noise";
+export const factorLabel = (id: FactorId) => FACTORS.find((f) => f.id === id)!.label;
+export const isFactorId = (v: string): v is FactorId => FACTORS.some((f) => f.id === v);
 
-export const quadrantById = (id: QuadrantId) => QUADRANTS.find((q) => q.id === id)!;
+export const TRADEOFF_MIN = 2;
+export const TRADEOFF_MAX = 3;
 
-export type MapMeasure = {
-  id: string;
-  label: string;
-  detail: string;
-  /** Ground truth for the two diagnostics. */
-  momentumHigh: boolean;
-  structuralHigh: boolean;
-  q1Clue: string;
-  q2Clue: string;
-  /** Whether the learner must justify it as a strategic bet. */
-  quadrant: QuadrantId;
-  answerKey: AnswerKeyBlock;
+export const SECTION_4 = {
+  n: 4,
+  title: "Central trade-offs",
+  instruction: `Draw ${TRADEOFF_MIN}–${TRADEOFF_MAX} links between opposing factors. Click one node, then the node it trades against.`,
+  helper: "A trade-off is only real if naming it costs you something. If both sides can be maximised, it is not a trade-off.",
+  noteLabel: "What is given up, and who feels it?",
+  notePlaceholder: "Naming this trade-off costs…",
 };
 
-export const MAP_QUESTIONS = {
-  q1: {
-    key: "q1",
-    label: "Momentum cost",
-    question:
-      "To do this, do teams have to stop or re-plan work they have already committed to this quarter?",
-    yes: "Yes — committed work has to move",
-    no: "No — it fits alongside committed work",
-    instruction: "Momentum cost is about the roadmap, not about effort in hours.",
+// ---------------------------------------------------------------------------
+// Section 5 — First measure
+// ---------------------------------------------------------------------------
+
+export type OptionId = "A" | "B" | "C" | "D" | "E";
+export const OPTION_IDS: OptionId[] = ["A", "B", "C", "D", "E"];
+
+export type FirstMeasureOption = { id: OptionId; text: string };
+
+export const FIRST_MEASURE_OPTIONS: FirstMeasureOption[] = [
+  { id: "A", text: "Make the existing approval gate binding and enforce criteria before any further commitment." },
+  { id: "B", text: "Modernise the three non-modernised sites first." },
+  { id: "C", text: "Qualify all planned 5G use cases against an evidenced-requirement test; proceed only with the qualified one." },
+  { id: "D", text: "Define lifecycle and support-period criteria and retrofit them onto the deployed IoT pilot fleet." },
+  { id: "E", text: "Build a full architecture and governance framework before any further connectivity decision." },
+];
+
+export const optionById = (id: OptionId) => FIRST_MEASURE_OPTIONS.find((o) => o.id === id)!;
+export const isOptionId = (v: string | undefined): v is OptionId => !!v && OPTION_IDS.includes(v as OptionId);
+
+export const JUSTIFICATION_TEMPLATE =
+  "We recommend X. This assumes Y. If [indicator] shows Z by [review point], we revise. The cost of being wrong is bounded because [reversibility].";
+
+export const SECTION_5 = {
+  n: 5,
+  title: "Recommended first prioritised line of measures",
+  justification: { label: "Justification", min: 300, placeholder: "We recommend… This assumes… If… shows… by…, we revise. The cost of being wrong is bounded because…" },
+  budgetQuestion: {
+    label: "How does this handle the budget already committed by two departments?",
+    min: 40,
+    placeholder: "The committed work continues under…",
   },
-  q2: {
-    key: "q2",
-    label: "Structural impact",
-    question:
-      "If the sponsor of this measure left tomorrow, would its effect persist without anyone repeating the effort?",
-    yes: "Yes — the effect persists on its own",
-    no: "No — it decays or has to be redone",
-    instruction: "Structural impact is about durability, not about size.",
+};
+
+// ---------------------------------------------------------------------------
+// Section 6 — Governance (RACI)
+// ---------------------------------------------------------------------------
+
+export type ResponsibilityId = "defineCriteria" | "approve" | "measure" | "review";
+
+export const RESPONSIBILITIES: { id: ResponsibilityId; label: string }[] = [
+  { id: "defineCriteria", label: "Define and maintain criteria" },
+  { id: "approve", label: "Approve or refuse connectivity investments" },
+  { id: "measure", label: "Measure and report energy and lifecycle effects" },
+  { id: "review", label: "Trigger review and revise the framework" },
+];
+
+/** RaciGrid's role shape — Route 2's task has no capacity-authority column, so every role reports `canBindCapacity: true` and the grid's `showCapacity` stays off. */
+export const GOVERNANCE_ROLES = ROLES.map((r) => ({ id: r.id, name: r.label, short: r.label.split(" ")[0], canBindCapacity: true }));
+
+export const SECTION_6 = {
+  n: 6,
+  title: "Governance: roles, approval, review",
+  helper: "Click a cell to cycle R / A / C / I / blank. Exactly one A per responsibility — a clue appears if that slips.",
+  review: {
+    label: "Review mechanism",
+    helper: "Name the meeting, its frequency, and what evidence it looks at. A review that reads a status slide changes nothing.",
+    min: 40,
+    placeholder: "A quarterly infrastructure review that examines…",
   },
+};
+
+// ---------------------------------------------------------------------------
+// Section 7 — The decision to take now
+// ---------------------------------------------------------------------------
+
+export const SECTION_7 = {
+  n: 7,
+  title: "The decision to take now despite incomplete information",
+  decision: { label: "The decision", min: 120, placeholder: "Despite incomplete data, we decide now to…" },
+  confidence: { label: "Confidence", min: 0, max: 100, helper: "Confidence below 60 is not a weakness — it is a signal that you need the review point named in section 5." },
+  changeMyMind: { label: "What would change your mind?", placeholder: "If…" },
+};
+
+// ---------------------------------------------------------------------------
+// Self-assessment (§8.5) — mirrors the rubric preview, non-blocking
+// ---------------------------------------------------------------------------
+
+export type RubricId = "problemType" | "firstMeasure" | "connected" | "actionCapable" | "separated";
+
+export const SELF_ASSESSMENT_ITEMS: { id: RubricId; label: string; section: number }[] = [
+  { id: "problemType", label: "Was the core problem identified as a technology, a data or a management question?", section: 1 },
+  { id: "firstMeasure", label: "Which first measure was prioritised, and why?", section: 5 },
+  { id: "connected", label: "Were network efficiency, IoT lifecycle and 5G meaningfully connected — or treated as three separate topics?", section: 3 },
+  { id: "actionCapable", label: "Was the argument action-capable under uncertainty (assumption, falsification, review point)?", section: 5 },
+  { id: "separated", label: "Was short-term innovation pressure cleanly separated from long-term structural effect?", section: 7 },
+];
+
+export type SelfAssessmentValue = "yes" | "partly" | "not-yet";
+export const SELF_ASSESSMENT_VALUES: SelfAssessmentValue[] = ["yes", "partly", "not-yet"];
+export const isSelfAssessmentValue = (v: string | undefined): v is SelfAssessmentValue =>
+  !!v && SELF_ASSESSMENT_VALUES.includes(v as SelfAssessmentValue);
+
+// ---------------------------------------------------------------------------
+// Check-on-demand copy (logic lives in components/route2/clues.ts)
+// ---------------------------------------------------------------------------
+
+export const CHECK_MEMO = {
+  label: "Check my memo",
+  recheckLabel: "Check again",
+  lead: "Clues from your own memo",
+  clean: "Nothing in your memo contradicts itself on what this check can read. That is not a verdict on the argument itself — read it once more against Vertex's five specific conditions.",
+};
+
+// ---------------------------------------------------------------------------
+// The memo document structure (§8.2) — section labels for the live preview
+// ---------------------------------------------------------------------------
+
+export const MEMO_SECTIONS = [
+  { n: 1, title: "Executive summary" },
+  { n: 2, title: "Strategic rationale" },
+  { n: 3, title: "Guiding decisions, next 12 months" },
+  { n: 4, title: "Decision logic and assessment criteria" },
+  { n: 5, title: "Central trade-offs" },
+  { n: 6, title: "Recommended first measure" },
+  { n: 7, title: "Governance: roles, approval, review" },
+  { n: 8, title: "Decision taken now under uncertainty" },
+];
+
+export const EXPORT = {
+  filenameLevels: [3],
+  filenameTask: 1,
+  schemaVersion: "day12.route2.v1",
+  docHeading: "Vertex Board Memo",
+  buttonLabel: "Export the Board Memo",
+  anywayLabel: "Export anyway (incomplete)",
+  incompleteStamp: "STATUS: INCOMPLETE DRAFT",
+  mentorStamp: "MENTOR SAMPLE — not participant work",
 } as const;
 
-export const MAP_MEASURES: MapMeasure[] = [
-  {
-    id: "m1",
-    label: "M1 — Establish an efficiency indicator baseline",
-    detail: "Across all products, so that figures are comparable between them.",
-    momentumHigh: false,
-    structuralHigh: true,
-    quadrant: "quick",
-    q1Clue: "Exposing an indicator is additive. Ask whether anything already committed has to come out of the plan to make room for it.",
-    q2Clue: "Once every product reports the same figure, what would have to happen for that to stop being true?",
-    answerKey: {
-      prompt: "M1 — Efficiency indicator baseline",
-      items: [
-        {
-          option: "Momentum cost: No (expected)",
-          verdict: "pick",
-          why: "Instrumentation is additive. It adds an obligation to expose numbers; it does not require a committed feature to be dropped.",
-        },
-        {
-          option: "Structural impact: Yes (expected)",
-          verdict: "pick",
-          why: "A baseline that every product reports against outlives whoever asked for it, and every later decision is measured against it.",
-        },
-        {
-          option: "Common wrong reading: high momentum cost",
-          verdict: "avoid",
-          why: "Confuses effort with momentum. It is real work, but it does not compete with the roadmap for the same slot — which is exactly what makes it the cheapest structural move available.",
-        },
-      ],
-      teachingNote:
-        "This is the quadrant participants most often misplace, because 'quick win' sounds trivial and this is the most valuable item on the map. Quick win here means low momentum cost and high durability — the best trade available, not the smallest.",
-    },
-  },
-  {
-    id: "m2",
-    label: "M2 — Introduce an architecture review gate",
-    detail: "For large changes, with the authority to require rework.",
-    momentumHigh: true,
-    structuralHigh: true,
-    quadrant: "bet",
-    q1Clue: "A gate can send work back. Ask what happens to a team's quarter the first time it does.",
-    q2Clue: "A gate that keeps operating after its sponsor leaves needs something a successor can point at. Does this have that?",
-    answerKey: {
-      prompt: "M2 — Architecture review gate",
-      items: [
-        {
-          option: "Momentum cost: Yes (expected)",
-          verdict: "pick",
-          why: "A gate with real authority will send committed work back. That cost lands inside a quarter someone has already planned.",
-        },
-        {
-          option: "Structural impact: Yes (expected)",
-          verdict: "pick",
-          why: "Once a gate is part of how changes ship, it persists as process rather than as someone's initiative — provided principles exist for it to test against.",
-        },
-        {
-          option: "Common wrong reading: low momentum cost",
-          verdict: "avoid",
-          why: "Assumes the gate will mostly approve. A gate that never requires rework has no momentum cost and no structural impact either — it is a meeting.",
-        },
-      ],
-    },
-  },
-  {
-    id: "m3",
-    label: "M3 — Optimise the three most conspicuous services now",
-    detail: "A real, attributable saving inside the quarter.",
-    momentumHigh: false,
-    structuralHigh: false,
-    quadrant: "noise",
-    q1Clue: "This is self-contained work on three services. Ask whether anyone outside those teams has to re-plan anything.",
-    q2Clue: "Ask what happens to the fourth-most conspicuous service next quarter.",
-    answerKey: {
-      prompt: "M3 — Optimise three services",
-      items: [
-        {
-          option: "Momentum cost: No (expected)",
-          verdict: "pick",
-          why: "Self-contained, inside teams that already own those services, with no cross-team dependency. It is the easiest thing on this map to start.",
-        },
-        {
-          option: "Structural impact: No (expected)",
-          verdict: "pick",
-          why: "Nothing about the conventions that produced the waste changes, so the fourth-most expensive service is already being written the same way.",
-        },
-        {
-          option: "Common wrong reading: high structural impact",
-          verdict: "avoid",
-          why: "Mistakes the size of the saving for its durability. The saving is real; it simply does not reproduce itself.",
-        },
-      ],
-      teachingNote:
-        "M3 is not worthless and must not be taught as a trap. It is a real saving with no durability — precisely the 'short-term visible but structurally weak' option the curriculum warns about. The professional error is choosing it and reporting it as though the problem were solved.",
-    },
-  },
-  {
-    id: "m4",
-    label: "M4 — Consolidate the redundant customer-data flows",
-    detail: "One owner, one canonical path, consumers on change events.",
-    momentumHigh: true,
-    structuralHigh: true,
-    quadrant: "bet",
-    q1Clue: "Count the teams whose services touch that record, then ask whose quarter absorbs the migration.",
-    q2Clue: "Once there is one owner and one path, what would have to happen for three copies to reappear?",
-    answerKey: {
-      prompt: "M4 — Data-flow consolidation",
-      items: [
-        {
-          option: "Momentum cost: Yes (expected)",
-          verdict: "pick",
-          why: "It touches record ownership, three services' contracts and a migration, across teams that each have a committed quarter.",
-        },
-        {
-          option: "Structural impact: Yes (expected)",
-          verdict: "pick",
-          why: "A canonical path with one owner is a shape the estate keeps. Re-duplicating it would require someone to deliberately undo the ownership decision.",
-        },
-        {
-          option: "Common wrong reading: low structural impact",
-          verdict: "avoid",
-          why: "Reads it as 'just a refactor'. It is a refactor that changes who owns a record, which is an architecture decision with a durable effect.",
-        },
-      ],
-    },
-  },
-  {
-    id: "m5",
-    label: "M5 — Add efficiency objectives to product-team goals",
-    detail: "A defined share of team objectives tied to efficiency indicators.",
-    momentumHigh: true,
-    structuralHigh: true,
-    quadrant: "bet",
-    q1Clue: "Objectives are zero-sum inside a quarter. Ask what comes out of the plan to make room for the new one.",
-    q2Clue: "Ask what a new team lead inherits: a preference, or an objective they are assessed on.",
-    answerKey: {
-      prompt: "M5 — Efficiency objectives in team goals",
-      items: [
-        {
-          option: "Momentum cost: Yes (expected)",
-          verdict: "pick",
-          why: "Objectives compete for the same quarter. Adding one without removing anything is how an objective becomes decorative.",
-        },
-        {
-          option: "Structural impact: Yes (expected)",
-          verdict: "pick",
-          why: "What a team is assessed on outlives the person who introduced it, and it changes every prioritisation conversation rather than one of them.",
-        },
-        {
-          option: "Common wrong reading: low momentum cost",
-          verdict: "avoid",
-          why: "Assumes an objective can be added for free. If nothing is taken out, the objective is either ignored or delivered at the cost of something nobody agreed to drop.",
-        },
-      ],
-      teachingNote:
-        "Three measures land in Strategic bets on purpose. The required one-line justification per bet is what stops the exercise collapsing into sorting — a board cannot fund three bets in one year, and saying which one and why is the actual level-3 skill.",
-    },
-  },
-];
-
-export const mapMeasureById = (id: string) => MAP_MEASURES.find((m) => m.id === id)!;
-
-export const MAP_EXERCISE = {
-  id: "ex-map",
-  n: 2,
-  minutes: 6,
-  title: "The trade-off map",
-  intro:
-    "Five measures, two diagnostic questions each. Answer both and the measure moves to its quadrant — you never drag it there directly, because the position is a consequence of the two answers, not a judgement of its own.",
-  material: ["board", "uncertainty"] as MaterialSectionId[],
-  wrongText: "That answer does not hold up for this measure. Read it again, then change the answer.",
-  clueLabel: "Need a clue?",
-  betField: {
-    label: "If you can fund only one strategic bet this year, why this one — or why not this one?",
-    instruction: "One line. Compare it against the other bets on the map, not against doing nothing.",
-    placeholder: "e.g. Fund this one first because it is the only bet that makes the other two cheaper…",
-  },
-  betSamples: {
-    m2: "Not this one first: a gate without published principles becomes a matter of taste, so M2 should follow the principles rather than lead them.",
-    m4: "Not this one first: it is the largest single saving on the map and it consumes the cross-team capacity that any other bet would also need.",
-    m5: "Fund this one: it is the only bet that changes what teams are assessed on, which is what makes the other two survivable when a deadline is at risk.",
-  } as Record<string, string>,
+export const TASK_INTRO = {
+  tag: "TASK · BOARD MEMO BUILDER",
+  title: "Vertex Connected Industries",
+  minutes: 20,
+  materialRefs: ["management", "dimensions", "levers", "measure", "roadmap"] as MaterialSectionId[],
 };
 
 // ---------------------------------------------------------------------------
-// Exercise 3 — the RACI
+// Answer key — the commit-equivalent for this task: which first measure, and
+// on what grounds.
 // ---------------------------------------------------------------------------
 
-export const RACI_ROWS = [
-  { id: "r1", label: "Approving the binding efficiency-monitoring standard" },
-  { id: "r2", label: "Defining and maintaining the architectural principles" },
-  { id: "r3", label: "Enforcing the architecture review gate on individual changes" },
-  { id: "r4", label: "Allocating team capacity for structural improvement work" },
-];
-
-export const TASK_RACI_ROLES = [
-  { id: "cto", name: "CTO / Management", short: "CTO", canBindCapacity: true },
-  { id: "arch", name: "Architecture Board", short: "Arch", canBindCapacity: false },
-  { id: "product", name: "Product Management", short: "Product", canBindCapacity: true },
-  { id: "eng", name: "Engineering Teams", short: "Eng", canBindCapacity: false },
-  { id: "ops", name: "Operations", short: "Ops", canBindCapacity: false },
-];
-
-/** Rows where the A must be able to bind capacity for the assignment to hold. */
-export const CAPACITY_ROWS = ["r4"];
-
-export const RACI_EXERCISE = {
-  id: "ex-raci",
-  n: 3,
-  minutes: 5,
-  title: "Ownership of the efficiency and architecture standard",
-  intro:
-    "Click a cell to cycle it through R, A, C, I and back to blank. The grid checks structure only — exactly one Accountable per row, at least one Responsible — and asks a question when an Accountable cannot bind capacity. It never tells you who should hold which letter.",
-  material: ["raci"] as MaterialSectionId[],
-  violations: {
-    manyA: "More than one Accountable in this row. Two Accountables have no escalation path between them.",
-    noA: "No Accountable in this row. A decision with no owner is one nobody will report as unmade.",
-    noR: "No Responsible in this row. Someone has to do the work.",
-    authority:
-      "Can this role change a team's roadmap? If not, who approves this in practice?",
-  },
-  answerKey: {
-    prompt: "Exercise 3 — RACI for the standard",
-    items: [
-      {
-        option: "Row 1 — Approving the monitoring standard: A = CTO / Management",
-        verdict: "pick",
-        why: "Approval of something binding across products belongs to the role that can require every product to comply. Architecture Board is R here, Product and Ops are C, Engineering is I.",
-      },
-      {
-        option: "Row 2 — Defining the architecture principles: A = Architecture Board",
-        verdict: "pick",
-        why: "Sound, with CTO as C. The principles are a technical artefact and the board owns their content; keep R separate from A where possible so the author is not the sole approver.",
-      },
-      {
-        option: "Row 3 — Enforcing the gate on individual changes: A = Architecture Board",
-        verdict: "pick",
-        why: "Enforcement on a single change is a technical judgement the board can make, provided row 1 and row 2 gave it something binding to enforce. Engineering is R, Product is C.",
-      },
-      {
-        option: "Row 4 — Allocating capacity: A = Architecture Board",
-        verdict: "avoid",
-        why: "The classic failure. Capacity allocation is a budget decision; an architecture board that cannot move a roadmap holds accountability without authority, which produces an agreed standard nobody has time to implement.",
-      },
-      {
-        option: "Row 4 — Allocating capacity: A = CTO / Management (with Product as C)",
-        verdict: "pick",
-        why: "The only assignment that survives contact with a delivery quarter. Product Management is genuinely Consulted here and in some organisations is jointly Accountable with the CTO — but never Accountable alone, or efficiency work loses every prioritisation round.",
-      },
-    ],
-    teachingNote:
-      "More than one grid defends. What does not defend is an A that cannot bind capacity for its row, an A held by a committee, or a row with no R. If a participant gives Product Management the A on row 1, ask what happens when a product's delivery date and the standard conflict.",
-  } as AnswerKeyBlock,
-};
-
-// ---------------------------------------------------------------------------
-// Exercise 4 — the decision that cannot wait
-// ---------------------------------------------------------------------------
-
-export const DECIDE_NOW_FIELDS = [
-  {
-    key: "decision",
-    label: "The decision to take now",
-    instruction: "One decision, stated so that someone could act on it on Monday. Name what becomes binding.",
-    placeholder: "e.g. From 1 October every product exposes the four agreed efficiency indicators; the CTO approves the list…",
-    sample:
-      "From the start of next quarter, every NexLayer product exposes the four agreed efficiency indicators in the shared format, and the CTO signs the standard that makes it binding rather than recommended.",
-  },
-  {
-    key: "assumption",
-    label: "The assumption it rests on",
-    instruction: "What must be true for this to be the right call?",
-    placeholder: "e.g. That the teams can expose these indicators without re-planning committed work…",
-    sample:
-      "That exposing the indicators is additive work teams can absorb without dropping committed features — roughly two to three days per product, not a sprint.",
-  },
-  {
-    key: "signal",
-    label: "The signal that would prove it wrong",
-    instruction: "What would you watch, and by when, to know the assumption failed?",
-    placeholder: "e.g. If fewer than two products have reported by the end of month two…",
-    sample:
-      "If fewer than three of the five products are reporting all four indicators by the end of month two, the assumption that this is absorbable was wrong, and the decision needs funded capacity rather than an obligation.",
-  },
-  {
-    key: "cost",
-    label: "The cost of waiting one more quarter",
-    instruction:
-      "Be specific: what is consumed, what is decided by default, what gets harder.",
-    placeholder: "e.g. Three more months of infrastructure spend nobody can attribute, plus…",
-    sample:
-      "Three more months of infrastructure growth nobody can attribute to a workload; every service shipped in that quarter is built under unchanged conventions, so the eventual consolidation is larger; and the architecture review we would fund next quarter would still be selecting its targets by anecdote.",
-  },
-] as const;
-
-export const DECIDE_NOW_EXERCISE = {
-  id: "ex-decide",
-  n: 4,
-  minutes: 3,
-  title: "The decision that cannot wait",
-  intro:
-    "One decision, stated as a decision. The three fields after it are what make it defensible in front of people who will challenge it.",
-  material: ["uncertainty"] as MaterialSectionId[],
-  answerKey: {
-    prompt: "Exercise 4 — the decision that cannot wait",
-    items: [
-      {
-        option: "The decision — binding, not aspirational",
-        verdict: "pick",
-        why: "Strong: \"From 1 October every product exposes the four agreed indicators; the CTO signs the standard.\" Weak: \"We should improve our monitoring.\" The test is whether someone could act on it on Monday without a further meeting.",
-      },
-      {
-        option: "The assumption — falsifiable",
-        verdict: "pick",
-        why: "Strong: \"Teams can expose these indicators in two to three days without dropping committed work.\" Weak: \"Teams will support this.\" The test is whether you could be shown to be wrong.",
-      },
-      {
-        option: "The falsifier — observable, with a date",
-        verdict: "pick",
-        why: "Strong: \"Fewer than three of five products reporting by end of month two.\" Weak: \"If it does not seem to be working.\" The test is whether two people would agree on the reading.",
-      },
-      {
-        option: "The cost of waiting — concrete",
-        verdict: "pick",
-        why: "Strong: \"Three months of unattributable infrastructure growth, plus every service shipped in that quarter built under unchanged conventions.\" Weak: \"We lose time.\" The test is whether a CFO could recognise the quantity.",
-      },
-    ],
-    teachingNote:
-      "Assess the four fields as a set rather than individually. A binding decision with an unfalsifiable assumption is a preference with a date on it; a good falsifier attached to an aspiration is a measurement of nothing. The set is what makes the memo survive a challenge.",
-  } as AnswerKeyBlock,
+export const FIRST_MEASURE_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "Section 5 — which first measure, and on what grounds",
+  items: [
+    {
+      option: "A — Make the existing approval gate binding (curriculum model answer for Vertex)",
+      verdict: "pick",
+      why: "Vertex already has an approval process on paper; the acute problem is that it is not enforced and two departments hold conflicting mandates. Making the existing gate binding is the cheapest, fastest lever available and directly answers the specific condition — no new structure has to be built, an existing one has to be used.",
+    },
+    {
+      option: "E — Build a full framework (NetSphere's answer — defensible, not automatic here)",
+      verdict: "pick",
+      why: "Still defensible, and structurally the most complete answer. But it costs more time than A while addressing a governance gap that, unlike NetSphere's, already has a process in place — a learner choosing E must explain why building new is better than enforcing what exists, and must still handle the committed budget and the evidenced 5G use case explicitly.",
+    },
+    {
+      option: "B — Modernise the three non-modernised sites",
+      verdict: "avoid",
+      why: "A real, targeted lever (section D, lever 2) — but chosen first it repeats NetSphere's dimension-one finding without touching the governance gap that let the uneven estate happen, and it does nothing for the pilot fleet or the unqualified 5G use cases.",
+    },
+    {
+      option: "C — Qualify all 5G use cases",
+      verdict: "avoid",
+      why: "Necessary and cheap, but narrow — it fixes one of Vertex's five specific conditions and leaves the approval-process, pilot-fleet and estate conditions untouched. A learner choosing C must not imply blanket 5G deprioritisation: one use case is evidenced and should proceed.",
+    },
+    {
+      option: "D — Retrofit lifecycle criteria onto the pilot fleet",
+      verdict: "avoid",
+      why: "Addresses a real, named exposure (the undefined support period) but is the narrowest of the five — it says nothing about the approval process, the uneven estate or the unqualified 5G use cases.",
+    },
+  ],
+  teachingNote:
+    "The point of this task is not that A is secretly 'correct' and E is a trap — both are defensible. What is not defensible is choosing E with a justification that could have been written before reading Vertex's five specific conditions, or choosing any option without an explicit answer to the committed-budget question. Grade the justification's contact with Vertex's specific facts, not the letter chosen.",
 };
