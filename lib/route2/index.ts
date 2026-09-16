@@ -1,13 +1,13 @@
 /**
- * Route 2 — the Level 3 management-decision route: the NetSphere worked
- * example, then the Vertex Board Memo Builder.
+ * Route 2 — the Synervia Board Memo. Curriculum level 3, Module 9.
  *
- * Same shape as Route 1 (CLAUDE.md #12): one material block (A–F, plus the
- * rubric and reflection framing), one task, one export. Self-contained per
- * §13 — nothing here silently depends on Route 1.
+ * Same shape as Route 1 (CLAUDE.md #12): the case once, the whole material
+ * block, then the task, then one export. Route 1's engagement was an
+ * analyst's; this one is a CIO/transformation advisor's, and the question has
+ * moved from "which signals matter" to "which line of measures the
+ * organisation funds, under trade-offs, incomplete information, and who is
+ * allowed to decide".
  */
-
-import type { MaterialSectionId } from "./sections";
 
 export * from "./sections";
 export * from "./material";
@@ -16,75 +16,73 @@ export * from "./task";
 export const LEARNER_NAME_KEY = "learner:name";
 
 // ---------------------------------------------------------------------------
-// Store key map
+// Store key map — everything this route writes.
 // ---------------------------------------------------------------------------
 export const R2 = {
   name: LEARNER_NAME_KEY,
 
-  // -- Material --------------------------------------------------------------
-  hotspotRead: (id: string) => `r2:hotspot:${id}`,
-  openHotspot: "r2:openhotspot",
-  leverOpen: (id: string) => `r2:lever:${id}`,
-  reflection: (id: string) => `r2:reflect:${id}`,
-  reflectionInclude: "r2:reflect:include",
-  micro: (questionId: string) => `r2:micro:${questionId}`,
+  // -- Exercise 1: prioritise & defend ---------------------------------------
+  prioritiseLane: "r2:prioritise:lane",
+  rating: (dimKey: string) => `r2:prioritise:rating:${dimKey}`,
+  ratingNote: (dimKey: string) => `r2:prioritise:note:${dimKey}`,
+  justification: "r2:prioritise:justify",
+  followUp: "r2:prioritise:followup",
+  risk: (n: 1 | 2) => `r2:prioritise:risk:${n}`,
 
-  // -- Task section 1: strategic relevance -----------------------------------
-  relevance: (id: string) => `r2:relevance:${id}`,
-  relevanceRationale: "r2:relevance:rationale",
+  // -- Exercise 2: rank the guiding decisions --------------------------------
+  ranking: "r2:ranking",
+  rankWhy: "r2:rank:why",
+  rankCheck: "r2:rank:check",
 
-  // -- Task section 2: guiding decisions --------------------------------------
-  guidingText: (n: 1 | 2 | 3) => `r2:guiding:${n}:text`,
-  guidingOwner: (n: 1 | 2 | 3) => `r2:guiding:${n}:owner`,
-  guidingQuarter: (n: 1 | 2 | 3) => `r2:guiding:${n}:quarter`,
+  // -- Exercise 3: the trade-off map ------------------------------------------
+  q1: (measureId: string) => `r2:q1:${measureId}`,
+  q2: (measureId: string) => `r2:q2:${measureId}`,
+  bet: (measureId: string) => `r2:bet:${measureId}`,
+  retries: (measureId: string) => `r2:retry:${measureId}`,
+  openMeasure: "r2:open",
 
-  // -- Task section 3: decision logic ------------------------------------------
-  /** Rank slots for the top 3 of 7 criteria, joined "leverage|risk|controllability". */
-  criteriaRank: "r2:criteria:rank",
-  boundary: "r2:boundary",
+  // -- Exercise 4: RACI --------------------------------------------------------
+  raci: (rowId: string, roleId: string) => `r2:raci:${rowId}:${roleId}`,
 
-  // -- Task section 4: trade-offs -----------------------------------------------
-  /** Every link, JSON-encoded: [{a,b,note}]. */
-  tradeOffs: "r2:tradeoffs",
-  /** Which factor node is the pending first click of a new link. Session-shaped but kept in notes for simplicity; cleared on selection. */
-  pendingLink: "r2:tradeoffs:pending",
-
-  // -- Task section 5: first measure ---------------------------------------------
-  firstMeasure: "r2:measure",
-  justification: "r2:justification",
-  committedBudget: "r2:budget",
-
-  // -- Task section 6: governance -------------------------------------------------
-  raci: (responsibilityId: string, roleId: string) => `r2:raci:${responsibilityId}:${roleId}`,
-  reviewMechanism: "r2:review",
-
-  // -- Task section 7: decision now -----------------------------------------------
-  decisionNow: "r2:decisionnow",
-  confidence: "r2:confidence",
-  changeMyMind: "r2:changemymind",
-
-  // -- Self-assessment + check log -------------------------------------------------
-  selfAssess: (id: string) => `r2:selfassess:${id}`,
-  checkLog: "r2:checklog",
-
-  // -- Route chrome -----------------------------------------------------------------
-  bannerDismissed: "r2:banner",
-  mentorSample: "r2:mentor",
-  previewOpenMobile: "r2:previewmobile",
+  // -- Exercise 5: the decision that cannot wait ------------------------------
+  decideNow: (key: string) => `r2:now:${key}`,
 } as const;
 
-/** Everything "Reset to empty" clears: every r2 key, plus the shared name field. */
-export const R2_KEY_PREFIXES = ["r2:", LEARNER_NAME_KEY];
+export const R2_KEY_PREFIXES = [
+  "r2:prioritise:",
+  "r2:ranking",
+  "r2:rank:",
+  "r2:q1:",
+  "r2:q2:",
+  "r2:bet:",
+  "r2:retry:",
+  "r2:open",
+  "r2:raci:",
+  "r2:now:",
+];
 
 export const PAGE_INTRO = {
   tag: "ROUTE 2 — MANAGEMENT DECISION",
-  title: "Governing Connected Infrastructure",
-  body: "Level 3 for Module 8. Route 1 built the technical vocabulary; this route is where it becomes a board decision. Walk NetSphere Industrial Systems GmbH's full reasoning chain — six management dimensions, four levers, one prioritised measure, fully justified — then build your own decision-ready proposal for a different company, under different conditions, in a live memo that assembles as you write it.",
+  title: "The Synervia Board Memo",
+  body: "Route 1 diagnosed seven signals from one company's digitalisation programme. This route is the level above: which line of measures the organisation funds, under trade-offs and incomplete information, and who is allowed to decide. Read how EcoFlow Administration GmbH solved exactly this — a complete worked example, including the option it deliberately did not take — then lead at Synervia Process Group, a company that appears nowhere else in this course.",
 } as const;
 
-export const BANNER = {
-  label: "Suggested sequence",
-  text: "Level 3 material → Level 3 task. Route 1 covers the technical foundations, but this route is self-contained — every concept used here is explained here. Nothing is locked.",
+/** Stated once, above the task. */
+export const SYNERVIA = {
+  company: "Synervia Process Group",
+  role: "Head of digital strategy / CIO / transformation advisor",
+  heading: "The mandate",
+  brief:
+    "Synervia Process Group is under high transformation pressure across several business areas, with departments, IT, sustainability, finance and management holding differing interests in how fast and how far digitalisation should go. Transparency on the indirect environmental impacts of past initiatives is incomplete. Budget is restricted even as leadership wants visible modernisation successes to report. There is a standing risk that digitalisation gets sold internally as an automatic sustainability win. Requirements for manageability, traceability and governance are growing faster than the organisation's capacity to meet them.",
+  conditions: [
+    "High transformation pressure across several business areas at once.",
+    "Differing interests between departments, IT, sustainability, finance and management.",
+    "Incomplete transparency on the indirect environmental impacts of past initiatives.",
+    "Budget restrictions alongside a desire for visible modernisation successes.",
+    "A standing risk that digitalisation is sold internally as an automatic sustainability win.",
+    "Growing requirements for manageability, traceability and governance.",
+  ],
+  mandate: "Produce a decision-ready board memo.",
 } as const;
 
 export const NAME_FIELD = {
@@ -93,5 +91,19 @@ export const NAME_FIELD = {
   placeholder: "e.g. Jane Muller",
 } as const;
 
-/** Material chips shown on the Vertex brief. */
-export const BRIEF_REFS: MaterialSectionId[] = ["management", "measure"];
+export const TASK = {
+  id: "task",
+  tag: "THE TASK",
+  title: "Synervia Board Memo",
+  minutes: 90,
+  framing:
+    "Five exercises, in the order a memo is actually built: what to fund and why, what else should be decided, what it costs to decide it, who owns it afterwards, and what cannot wait for the next round of data. None gates another. The memo assembles on the right as you work.",
+} as const;
+
+export const EXPORT = {
+  filenameLevels: [3],
+  filenameTask: 1,
+  schemaVersion: "day13.route2.v1",
+  docHeading: "Synervia Board Memo",
+  buttonLabel: "Export the Board Memo",
+} as const;

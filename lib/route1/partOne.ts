@@ -1,15 +1,25 @@
 /**
- * Part 1 — Diagnose: the Signal Board. Level 1, ~15 minutes.
+ * The task — Triage, Escalate, Deep Dive. ~20 minutes, covering curriculum
+ * levels 1 and 2 in one part (CLAUDE.md §13; see sections.ts for why Day 13
+ * has no separate Decide stage).
  *
- * Six signals from SmartLink's plan. Placement is the *result* of a diagnosis
- * (CURRICULUM-GUIDE §5): the learner answers two diagnostic questions —
- * potential or risk, and the primary area affected — and the card routes
- * itself to the chosen zone. Then, in place, three required inputs: an
- * improvement approach, the root cause and the time horizon.
+ * Three steps, not one flat list of seven full workups:
  *
- * "Check my routing" reads patterns across the whole board and gives clues; it
- * never names a zone (CLAUDE.md #4). The expected answers below exist for those
- * clues, for the mentor answer keys and for the export — never for the learner.
+ *  1. Triage — all seven signals, but shallow: tag Positive or Negative and
+ *     tap the phrase in the signal that proves it. Checked as a set, because
+ *     the tag is a two-way choice and naming which row is wrong would be the
+ *     answer.
+ *  2. Escalate — the learner picks exactly two signals to take further, with
+ *     a one-line reason. This is the actual level-1 skill: judging what
+ *     deserves attention, not processing everything to the same depth.
+ *  3. Deep dive — only the two escalated signals get the full workup: area,
+ *     direct/indirect effect, improvement approach. Checked per signal, since
+ *     area is a six-way choice.
+ *
+ * Both checks are set/pair-level and never name which specific answer is
+ * wrong (CLAUDE.md #4, #12). After two genuine checks a "show the reasoning"
+ * option opens — recorded in the export — so a learner who is stuck has a
+ * real anchor to reason from, not just repeated guessing.
  */
 
 import type { AnswerKeyBlock } from "@/lib/answerKey";
@@ -17,220 +27,156 @@ import type { IconKey } from "@/lib/routes";
 import type { MaterialSectionId } from "./sections";
 
 // ---------------------------------------------------------------------------
-// Zones
+// Areas — the six-area diagnostic framework taught in S4
 // ---------------------------------------------------------------------------
 
-export type ZoneId = "network" | "iot" | "data" | "energy" | "lifecycle" | "fiveg" | "management";
-export type ZoneFamily = "technology" | "crosscutting";
+export type AreaId = "process" | "data" | "infrastructure" | "behaviour" | "complexity" | "management";
 
-export type Zone = {
-  id: ZoneId;
+export type Area = {
+  id: AreaId;
   name: string;
-  /** The name broken over two lines for the hexagon label. */
-  lines: [string, string];
-  family: ZoneFamily;
   icon: IconKey;
-  /** One line on what belongs here — never what the answer is. */
+  /** One line under the name — what belongs here, never what the answer is. */
   note: string;
+  /** A worked mini-example for the S4 diagram tile — not shown on the deep-dive picker. */
+  example: string;
 };
 
-export const ZONES: Zone[] = [
+export const AREAS: Area[] = [
   {
-    id: "network",
-    name: "Network Operations",
-    lines: ["Network", "Operations"],
-    family: "technology",
-    icon: "network",
-    note: "How the network is run day to day: what is switched on, when, and against what load.",
-  },
-  {
-    id: "iot",
-    name: "IoT Devices",
-    lines: ["IoT", "Devices"],
-    family: "technology",
-    icon: "sensor",
-    note: "The devices themselves: how many, which kind, and what each one needs to keep working.",
+    id: "process",
+    name: "Process Efficiency",
+    icon: "cycle",
+    note: "How work moves through the organisation — steps, delay or rework in one workflow.",
+    example: "An approval that used to pass through four hand-offs now clears in one digital step.",
   },
   {
     id: "data",
-    name: "Data Volume",
-    lines: ["Data", "Volume"],
-    family: "technology",
+    name: "Data Use",
     icon: "database",
-    note: "What is transmitted, stored and processed — and whether anyone uses it.",
+    note: "How much data is collected, duplicated and kept.",
+    example: "Five departments each store their own full copy of the same customer dataset.",
   },
   {
-    id: "energy",
-    name: "Energy Demand",
-    lines: ["Energy", "Demand"],
-    family: "technology",
-    icon: "gauge",
-    note: "Electricity drawn by devices, network and sites, and whether it follows useful load.",
+    id: "infrastructure",
+    name: "Infrastructure",
+    icon: "drive",
+    note: "The hardware, compute, storage and network a system runs on.",
+    example: "A server sized for December's peak runs at a fifth of that capacity every other month.",
   },
   {
-    id: "lifecycle",
-    name: "Life Cycle",
-    lines: ["Life", "Cycle"],
-    family: "crosscutting",
-    icon: "recycleLoop",
-    note: "What a decision commits you to from manufacture to disposal: maintenance, replacement, e-waste.",
+    id: "behaviour",
+    name: "User Behaviour",
+    icon: "person",
+    note: "What people do differently because a system exists.",
+    example: "Staff check a remote dashboard instead of driving out to read a gauge in person.",
   },
   {
-    id: "fiveg",
-    name: "5G Use",
-    lines: ["5G", "Use"],
-    family: "technology",
-    icon: "antenna",
-    note: "Where 5G capacity is deployed, and whether the requirement behind it is real.",
+    id: "complexity",
+    name: "Complexity",
+    icon: "layers",
+    note: "How many systems, integrations and exceptions have accumulated.",
+    example: "Answering one operational question now means checking four separate systems.",
   },
   {
     id: "management",
-    name: "Management Logic",
-    lines: ["Management", "Logic"],
-    family: "crosscutting",
-    icon: "layers",
-    note: "How connectivity decisions are assessed, approved, measured and reviewed.",
+    name: "Management",
+    icon: "gavel",
+    note: "Whether any of the above is reviewed, owned and acted on.",
+    example: "A metric has been collected for a year; no meeting has ever put it on the agenda.",
   },
 ];
 
-export const zoneById = (id: ZoneId): Zone => ZONES.find((z) => z.id === id)!;
-export const isZoneId = (v: string | undefined): v is ZoneId => ZONES.some((z) => z.id === v);
-
-export const ZONE_FAMILIES: Record<ZoneFamily, { label: string; note: string }> = {
-  technology: {
-    label: "Technology domains",
-    note: "A component, a device, a data stream or an energy draw.",
-  },
-  crosscutting: {
-    label: "Cross-cutting domains",
-    note: "A commitment over time or a decision process — not any single component.",
-  },
-};
+export const areaById = (id: AreaId): Area => AREAS.find((a) => a.id === id)!;
 
 // ---------------------------------------------------------------------------
-// The diagnostic questions and the in-place inputs
+// Tags
 // ---------------------------------------------------------------------------
 
-export type Reading = "potential" | "risk" | "both";
-export type RootCause = "technology" | "governance";
-export type Horizon = "short" | "structural";
+export type Sentiment = "positive" | "negative";
+export type Effect = "direct" | "indirect";
 
-export const READINGS: { id: Reading; label: string; hint: string }[] = [
+export const SENTIMENTS: { id: Sentiment; label: string; hint: string }[] = [
   {
-    id: "potential",
-    label: "Sustainability potential",
-    hint: "Handled as planned, this saves energy, emissions or material somewhere.",
+    id: "positive",
+    label: "Positive Signal",
+    hint: "Names a concrete reduction — a trip, a form, a redundant measurement, an idle resource that stopped.",
   },
   {
-    id: "risk",
-    label: "Sustainability risk",
-    hint: "Handled as planned, this adds energy, emissions or material burden somewhere.",
-  },
-  {
-    id: "both",
-    label: "Both — depends on how it is governed",
-    hint: "The same signal can go either way. Say in one line what decides it.",
+    id: "negative",
+    label: "Negative Signal",
+    hint: "Describes new capability, rising duplication, or a gap nobody reviews — nothing concrete was removed.",
   },
 ];
 
-export const ROOT_CAUSES: { id: RootCause; label: string; hint: string }[] = [
+export const EFFECTS: { id: Effect; label: string; hint: string }[] = [
   {
-    id: "technology",
-    label: "Technology use",
-    hint: "Better equipment, or a different way of running it, removes the problem.",
+    id: "direct",
+    label: "Direct",
+    hint: "Happens because the digital system itself is running — its own energy, hardware, compute, storage or network.",
   },
   {
-    id: "governance",
-    label: "Missing governance or architecture decision",
-    hint: "Whatever equipment is bought, the problem returns until someone decides.",
-  },
-];
-
-export const HORIZONS: { id: Horizon; label: string; hint: string }[] = [
-  {
-    id: "short",
-    label: "Visible short-term",
-    hint: "The effect appears within the current operating year.",
-  },
-  {
-    id: "structural",
-    label: "Structurally effective",
-    hint: "It changes how future decisions are made.",
+    id: "indirect",
+    label: "Indirect",
+    hint: "Happens because people or processes changed around the system — behaviour, data growth, new services, faster processes.",
   },
 ];
 
-export const READING_FIELD = {
-  label: "Q1 · Potential or risk?",
-  instruction: "Read the signal as SmartLink currently plans it, not as it could ideally be done.",
-};
-
-export const BOTH_FIELD = {
-  label: "One-line justification",
-  instruction:
-    "Required when you choose Both. Name the condition that decides which way it goes — for example whether the savings are measured, or whether an older layer is retired.",
-  placeholder: "e.g. Potential only where savings are measured against a baseline; otherwise it adds devices and data.",
-};
-
-export const ZONE_FIELD = {
-  label: "Q2 · Primary area affected?",
-  instruction: "Choose where the effect first becomes real — not where it is eventually reported.",
+export const EFFECT_FIELD = {
+  label: "Direct or indirect effect?",
+  instruction: "Ask whether this happens because the system itself runs, or because people or processes changed around it.",
 };
 
 export const APPROACH_FIELD = {
   label: "Improvement approach",
   instruction:
-    "State an action, not a goal. 'Enable load-based deactivation on the aggregation layer at night' — not 'improve efficiency'.",
-  placeholder:
-    "e.g. Network operations enables night-time sleep modes on the aggregation layer, after agreeing latency exceptions.",
-  min: 40,
+    "One sentence: the first concrete step you would take, and who owns it. If it's an efficiency claim, say what stops the saved capacity being used elsewhere.",
+  placeholder: "e.g. Platform owner consolidates the five dashboard copies onto one canonical dataset within the next release cycle.",
 };
 
-export const ROOT_CAUSE_FIELD = {
-  label: "Root cause",
-  instruction: "Ask: would buying better equipment fix this, or would it only postpone it?",
-};
-
-export const HORIZON_FIELD = {
-  label: "Time horizon",
-  instruction:
-    "Short-term = the effect appears within the current operating year. Structural = it changes how future decisions are made.",
+export const AREA_FIELD = {
+  label: "Which area does this belong to?",
+  instruction: "Sort by the effect the signal actually reports, not by the department you'd expect to own the fix.",
 };
 
 // ---------------------------------------------------------------------------
-// The six signals
+// The seven signals
 // ---------------------------------------------------------------------------
 
-export type SignalSample = {
-  reading: Reading;
-  bothWhy?: string;
-  zone: ZoneId;
-  approach: string;
-  rootCause: RootCause;
-  horizon: Horizon;
-};
+/**
+ * A signal's text, broken into tappable spans. A plain string renders as-is;
+ * `{ text, decisive }` renders as a tappable phrase — `decisive: true` is the
+ * one phrase that actually proves the triage tag, the rest are texture or a
+ * plausible-but-wrong anchor. The clue (Step 1) marks every decisive phrase at
+ * once, never singling out which row was wrong.
+ */
+export type Segment = string | { text: string; decisive: boolean };
 
 export type Signal = {
   id: string;
   n: number;
-  /** Short handle used on the board and in the report. */
+  /** Short handle used in the missing list and the report. */
   title: string;
-  /** The signal exactly as the curriculum states it. */
+  /** Where at ProcessNova this was observed. */
+  source: string;
+  /** The signal as the learner reads it, unbroken — used in the deep-dive quote. */
   text: string;
-  /** Expected primary zone, and every zone the answer key accepts as defensible. */
-  zone: ZoneId;
-  acceptableZones: ZoneId[];
-  reading: Reading;
-  acceptableReadings: Reading[];
-  rootCause: RootCause;
-  horizon: Horizon;
-  /**
-   * Directional clue for "Check my routing" when the chosen zone is outside
-   * the defensible set. Points at the reasoning, never at a zone name.
-   */
-  clue: string;
-  material: MaterialSectionId[];
-  /** Mentor demo fill: plausible practitioner work, deliberately not the key. */
-  sample: SignalSample;
+  /** The same text, broken into tappable evidence phrases for the triage step. */
+  segments: Segment[];
+  sentiment: Sentiment;
+  area: AreaId;
+  effect: Effect;
+
+  /** Step 1 (triage) reasoning — why the sentiment tag holds. */
+  triageWhy: string;
+  /** Step 3 (deep dive) directional clues — never name the area or the effect. */
+  areaClue: string;
+  effectClue: string;
+  /** Step 3 reasoning — why the area and effect hold, shown together. */
+  analysisWhy: string;
+
+  /** Demo answer for the mentor auto-fill. */
+  sampleApproach: string;
   answerKey: AnswerKeyBlock;
 };
 
@@ -238,402 +184,546 @@ export const SIGNALS: Signal[] = [
   {
     id: "s1",
     n: 1,
-    title: "Always-on legacy infrastructure",
-    text: "The existing network infrastructure is partly outdated and permanently active, regardless of actual load.",
-    zone: "network",
-    acceptableZones: ["network", "energy"],
-    reading: "risk",
-    acceptableReadings: ["risk", "both"],
-    rootCause: "technology",
-    horizon: "short",
-    clue: "Signal 1 describes equipment that stays switched on whatever the load. Ask which part of the system decides what is switched on and when — not where the electricity bill finally lands.",
-    material: ["infrastructure", "levers"],
-    sample: {
-      reading: "risk",
-      zone: "network",
-      approach:
-        "Network operations enables load-based link and carrier deactivation between 22:00 and 06:00 on the aggregation layer, after agreeing latency exceptions for the two production-critical services.",
-      rootCause: "technology",
-      horizon: "short",
-    },
+    title: "Courier trips eliminated by digital approval workflow",
+    source: "Procurement · workflow migration log",
+    text: "ProcessNova replaced its paper-based supplier approval workflow with a digital form last year. Physical courier trips between the procurement office and three regional sites have stopped entirely, and the paper archive the workflow used to require has been retired.",
+    segments: [
+      "ProcessNova replaced its paper-based supplier approval workflow with a digital form last year. ",
+      { text: "Physical courier trips between the procurement office and three regional sites have stopped entirely", decisive: true },
+      ", and ",
+      { text: "the paper archive the workflow used to require has been retired", decisive: false },
+      ".",
+    ],
+    sentiment: "positive",
+    area: "process",
+    effect: "indirect",
+    triageWhy:
+      "The signal names two removed costs — courier trips and the physical archive — which is exactly what S1 asks a Positive signal to show: a named reduction, not a vague efficiency claim.",
+    areaClue: "The workflow itself did not change what it runs on — ask what it changed about how work reaches people.",
+    effectClue: "Ask whether this is something the software itself consumes, or something people no longer have to do because the software exists.",
+    analysisWhy:
+      "Process Efficiency — the finding is about how an approval step moves through the organisation, not about a technical resource. Indirect — the courier trips and archive did not stop because the digital system itself uses less energy; they stopped because the process around it changed, which is exactly S2's test: it happens because the process changed, not because the system runs.",
+    sampleApproach:
+      "Procurement lead documents the eliminated courier and archive costs as a template case, then proposes the same digital-approval pattern for the two remaining paper-based workflows in Finance.",
     answerKey: {
-      prompt: "Signal 1 — Always-on legacy infrastructure",
+      prompt: "Signal 1 — Courier trips eliminated by digital approval workflow",
       items: [
         {
-          option: "Network Operations (expected)",
+          option: "Positive Signal (expected)",
           verdict: "pick",
-          why: "The defect is an operating mode: capacity powered for uptime rather than for load. It first becomes real in how the network is run — what is switched on, when, and against which traffic. Load-adaptive operation and sleep states are Network Operations levers (S2).",
+          why: "Two concrete costs are named as removed — courier trips and a physical archive. That is exactly the test S1 sets for a Positive signal.",
         },
         {
-          option: "Energy Demand (defensible, weaker)",
-          verdict: "pick",
-          why: "Where the effect is eventually reported: the electricity bill. The Q2 helper exists for exactly this case — almost every signal ends up in Energy Demand, so routing by where it is reported erases the difference between six different findings. Accept it, and ask what the operating decision behind it is.",
+          option: "Negative Signal (strongest wrong answer)",
+          verdict: "avoid",
+          why: "Tempting because a new digital system was introduced, and new systems can raise consumption. But this signal names two removed real-world costs, not a rising one — check what disappeared, not what appeared.",
         },
         {
-          option: "Reading: Sustainability risk (expected)",
+          option: "Process Efficiency (expected)",
           verdict: "pick",
-          why: "As planned, the network keeps drawing baseline power without useful load (S1). Both defends only if the justification names the governing condition — modernisation with load management.",
+          why: "The finding is about how an approval step moves through the organisation, not about a technical resource or a dataset.",
         },
         {
-          option: "Root cause: Technology use (expected)",
-          verdict: "pick",
-          why: "Modern, load-adaptive equipment and enabled sleep states do remove always-on draw. Nothing about this requires a new approval process.",
+          option: "Infrastructure (strongest wrong answer)",
+          verdict: "avoid",
+          why: "A digital form does run on infrastructure, but nothing in this signal reports a hardware, compute or storage finding — it reports a workflow change.",
         },
         {
-          option: "Horizon: Visible short-term (expected)",
+          option: "Indirect (expected)",
           verdict: "pick",
-          why: "Enabling deactivation windows on existing equipment shows in the current operating year's consumption.",
+          why: "The courier trips and archive stopped because the process around the system changed, not because the system itself draws less power.",
         },
       ],
       teachingNote:
-        "A learner who reads 'partly outdated' as a legacy layer awaiting a sunset decision — and tags Missing governance + Structurally effective — has a real argument: retiring a generation is a governance and customer-migration decision (the 3G example in S1). Accept it if the improvement approach names the migration and its owner. What does not hold is Missing governance + Visible short-term: a sunset decision does not pay back inside one operating year.",
+        "Good first signal to anchor the rule on: a real removed cost, cleanly Positive, cleanly Indirect. Signal 7 later gives the contrasting case — a real removed cost that is Direct instead.",
     },
   },
   {
     id: "s2",
     n: 2,
-    title: "Large-scale sensor rollout",
-    text: "New IoT sensors are to be introduced in large numbers across production and buildings.",
-    zone: "iot",
-    acceptableZones: ["iot", "lifecycle"],
-    reading: "both",
-    acceptableReadings: ["both", "risk"],
-    rootCause: "governance",
-    horizon: "structural",
-    clue: "Signal 2 is about how many things are being connected. Ask where that number first becomes a physical fact — before any energy, data or disposal follows from it.",
-    material: ["iot"],
-    sample: {
-      reading: "both",
-      bothWhy:
-        "Potential only where condition monitoring or occupancy-driven HVAC savings are measured against a baseline; everywhere else it adds devices, data and maintenance.",
-      zone: "iot",
-      approach:
-        "Facilities and production IT agree density and use-case criteria before the purchase order: every sensor type needs a named saving, a baseline and a stated support period.",
-      rootCause: "governance",
-      horizon: "structural",
-    },
+    title: "Dashboards duplicating data nobody reconciles",
+    source: "Data platform · storage audit",
+    text: "Since the new data platform launched, five departments have each built their own dashboard, pulling and storing a full copy of the same customer dataset. Nobody owns reconciling the copies, and three of the five haven't been opened in over two months.",
+    segments: [
+      "Since the new data platform launched, five departments have ",
+      { text: "each built their own dashboard, pulling and storing a full copy of the same customer dataset", decisive: true },
+      ". Nobody owns reconciling the copies, and ",
+      { text: "three of the five haven't been opened in over two months", decisive: false },
+      ".",
+    ],
+    sentiment: "negative",
+    area: "data",
+    effect: "indirect",
+    triageWhy:
+      "Five separate full copies of the same dataset, most of them unused, is what S1's mechanisms are supposed to prevent, not produce — nothing here names a reduction, and the finding describes new capability duplicating itself without control.",
+    areaClue: "Ask what artefact is proliferating, not who built it.",
+    effectClue: "The platform's own storage draw is one thing; ask why five full copies exist in the first place.",
+    analysisWhy:
+      "Data Use — the defect is duplicated, unreconciled copies of the same dataset, which is squarely what this area covers. Indirect — per S2, data growth driven by departments' own behaviour (each building its own dashboard) is named as an indirect impact category, even though the resulting bytes sit on infrastructure someone else pays for.",
+    sampleApproach:
+      "Data platform owner sets one canonical customer dataset with read access for all five dashboards, and each department team wires its dashboard to the shared source within the next release cycle.",
     answerKey: {
-      prompt: "Signal 2 — Large-scale sensor rollout",
+      prompt: "Signal 2 — Dashboards duplicating data nobody reconciles",
       items: [
         {
-          option: "IoT Devices (expected)",
+          option: "Negative Signal (expected)",
           verdict: "pick",
-          why: "The signal is the device count itself. Fleet impact is device count × lifetime × replacement rate × data generated (S3), and the first factor is decided here.",
+          why: "Five uncoordinated full copies of one dataset is new capability duplicating without control — no reduction is named anywhere in the signal.",
         },
         {
-          option: "Life Cycle (defensible)",
-          verdict: "pick",
-          why: "A learner who reads 'in large numbers' as a replacement programme in waiting routes to Life Cycle, and that holds. The weak version of the argument is 'IoT is always a lifecycle issue', which would put every device signal in one zone.",
-        },
-        {
-          option: "Data Volume",
+          option: "Positive Signal (strongest wrong answer)",
           verdict: "avoid",
-          why: "Sensors do produce data, but this signal says nothing about what is transmitted or used — that is Signal 4's finding.",
+          why: "New dashboards can look like a transparency win (S1's mechanisms), but transparency only counts once something is actually seen and acted on — three of the five are unopened, and duplication itself is the finding, not a reduction.",
         },
         {
-          option: "Reading: Both — depends on how it is governed (expected)",
+          option: "Data Use (expected)",
           verdict: "pick",
-          why: "IoT's sustainability case is almost always an enabling case: savings elsewhere, real only if measured (S3). The justification line should name that condition.",
+          why: "The defect named is duplicated, unreconciled copies of the same dataset — exactly what Data Use covers.",
         },
         {
-          option: "Reading: Sustainability potential",
+          option: "Management (strongest wrong answer)",
           verdict: "avoid",
-          why: "Reads the sales pitch, not the plan. Nothing in the signal says the savings will be measured or that density has been assessed.",
+          why: "Close, because 'nobody owns reconciling the copies' sounds like an absence of ownership. But the primary finding is the duplication itself, which is a Data Use defect; the missing owner is a secondary detail, not the diagnostic phrase.",
         },
         {
-          option: "Root cause: Missing governance or architecture decision (expected)",
+          option: "Indirect (expected)",
           verdict: "pick",
-          why: "Better sensors lower per-device impact, not the count, the lifetime commitment or the data. The fix is criteria at procurement, where a device decision becomes a multi-year operating commitment.",
-        },
-        {
-          option: "Horizon: Structurally effective (expected)",
-          verdict: "pick",
-          why: "Selection criteria change how every later device decision is made.",
+          why: "The data growth is driven by departments' own behaviour — building separate dashboards — which S2 names explicitly as an indirect impact category.",
         },
       ],
       teachingNote:
-        "Participants often tag Technology use on the grounds that 'the sensors are the technology'. Run the equipment test with them: would a better sensor make a fleet of thousands a smaller commitment? It makes each device smaller; it does not decide how many there should be.",
+        "If a participant argues Management because of 'nobody owns reconciling', accept the observation but redirect: S4's second reasoning rule reserves Management for findings that are entirely about an absent review or rule. Here there is a specific technical defect (duplicated data) to point at directly, which is what makes this Data Use rather than Management.",
     },
   },
   {
     id: "s3",
     n: 3,
-    title: "Battery-powered devices",
-    text: "Battery-powered devices are planned for several areas of application.",
-    zone: "lifecycle",
-    acceptableZones: ["lifecycle", "iot"],
-    reading: "risk",
-    acceptableReadings: ["risk", "both"],
-    rootCause: "governance",
-    horizon: "structural",
-    clue: "Reconsider whether Signal 3 is really about power draw — or about how long devices stay in service, and what happens every time a battery runs out.",
-    material: ["iot"],
-    sample: {
-      reading: "risk",
-      zone: "lifecycle",
-      approach:
-        "Procurement requires mains or PoE power wherever cabling exists, and for battery devices a replaceable battery, a stated service interval and a WEEE take-back route.",
-      rootCause: "governance",
-      horizon: "structural",
-    },
+    title: "Monitoring platform provisioned for peak, running at a fraction",
+    source: "IT infrastructure · monitoring platform capacity report",
+    text: "The new monitoring platform was provisioned for the busiest month of the year, so dashboards never lag during a peak. For the other eleven months, the servers run at roughly a fifth of that capacity, drawing power the whole time regardless of load.",
+    segments: [
+      { text: "The new monitoring platform was provisioned for the busiest month of the year", decisive: false },
+      ", so dashboards never lag during a peak. For the other eleven months, the servers run at roughly a fifth of that capacity, ",
+      { text: "drawing power the whole time regardless of load", decisive: true },
+      ".",
+    ],
+    sentiment: "negative",
+    area: "infrastructure",
+    effect: "direct",
+    triageWhy:
+      "Capacity sized for a peak and left running year-round at a fraction of that draw is provisioned-but-unused resource consuming power regardless of demand — a textbook infrastructure defect, not a process or behaviour one.",
+    areaClue: "Ask what physical or compute resource is sized wrong, not who decided to size it that way.",
+    effectClue: "This is the server's own power draw, independent of who is using it or how — check S2's own list of what counts as direct.",
+    analysisWhy:
+      "Infrastructure — the finding is entirely about server capacity and power draw, sized for a peak and left running idle otherwise. Direct — energy and hardware draw are named explicitly in S2 as direct impact; this happens because the system itself runs, regardless of what any person does around it.",
+    sampleApproach:
+      "Infrastructure lead moves the monitoring platform onto autoscaling capacity that tracks actual load, keeping the peak-month burst as an on-demand ceiling rather than a year-round baseline.",
     answerKey: {
-      prompt: "Signal 3 — Battery-powered devices",
+      prompt: "Signal 3 — Monitoring platform provisioned for peak, running at a fraction",
       items: [
         {
-          option: "Life Cycle (expected)",
+          option: "Negative Signal (expected)",
           verdict: "pick",
-          why: "Batteries convert an energy problem into a maintenance and waste problem at fleet scale (S3). The effect first becomes real as a replacement programme and an e-waste stream, not as grid electricity.",
+          why: "Servers drawing power year-round at a fifth of their provisioned capacity is unused resource cost — no reduction is named anywhere in the signal.",
         },
         {
-          option: "IoT Devices (defensible)",
-          verdict: "pick",
-          why: "Holds if the learner argues that the power supply is a device attribute. The approach then has to address the replacement and disposal consequence, or the finding loses its point.",
-        },
-        {
-          option: "Energy Demand (strongest wrong answer)",
+          option: "Positive Signal (strongest wrong answer)",
           verdict: "avoid",
-          why: "'Battery' sounds like energy. But battery devices barely touch SmartLink's electricity bill — their cost lands in field service and disposal.",
+          why: "The monitoring platform itself may be a genuine improvement elsewhere, but this specific signal only reports capacity sitting idle and drawing power — nothing about it describes a removed cost.",
         },
         {
-          option: "Reading: Sustainability risk (expected)",
+          option: "Infrastructure (expected)",
           verdict: "pick",
-          why: "As planned, several application areas acquire recurring battery replacement and waste. Both defends if the justification names where battery power genuinely avoids cabling work.",
+          why: "The finding is entirely about server capacity and power draw sized for a peak and left running the rest of the year — exactly what this area covers.",
         },
         {
-          option: "Root cause: Missing governance or architecture decision (expected)",
-          verdict: "pick",
-          why: "A longer-life battery postpones the replacement programme; it does not remove it. The fix is a power-supply architecture decision per application area.",
+          option: "Management (strongest wrong answer)",
+          verdict: "avoid",
+          why: "Sizing decisions do get reviewed by someone, but this signal doesn't report an absent review or rule — it reports a specific, measurable resource defect that a capacity change fixes directly.",
         },
         {
-          option: "Horizon: Structurally effective (expected)",
+          option: "Direct (expected)",
           verdict: "pick",
-          why: "The criterion changes every future device purchase; its effect is not visible in this year's consumption.",
+          why: "Server power draw is the system's own resource use, independent of any person's behaviour — the clearest possible case of a direct effect.",
         },
       ],
       teachingNote:
-        "Participants who tag Technology use usually propose energy harvesting or better batteries. Both are legitimate — and both are equipment answers to what the equipment test says is a decision: which application areas justify a battery at all.",
+        "Pairs well with Signal 7 for contrast: both are Infrastructure, one Direct-negative (this one) and one Direct-positive. Useful to show that Direct/Indirect is orthogonal to Positive/Negative — knowing one doesn't tell you the other.",
     },
   },
   {
     id: "s4",
     n: 4,
-    title: "Data collected, not analysed",
-    text: "Data is collected from many sources, but not all of it is actually analysed.",
-    zone: "data",
-    acceptableZones: ["data", "management"],
-    reading: "risk",
-    acceptableReadings: ["risk", "both"],
-    rootCause: "technology",
-    horizon: "short",
-    clue: "Signal 4 is about data that is produced and moved but never used. Ask where that unused data first costs something — before anyone decides anything about it.",
-    material: ["iot", "levers"],
-    sample: {
-      reading: "risk",
-      zone: "management",
-      approach:
-        "Operations and the data owners list every sensor stream against the decision it feeds; streams with no consumer move to event-driven transmission or are switched off.",
-      rootCause: "governance",
-      horizon: "short",
-    },
+    title: "Field staff check equipment status remotely instead of driving out",
+    source: "Operations · field visit log",
+    text: "Field technicians used to drive to three remote facilities every morning just to check equipment status. With the new monitoring dashboard, most checks now happen from the office — but two technicians have started driving out anyway 'to be sure', on top of checking the dashboard.",
+    segments: [
+      "Field technicians used to drive to three remote facilities every morning just to check equipment status. With the new monitoring dashboard, ",
+      { text: "most checks now happen from the office", decisive: true },
+      " — but ",
+      { text: "two technicians have started driving out anyway 'to be sure', on top of checking the dashboard", decisive: false },
+      ".",
+    ],
+    sentiment: "positive",
+    area: "behaviour",
+    effect: "indirect",
+    triageWhy:
+      "'Most checks now happen from the office' names a real, concrete reduction in daily driving — exactly what S1 asks a Positive signal to show. The two technicians who still drive out are a caution worth carrying into a deep dive, not grounds to flip the tag: the reduction described is real and it is the majority case.",
+    areaClue: "Ask what people are doing differently with their day, not what the dashboard itself consumes.",
+    effectClue: "Nothing here is about the dashboard's own power draw — it's entirely about what technicians choose to do.",
+    analysisWhy:
+      "User Behaviour — the whole finding is about what technicians do differently (drive vs. check remotely), not a technical resource. Indirect — per S2, behaviour change is the first item on the indirect list; this happens because people changed their routine around the system, not because the system itself is running.",
+    sampleApproach:
+      "Operations lead reviews with the two technicians why the dashboard alone doesn't yet feel sufficient for those two sites, and fixes the specific trust gap — sensor lag or a missing alert type — rather than treating the workaround as a training problem.",
     answerKey: {
-      prompt: "Signal 4 — Data collected, not analysed",
+      prompt: "Signal 4 — Field staff check equipment status remotely instead of driving out",
       items: [
         {
-          option: "Data Volume (expected)",
+          option: "Positive Signal (expected)",
           verdict: "pick",
-          why: "Unanalysed data is still transmitted, stored and processed. The effect first becomes real as volume — energy spent on data nobody uses — and the lever is protocol and data discipline (S2).",
+          why: "'Most checks now happen from the office' names a real, majority-case reduction in driving — the S1 test for Positive is met even though two technicians haven't fully adopted the change.",
         },
         {
-          option: "Management Logic (defensible)",
-          verdict: "pick",
-          why: "Holds when 'not analysed' is read as the absence of a decision about which data serves which decision. Accept it if the approach names who decides; note that it then overlaps with Signal 6.",
-        },
-        {
-          option: "Energy Demand",
+          option: "Negative Signal (strongest wrong answer)",
           verdict: "avoid",
-          why: "Where the transmission and storage energy is eventually reported. Route by where the effect first becomes real.",
+          why: "The most common misplacement in this exercise: focusing on the two technicians who still drive out and missing that the signal explicitly says 'most' checks moved. A partial rebound risk is real and worth flagging in a deep dive — it isn't enough on its own to flip the sentiment.",
         },
         {
-          option: "Reading: Sustainability risk (expected)",
+          option: "User Behaviour (expected)",
           verdict: "pick",
-          why: "As planned, data keeps growing without use. Both defends only if the justification names the analysis that would turn it into an enabling saving.",
+          why: "The entire finding is about what technicians choose to do with their day — drive or check remotely — not about a technical resource.",
         },
         {
-          option: "Root cause: Technology use (expected)",
-          verdict: "pick",
-          why: "Polling intervals, telemetry frequency, payload size and duplicate streams are settings. Changing how the technology is used removes the waste without buying anything — the cheapest lever in S2, and the least owned.",
+          option: "Infrastructure (strongest wrong answer)",
+          verdict: "avoid",
+          why: "The dashboard runs on infrastructure, but this signal reports nothing about its hardware, compute or power draw — it reports a change in human routine.",
         },
         {
-          option: "Horizon: Visible short-term (expected)",
+          option: "Indirect (expected)",
           verdict: "pick",
-          why: "Moving unused streams to event-driven transmission reduces volume inside the operating year.",
+          why: "Behaviour change is the first item on S2's indirect list — this happens because people changed their routine around the system, not because the system itself is running.",
         },
       ],
       teachingNote:
-        "The mentor demo fill routes this signal to Management Logic and tags it Missing governance + Visible short-term — a plausible practitioner answer that triggers the check's contradiction clue. Use it to show the difference: a governance gap rarely resolves inside one operating year, while a data-discipline setting does.",
+        "The deliberately ambiguous signal in this set. The 'two technicians' detail is real and worth carrying forward — it's a rebound risk (S3) an escalated deep dive should name — but the sentiment tag itself turns on the word 'most', which the material's S1 rule resolves cleanly once applied literally.",
     },
   },
   {
     id: "s5",
     n: 5,
-    title: "5G expanded for speed and flexibility",
-    text: "5G applications are to be expanded mainly because of speed and flexibility.",
-    zone: "fiveg",
-    acceptableZones: ["fiveg", "management"],
-    reading: "risk",
-    acceptableReadings: ["risk", "both"],
-    rootCause: "governance",
-    horizon: "structural",
-    clue: "Signal 5 names a reason for expanding a technology. Ask where that reason is supposed to be tested before anything is deployed.",
-    material: ["fiveg"],
-    sample: {
-      reading: "both",
-      bothWhy:
-        "Potential where a use case needs latency or density that existing connectivity cannot deliver and an older layer is retired; otherwise traffic and layers simply grow.",
-      zone: "fiveg",
-      approach:
-        "The architecture board qualifies each 5G use case against throughput, latency, density and mobility, and approves none without a named layer to retire.",
-      rootCause: "governance",
-      horizon: "structural",
-    },
+    title: "Four systems now needed to answer one operational question",
+    source: "Engineering · integration inventory",
+    text: "Answering 'is production on schedule today' now requires checking the ERP system, the new monitoring dashboard, a spreadsheet nobody has retired, and a chat channel where exceptions get flagged manually. Each was added for a good reason at the time it was introduced.",
+    segments: [
+      "Answering 'is production on schedule today' now ",
+      { text: "requires checking the ERP system, the new monitoring dashboard, a spreadsheet nobody has retired, and a chat channel where exceptions get flagged manually", decisive: true },
+      ". ",
+      { text: "Each was added for a good reason at the time it was introduced", decisive: false },
+      ".",
+    ],
+    sentiment: "negative",
+    area: "complexity",
+    effect: "indirect",
+    triageWhy:
+      "Four separate systems and channels for one operational question is accumulated complexity — the diagnostic phrase is the count and the fact each was added independently, not any single system's defect.",
+    areaClue: "Count what has to be checked, not why any one piece was added.",
+    effectClue: "This describes systems accumulating over time as the organisation added new services, not any one system's current power draw.",
+    analysisWhy:
+      "Complexity — the finding is the count of systems and manual channels required to answer one simple question, which is what this area diagnoses. Indirect — per S2, 'new services' built on top of existing ones over time is named as an indirect impact category; the accumulation is a consequence of process decisions, not any single system's direct draw.",
+    sampleApproach:
+      "Engineering lead runs a one-quarter consolidation: retires the spreadsheet by migrating its one still-used field into the monitoring dashboard, and turns the chat channel's manual exception flag into a dashboard alert.",
     answerKey: {
-      prompt: "Signal 5 — 5G expanded for speed and flexibility",
+      prompt: "Signal 5 — Four systems now needed to answer one operational question",
       items: [
         {
-          option: "5G Use (expected)",
+          option: "Negative Signal (expected)",
           verdict: "pick",
-          why: "The signal is about why 5G capacity gets deployed. 'Speed and flexibility' is not a requirement until the Use-Case Qualifier (S4) has asked whether existing connectivity cannot deliver it.",
+          why: "Four systems and channels for one question is accumulated overhead, not a removed cost — nothing here names a reduction.",
         },
         {
-          option: "Management Logic (defensible)",
-          verdict: "pick",
-          why: "Holds if the learner routes the missing qualification step rather than the deployment. The approach should then name the approval gate.",
-        },
-        {
-          option: "Energy Demand",
+          option: "Positive Signal (strongest wrong answer)",
           verdict: "avoid",
-          why: "The rebound consequence ends up in Energy Demand — which is exactly why it is the wrong place to file it: by the time it shows there, the layers are built.",
+          why: "Each individual system may have been a genuine improvement when it was added — that is exactly the trap. The finding is about the accumulated total, not any one addition.",
         },
         {
-          option: "Reading: Sustainability risk (expected)",
+          option: "Complexity (expected)",
           verdict: "pick",
-          why: "As planned — speed and flexibility as the reason — per-bit efficiency invites rebound, and new layers run alongside old ones (S4).",
+          why: "The count of systems and manual channels needed to answer one question is the textbook Complexity finding from S4.",
         },
         {
-          option: "Reading: Both (defensible)",
-          verdict: "pick",
-          why: "Holds with a justification naming the conditions: an evidenced requirement and a retired layer.",
+          option: "Process Efficiency (strongest wrong answer)",
+          verdict: "avoid",
+          why: "Close, and S4's third reasoning rule addresses this pair directly: Process Efficiency is about how one workflow moves; this signal names a count of systems, which points to Complexity instead.",
         },
         {
-          option: "Root cause: Missing governance or architecture decision (expected)",
+          option: "Indirect (expected)",
           verdict: "pick",
-          why: "More efficient radio units do not answer whether the use case needed 5G. The per-bit gain is real; the missing piece is the decision rule.",
-        },
-        {
-          option: "Horizon: Structurally effective (expected)",
-          verdict: "pick",
-          why: "A qualification rule changes every later deployment decision.",
+          why: "The accumulation happened as new services were added over time — a process consequence, not any single system's own resource draw.",
         },
       ],
       teachingNote:
-        "The honest counter-case: some industrial use cases do need deterministic latency or high device density, and for those 5G is justified. The finding is not that 5G is wrong — it is that 'speed and flexibility' has not yet been turned into an evidenced requirement.",
+        "The multiplier signal in this set — it explains why fixing any one system (Signal 3's capacity, Signal 2's duplication) doesn't make the organisation feel simpler, because the count of things to check never drops. A strong escalation candidate for that reason.",
     },
   },
   {
     id: "s6",
     n: 6,
-    title: "No integrated lifecycle assessment",
-    text: "There is no integrated sustainability or lifecycle assessment for network and IoT decisions.",
-    zone: "management",
-    acceptableZones: ["management", "lifecycle"],
-    reading: "risk",
-    acceptableReadings: ["risk"],
-    rootCause: "governance",
-    horizon: "structural",
-    clue: "Re-read what Signal 6 actually describes: not a component or a device, but the absence of a process.",
-    material: ["system", "iot", "infrastructure"],
-    sample: {
-      reading: "risk",
-      zone: "management",
-      approach:
-        "The CIO's architecture board adds energy, device-density and lifecycle criteria to every network and IoT approval, with one owner presenting the results at each quarterly review.",
-      rootCause: "governance",
-      horizon: "structural",
-    },
+    title: "Sustainability metrics collected, never reviewed",
+    source: "IT & Sustainability liaison · quarterly notes",
+    text: "The monitoring platform has tracked estimated energy use per system since launch. The figures sit in an export nobody has opened since the platform went live, and no meeting has ever had them on the agenda.",
+    segments: [
+      "The monitoring platform has tracked estimated energy use per system since launch. ",
+      { text: "The figures sit in an export nobody has opened since the platform went live", decisive: false },
+      ", and ",
+      { text: "no meeting has ever had them on the agenda", decisive: true },
+      ".",
+    ],
+    sentiment: "negative",
+    area: "management",
+    effect: "indirect",
+    triageWhy:
+      "Tracking a metric is transparency capability, but nothing here shows it doing any work — no review, no agenda item, no decision traced back to it. S1's rule is explicit: capability that never gets used is a different claim from a realised reduction, and nothing here claims a reduction.",
+    areaClue: "The data collection itself works fine — ask who looks at it, when, and to decide what.",
+    effectClue: "This is about whether anyone reviews the figures, not about the platform's own power draw while collecting them.",
+    analysisWhy:
+      "Management — per S4's second reasoning rule, an absence of review, ownership or a rule belongs in Management even when it appears next to a data-looking symptom (an unopened export). Indirect — the missing review loop is a process gap, not the system's own resource draw.",
+    sampleApproach:
+      "Sustainability liaison adds the energy-use export as a standing agenda item on the monthly IT review, with one named owner who brings one action proposal each time.",
     answerKey: {
-      prompt: "Signal 6 — No integrated lifecycle assessment",
+      prompt: "Signal 6 — Sustainability metrics collected, never reviewed",
       items: [
         {
-          option: "Management Logic (expected)",
+          option: "Negative Signal (expected)",
           verdict: "pick",
-          why: "The signal describes the absence of an assessment inside the decision process. Nothing in it is a component; everything in it is how decisions are made.",
+          why: "Transparency capability exists (S1's mechanism) but is never used — no review, no agenda, no decision. Nothing here claims a realised reduction.",
         },
         {
-          option: "Life Cycle (defensible)",
-          verdict: "pick",
-          why: "Holds if 'lifecycle assessment' is read as the missing content rather than the missing process. Weaker, because the signal names sustainability assessment in general and applies to network decisions, not only devices.",
-        },
-        {
-          option: "Any technology domain",
+          option: "Positive Signal (strongest wrong answer)",
           verdict: "avoid",
-          why: "A process gap does not live in a device, a link or a data stream. This is the signal most often pulled into a technology zone by association with the rest of the plan.",
+          why: "Tracking the metric sounds like the transparency mechanism from S1 working — but S1 is explicit that capability which never gets used is a different claim from a realised benefit.",
         },
         {
-          option: "Reading: Sustainability risk (expected)",
+          option: "Management (expected)",
           verdict: "pick",
-          why: "An absent assessment cannot save anything by itself. Reading it as potential confuses the fix with the finding.",
+          why: "What's missing is a review cadence, an owner and an agenda item — exactly the absence S4's second reasoning rule reserves for Management, even though the surface detail (an unopened export) looks data-related.",
         },
         {
-          option: "Root cause: Missing governance or architecture decision (expected)",
-          verdict: "pick",
-          why: "No equipment purchase creates an assessment process.",
+          option: "Data Use (strongest wrong answer)",
+          verdict: "avoid",
+          why: "The most common misplacement in this exercise: 'an unopened export' reads like a data problem. But the data itself is not duplicated, wrong or excessive — the defect is entirely that nobody reviews it, which is a Management finding.",
         },
         {
-          option: "Horizon: Structurally effective (expected)",
+          option: "Indirect (expected)",
           verdict: "pick",
-          why: "An assessment changes how every future network and IoT decision is made; its first effect is on decisions, not on this year's consumption.",
+          why: "The missing review loop is a process gap around the system, not the platform's own resource draw while it collects the figures.",
         },
       ],
       teachingNote:
-        "This is the signal the check's technology-overload clue points at. It is also the finding Option B in Part 2 answers most directly — a good question for learners who choose A or C is what they would do about it.",
+        "Deliberately parallel to Signal 2, where the surface detail is also 'unopened' — here the fix is a review loop, not a data-ownership fix, because the underlying defect this time is genuinely an absent process rather than uncontrolled duplication. Good pair to contrast during the deep dive if both get escalated.",
+    },
+  },
+  {
+    id: "s7",
+    n: 7,
+    title: "Batch reporting replaces always-on polling",
+    source: "IT infrastructure · database load report",
+    text: "The customer analytics service used to poll the production database every thirty seconds around the clock. It was rebuilt this quarter to pull data once, in a single nightly batch — database load from this service has dropped by roughly the same margin, measured directly on the database's own request logs.",
+    segments: [
+      "The customer analytics service used to poll the production database every thirty seconds around the clock. It was ",
+      { text: "rebuilt this quarter to pull data once, in a single nightly batch", decisive: false },
+      " — ",
+      { text: "database load from this service has dropped by roughly the same margin, measured directly on the database's own request logs", decisive: true },
+      ".",
+    ],
+    sentiment: "positive",
+    area: "infrastructure",
+    effect: "direct",
+    triageWhy:
+      "The load reduction is measured directly on the database's own request logs, not inferred from a downstream behaviour change — a genuine drop in what the system itself does, which is exactly the kind of concrete reduction S1 asks a Positive signal to name.",
+    areaClue: "This is about a technical resource pattern — how often a service queries the database — not about how a person's workflow changed.",
+    effectClue: "The reduction is measured on the database's own request logs — ask whether that's the system running, or a person's behaviour changing.",
+    analysisWhy:
+      "Infrastructure — the finding is a technical resource pattern (query frequency against a database), which is what this area covers regardless of which application-layer service triggered it. Direct — the reduction is measured on the database's own request logs, which per S2 is exactly a direct-impact measurement: it happens because the system itself runs less often, independent of any person's behaviour.",
+    sampleApproach:
+      "Platform team documents the polling-to-batch pattern as a reusable template and audits the two remaining services still polling the same database on a short interval.",
+    answerKey: {
+      prompt: "Signal 7 — Batch reporting replaces always-on polling",
+      items: [
+        {
+          option: "Positive Signal (expected)",
+          verdict: "pick",
+          why: "The load drop is measured directly on the database's own request logs — a concrete, verified reduction, exactly the S1 test for Positive.",
+        },
+        {
+          option: "Negative Signal (strongest wrong answer)",
+          verdict: "avoid",
+          why: "Rebuilding a service can sound like added complexity or cost, but the signal reports a measured drop in database load as the outcome — the rebuild is the method, not the finding.",
+        },
+        {
+          option: "Infrastructure (expected)",
+          verdict: "pick",
+          why: "Query frequency against a database is a technical resource pattern, which is what Infrastructure covers, regardless of which application triggered the change.",
+        },
+        {
+          option: "Process Efficiency (strongest wrong answer)",
+          verdict: "avoid",
+          why: "Tempting because 'a service was rebuilt' sounds like a process change. But the actual finding — reduced database load, measured on the database's own logs — is a technical resource outcome, not a workflow one.",
+        },
+        {
+          option: "Direct (expected)",
+          verdict: "pick",
+          why: "Measured directly on the database's own request logs — the system running less often, independent of any person's behaviour. The clearest Direct-positive case in this set.",
+        },
+      ],
+      teachingNote:
+        "The clean contrast to Signal 1: both Positive, but Signal 1 is Indirect (a process changed around a system) and this one is Direct (the system itself does measurably less). Useful for showing the two axes — sentiment and effect — are independent of each other.",
     },
   },
 ];
 
 export const signalById = (id: string): Signal => SIGNALS.find((s) => s.id === id)!;
 
-/** `Battery-powered devices are planned for several…` — the handle the missing list quotes. */
-export function signalExcerpt(signal: Signal, words = 6): string {
-  const all = signal.text.replace(/[.]$/, "").split(/\s+/);
-  return all.length <= words ? all.join(" ") : `${all.slice(0, words).join(" ")}…`;
-}
-
 // ---------------------------------------------------------------------------
-// Framing
+// Framing — three steps
 // ---------------------------------------------------------------------------
 
-export const PART_ONE = {
-  id: "part-1",
-  tag: "PART 1 · DIAGNOSE — THE SIGNAL BOARD",
-  title: "Six signals from SmartLink's plan",
-  minutes: 15,
+export const TASK_INTRO = {
+  id: "task",
+  tag: "THE TASK",
+  title: "Seven signals from ProcessNova's digitalisation programme",
+  minutes: 20,
   framing:
-    "Placement is the result of a diagnosis. Open a signal, read it, and answer the two diagnostic questions — the card then routes itself to the zone you chose. Complete it in place with an improvement approach, the root cause and the time horizon. Work in any order and re-route any card at any time; undo and redo with the buttons or Ctrl/⌘+Z and Ctrl/⌘+Shift+Z. When you are ready, Check my routing reads the pattern of your board and gives clues — never answers.",
-  stepA: "Step A · Read the signal",
-  stepB: "Step B · Two diagnostic questions",
-  stepC: "Step C · Routing",
-  stepD: "Step D · Complete it in place",
-  referenceLevers: "Reference: Lever Map",
-  referenceWheel: "Reference: IoT Lifecycle Wheel",
-  moveLabel: "Move signal",
-  intake: "Intake",
-  waitingToRoute: "Answer both questions and the card routes itself.",
-  stepDPlaceholder:
-    "Improvement approach, root cause and time horizon open here once the signal lands in a zone.",
-  checkLabel: "Check my routing",
+    "These seven signals were collected during a review of ProcessNova's digitalisation programme — from workflow logs, platform capacity reports and conversations with field and engineering teams. You will not have time to give all seven a full workup, and that is deliberate: triage all seven shallowly, escalate the two that most deserve a closer look, then go deep on those two alone.",
+} as const;
+
+export const TRIAGE = {
+  step: "Step 1",
+  title: "Triage all seven signals",
+  minutes: 8,
+  intro:
+    "For each signal, tag it Positive or Negative and tap the phrase in the signal itself that proves your tag. Check the set when you're done — the check reports how many rows hold, never which ones, since the tag is a two-way choice.",
+  material: ["lever", "impact"] as MaterialSectionId[],
+  rule: {
+    label: "Rule from the material — your anchor",
+    text: "Does the signal name a concrete reduction — a trip, a form, a redundant measurement, an idle resource that stopped? If yes, it's Positive. If it only describes new capability, rising duplication, or a gap nobody reviews: Negative.",
+  },
+  becauseLabel: "Because",
+  evidencePrompt: "Tap the phrase in the signal that proves your tag.",
+  checkLabel: "Check my triage",
   recheckLabel: "Check again",
-  checkTooEarly: "Route at least two signals first — the check reads patterns across the board, not a single card.",
-  checkClean:
-    "Nothing in the pattern of your routing contradicts the material. That is not a verdict on each card — keep testing your improvement approaches against S1–S4.",
-  checkLead: "Clues from the pattern of your board",
+  clueLabel: "Need a clue?",
+  clueText: "The decisive phrase in every signal is now marked. Read it again against the rule above, then retag the ones that don't fit yet.",
+  revealAfter: 2,
+  revealLabel: "Show the reasoning",
+  whyHolds: "Why this holds",
+  whyNot: "Why this doesn't hold yet",
+  result: (ok: number, total: number) =>
+    ok === total
+      ? `All ${total} hold up — tag and evidence.`
+      : `${ok} of ${total} hold up. A row holds when the tag is right and the phrase you tapped is the one that decides it.`,
+  incomplete: (items: string[]) => `Before checking: ${items.join("; ")}.`,
+  stale: "You've changed an answer since the last check — check again to see where you stand now.",
+  revealNote: (at: number) => `Reasoning shown after ${at} check${at === 1 ? "" : "s"} — recorded in the export.`,
+} as const;
+
+export const ESCALATE = {
+  step: "Step 2",
+  title: "Escalate two for a deeper look",
+  minutes: 3,
+  limit: 2,
+  intro:
+    "You will not analyse all seven in depth — pick the two signals that most deserve it, and say why. This is the actual skill: judging where attention pays off, not processing everything to the same depth.",
+  material: ["rebound"] as MaterialSectionId[],
+  fullNote: "Two are already selected. Remove one first, then choose a different signal.",
+  whyField: {
+    label: "Why these two?",
+    instruction: "One or two sentences. Argue from leverage — what's expensive or structural — not from what's easiest to write about.",
+    placeholder: "e.g. These two point at accumulated, system-level effects rather than one-off behaviour, and each explains findings the other five don't…",
+  },
+} as const;
+
+export const ANALYSIS = {
+  kicker: "Deep dive",
+  step: "Step 3",
+  title: "Analyse your two",
+  minutes: 9,
+  intro: "Full workup: which area it belongs to, whether the effect is direct or indirect, and the first concrete improvement you'd make.",
+  triageReminder: "Your triage",
+  notTriaged: "You have not tagged this signal yet — do that in Step 1 first.",
+  checkLabel: "Check area & effect",
+  recheckLabel: "Check again",
+  checkScope: "Checks the area and the effect together — never your wording.",
+  clueLabel: "Need a clue?",
+  revealAfter: 2,
+  revealLabel: "Show the reasoning",
+  incomplete: "Pick an area and an effect before checking.",
+  holds: "That holds up — area and effect both fit. Carry on with the improvement approach.",
+  wrong: "That doesn't hold up yet. Look again, or ask for a clue.",
+  stale: "You've changed an answer since the last check — check again to see where you stand now.",
+  whyLabel: "Why",
+  revealNote: "Reasoning shown after two checks — recorded in the export.",
+} as const;
+
+// ---------------------------------------------------------------------------
+// Mentor-only answer keys for the two set-level checks
+// ---------------------------------------------------------------------------
+
+export const TRIAGE_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "Triage — expected tag and decisive phrase per signal",
+  items: SIGNALS.map((s) => {
+    const decisive = s.segments.find((seg): seg is { text: string; decisive: boolean } =>
+      typeof seg !== "string" && seg.decisive,
+    );
+    const label = SENTIMENTS.find((r) => r.id === s.sentiment)!.label;
+    return {
+      option: `Signal ${s.n} — ${s.title}`,
+      verdict: "pick" as const,
+      why: `${label}, because "${decisive?.text}". ${s.triageWhy}`,
+    };
+  }),
+  teachingNote:
+    "Every row's non-decisive phrase is a plausible wrong anchor, not a distractor for its own sake — Signal 3's 'provisioned for the busiest month' reads like a Management sizing decision, Signal 6's 'unopened export' reads like a Data Use problem. A learner who ends up on the wrong tag or area has usually anchored on that phrase.",
+};
+
+export const ESCALATION_ANSWER_KEY: AnswerKeyBlock = {
+  prompt: "Which two signals are worth escalating",
+  items: [
+    {
+      option: "Signal 5 — Four systems now needed to answer one operational question",
+      verdict: "pick",
+      why: "The multiplier signal — it explains why fixing any single system elsewhere doesn't make the organisation feel simpler. A strong pick if the rationale is 'fix the cause of the causes'.",
+    },
+    {
+      option: "Signal 6 — Sustainability metrics collected, never reviewed",
+      verdict: "pick",
+      why: "The structural governance gap: capability exists but nothing acts on it. A strong pick if the rationale is 'without a review loop, every other fix here eventually drifts back'.",
+    },
+    {
+      option: "Signal 2 — Dashboards duplicating data nobody reconciles",
+      verdict: "pick",
+      why: "A clear, concrete Data Use defect with a traceable fix. A strong pick if the rationale is 'this is the most wasteful single finding in the set'.",
+    },
+    {
+      option: "Signal 3 — Monitoring platform provisioned for peak, running at a fraction",
+      verdict: "pick",
+      why: "The clearest Direct-effect finding, measurable and fixable with a capacity change. A strong pick if the rationale is 'this is the most measurable single waste in the set'.",
+    },
+    {
+      option: "Signal 1 — Courier trips eliminated by digital approval workflow",
+      verdict: "avoid",
+      why: "Real, and worth celebrating, but it's already a completed win with nothing further to diagnose — escalating it spends a slot confirming success rather than finding leverage.",
+    },
+    {
+      option: "Signal 4 — Field staff check equipment status remotely instead of driving out",
+      verdict: "avoid",
+      why: "A good signal to have triaged carefully, but its deep dive is thin: the area and effect are clear once the ambiguity is resolved, and the improvement (address two technicians' trust gap) is narrow compared to the structural signals.",
+    },
+    {
+      option: "Signal 7 — Batch reporting replaces always-on polling",
+      verdict: "avoid",
+      why: "Like Signal 1, a genuine and already-realised win. Strong as a triage example of a Direct-positive effect; thin as a deep-dive target since the fix (audit remaining pollers) is a small, bounded follow-up rather than a structural question.",
+    },
+  ],
+  teachingNote:
+    "There is no single correct pair. The assessment criterion is whether the written justification argues from leverage — structural, explains other findings, or genuinely costly — rather than from what happens to be quickest to write up. A pair of 1 and 7 (both already-solved wins) with a leverage-based justification is a worse answer than a pair of 5 and 6 with none.",
 };

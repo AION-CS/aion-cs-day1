@@ -1,19 +1,14 @@
 /**
- * Route 1 — the SmartLink Operations engagement. One case, one arc, one
- * deliverable.
+ * Route 1 — the ProcessNova engagement. One case, one arc, one deliverable.
  *
- * Day 13 ships two routes (CLAUDE.md #12, CURRICULUM-GUIDE.md §2): this one
- * carries curriculum levels 1 and 2, Route 2 carries level 3. The shape is
- * material-first — all seven sections are taught before any interaction — then
- * one task with two internal parts on a single continuous scroll (Part 1, the
- * Signal Board; Part 2, the Decision Scorecard), then one export.
+ * Day 13 ships one route only (see routes.ts and sections.ts for why): it
+ * covers curriculum levels 1 and 2 in a single triage-escalate-deep-dive task,
+ * not a two-part diagnose-then-decide engagement. The shape is still
+ * material-first — all four sections are taught before any interaction — then
+ * one task on a single continuous scroll, then one export.
  *
  * Everything that would otherwise be said twice lives here and only here: the
- * company, the learner's name field, the suggested-sequence banner, the
- * handover between the parts, and the export contract.
- *
- * Nothing in lib/route1 may import a "use client" module: the route page is a
- * server component and reads PAGE_INTRO from here.
+ * company, the role, the learner's name field, and the export contract.
  */
 
 import type { MaterialSectionId } from "./sections";
@@ -21,88 +16,78 @@ import type { MaterialSectionId } from "./sections";
 export * from "./sections";
 export * from "./material";
 export * from "./partOne";
-export * from "./partTwo";
 
 export const LEARNER_NAME_KEY = "learner:name";
 
 // ---------------------------------------------------------------------------
-// Store key map — every key this route writes, both parts, one prefix.
+// Store key map — every key this route writes.
 // ---------------------------------------------------------------------------
 export const R1 = {
   name: LEARNER_NAME_KEY,
 
-  // -- Part 1: the Signal Board ---------------------------------------------
-  /** "potential" | "risk" | "both" */
-  reading: (signalId: string) => `r1:reading:${signalId}`,
-  /** The one-line justification required when the reading is "both". */
-  bothWhy: (signalId: string) => `r1:bothwhy:${signalId}`,
-  /** The zone the signal is routed to. */
-  zone: (signalId: string) => `r1:zone:${signalId}`,
+  // -- Step 1: triage (all seven) --------------------------------------------
+  triageTag: (signalId: string) => `r1:triage:tag:${signalId}`,
+  /** Index into the signal's `segments` array of the phrase the learner tapped. */
+  triageEvidence: (signalId: string) => `r1:triage:ev:${signalId}`,
+  /** Stringified count of "Check my triage" presses — exported for grading. */
+  triageChecks: "r1:triage:checks",
+  /** The triage signature (every row's tag+evidence) as of the last check, to detect a stale result. */
+  triageLastSig: "r1:triage:lastsig",
+  /** How many rows held as of the last check. */
+  triageLastOk: "r1:triage:lastok",
+  /** toggleCheck: the clue (every decisive phrase marked) has been opened. */
+  triageClue: "r1:triage:clue",
+  /** toggleCheck: "Show the reasoning" was used, after two genuine checks. */
+  triageReveal: "r1:triage:reveal",
+  /** How many checks had been made when the reasoning was revealed — exported for grading. */
+  triageRevealAt: "r1:triage:revealat",
+
+  // -- Step 2: escalate -------------------------------------------------------
+  /** The two escalated signal ids, joined with "|" — the store holds no arrays. */
+  escalate: "r1:escalate",
+  escalateWhy: "r1:escalate:why",
+
+  // -- Step 3: deep dive (the two escalated signals only) ---------------------
+  area: (signalId: string) => `r1:area:${signalId}`,
+  effect: (signalId: string) => `r1:effect:${signalId}`,
   approach: (signalId: string) => `r1:approach:${signalId}`,
-  /** "technology" | "governance" */
-  rootCause: (signalId: string) => `r1:root:${signalId}`,
-  /** "short" | "structural" */
-  horizon: (signalId: string) => `r1:horizon:${signalId}`,
-  /**
-   * Which signal card is expanded. Persisted rather than component-local so a
-   * missing-item click can open the right card before scrolling to a field
-   * inside it — a missing entry that lands on a collapsed panel is a dead
-   * click, which CLAUDE.md #2 does not allow.
-   */
-  openSignal: "r1:open",
-  /** markSeen bucket: the order signals were first routed. */
-  routed: "r1:routed",
-  /** JSON log of "Check my routing" presses: [{ at, clues }]. Exported for grading. */
-  checkLog: "r1:checklog",
-
-  // -- Part 2: the Decision Scorecard ---------------------------------------
-  /** One key per criterion, holding the three rank slots as "B|A|C" ("" = empty slot). */
-  rank: (criterionId: string) => `r1:rank:${criterionId}`,
-  chosen: "r1:chosen",
-  justification: "r1:justification",
-  followUp: (n: 1 | 2) => `r1:followup:${n}`,
-  risk: (n: 1 | 2) => `r1:risk:${n}`,
-  /** JSON log of "Check my reasoning" presses. */
-  reasonLog: "r1:reasonlog",
-
-  // -- Material --------------------------------------------------------------
-  /** A micro-check answer. Not graded, never part of the missing list. */
-  micro: (questionId: string) => `r1:micro:${questionId}`,
-
-  // -- Route chrome ----------------------------------------------------------
-  bannerDismissed: "r1:banner",
-  /** True from a mentor demo fill until "Reset to empty" — stamps every export. */
-  mentorSample: "r1:mentor",
+  /** Stringified count of Check presses on one deep-dive signal — exported for grading. */
+  analysisChecks: (signalId: string) => `r1:an:checks:${signalId}`,
+  /** The area:effect signature as of that signal's last check, to detect staleness. */
+  analysisLastSig: (signalId: string) => `r1:an:lastsig:${signalId}`,
+  /** markSeen bucket: signals whose deep-dive clue was opened at least once. */
+  clues: "r1:clues",
+  /** toggleCheck per signal: "Show the reasoning" was used, after two genuine checks. */
+  analysisReveal: (signalId: string) => `r1:an:reveal:${signalId}`,
 } as const;
 
-/** Everything "Reset to empty" clears: every r1 key, plus the shared name field. */
-export const R1_KEY_PREFIXES = ["r1:", LEARNER_NAME_KEY];
+/** Prefixes resetSection() must sweep to clear every compound key this route writes. */
+export const R1_KEY_PREFIXES = [
+  "r1:triage:",
+  "r1:escalate",
+  "r1:area:",
+  "r1:effect:",
+  "r1:approach:",
+  "r1:an:",
+  "r1:clues",
+];
 
 export const PAGE_INTRO = {
   tag: "ROUTE 1 — DIAGNOSE & DECIDE",
-  title: "The SmartLink Operations Engagement",
-  body: "Module 8. Connectivity is usually presented as progress. This route teaches you to read it the way a network architect or a sustainability lead does — as capacity that has to be provisioned, powered, maintained, replaced and disposed of, whether or not anyone is using it. The seven sections below are the whole teaching block. Then you work one engagement at SmartLink Operations: six signals to diagnose on the Signal Board, and one line of measures to rank, choose and defend.",
-} as const;
-
-/** Suggested order — a dismissible note, never a lock (CLAUDE.md #6). */
-export const BANNER = {
-  label: "Suggested sequence",
-  text: "Material (S1–S7) → Part 1, the Signal Board → Part 2, the Decision Scorecard. You may move freely between sections at any time; nothing is locked.",
+  title: "The ProcessNova Engagement",
+  body: "Module 9, day one. Digitalisation is a lever, not a guarantee: the four sections below are the whole teaching block — the five mechanisms that make it a genuine sustainability lever, the line between what a system itself consumes and what changes around it, why an efficiency gain doesn't automatically stay banked, and the six-area framework that sorts a finding before it can be acted on. Then you work one engagement at ProcessNova Services: seven signals to triage, two to take further.",
 } as const;
 
 /** Stated once, above the material, and never re-introduced mid-page. */
 export const ENGAGEMENT = {
-  company: "SmartLink Operations",
-  role: "Network and IoT sustainability reviewer",
+  company: "ProcessNova Services",
+  role: "Digital sustainability analyst",
   heading: "The engagement",
-  brief: [
-    "SmartLink Operations is modernising its network infrastructure, rolling out connected sensors across production and building management, and expanding mobile 5G applications. Management associates this programme with efficiency, innovation and modernisation. IT and operations are less certain: nobody has assessed the energy demand, the added device density, the data volumes or the long-term operating load.",
-    "Six signals from the current plan are on the table. None of them is obviously wrong. Each of them carries a sustainability consequence that is not yet visible in the business case.",
-  ],
-  mandate:
-    "Your job: diagnose each signal, route it to the part of the system it actually affects, and state what you would do about it — then decide which single line of measures SmartLink should prioritise.",
+  brief:
+    "ProcessNova Services has digitalised most of its paper-based processes over the past two years. New dashboards, data platforms and monitoring solutions have been introduced across procurement, operations and engineering; process lead times have shortened; and storage, data-analysis and infrastructure needs are rising steadily. Departments keep requesting new digital analyses and functions. No systematic environmental assessment of any of this exists.",
+  mandate: "You have been brought in to sort what has actually happened — and to say where a closer look pays off.",
   deliverable:
-    "You leave with one document: Part 1 is the Sustainability Signal Report, Part 2 is the Prioritisation Decision Memo.",
+    "You leave with one document: a Signal Triage & Deep-Dive Report covering all seven signals and the full workup on the two you escalated.",
 } as const;
 
 export const NAME_FIELD = {
@@ -112,49 +97,19 @@ export const NAME_FIELD = {
 } as const;
 
 /**
- * The handover between the two parts. Inline, small, and built from the
- * learner's own routing — Part 2 has to read as caused by Part 1, not merely
- * printed after it (CLAUDE.md #12). It is never a gate.
- */
-export const HANDOVER = {
-  id: "r1-handover",
-  kicker: "Handover",
-  heading: "You can see the system. Now decide what to fund.",
-  body: "A board of signals is not a decision. SmartLink can prioritise one line of measures, and the signals you routed are the evidence each option has to answer to.",
-  tally: (p: {
-    routed: number;
-    total: number;
-    zonesUsed: number;
-    governance: number;
-    technology: number;
-    short: number;
-    structural: number;
-  }) =>
-    p.routed === 0
-      ? "No signals routed yet — the split below fills in as you work the board."
-      : `You routed ${p.routed} of ${p.total} signal${p.total === 1 ? "" : "s"} across ${p.zonesUsed} of 7 zones: ${p.governance} tagged as a missing governance or architecture decision, ${p.technology} as technology use — ${p.short} visible short-term, ${p.structural} structurally effective.`,
-  carry:
-    "Carry one rule across: a technology that is more efficient per unit is not a decision about total consumption. Someone still has to decide what gets connected, measured and retired.",
-  cta: "Continue to Part 2",
-} as const;
-
-/**
- * One export for the whole route. The document carries a part per level and
- * the JSON keeps `partOne` / `partTwo` as separate top-level blocks, so a
- * grader can score the two levels independently out of a single file.
+ * One export for the whole route. Levels 1 and 2 are both covered by this
+ * single task, so — unlike a two-part route — the JSON keeps one continuous
+ * `task` block rather than a `partOne` / `partTwo` split; `triage`,
+ * `escalation` and `analysis` inside it are what keep the three steps
+ * separately gradable.
  */
 export const EXPORT = {
   filenameLevels: [1, 2],
   filenameTask: 1,
   schemaVersion: "day13.route1.v1",
-  docHeading: "SmartLink Signal Report & Decision Memo",
-  buttonLabel: "Export the Signal Report & Decision Memo",
-  anywayLabel: "Export anyway (incomplete)",
-  partOne: "Part 1 — Sustainability Signal Report",
-  partTwo: "Part 2 — Prioritisation Decision Memo",
-  incompleteStamp: "STATUS: INCOMPLETE DRAFT",
-  mentorStamp: "MENTOR SAMPLE — not participant work",
+  docHeading: "ProcessNova Signal Triage & Deep-Dive Report",
+  buttonLabel: "Export the Signal Triage & Deep-Dive Report",
 } as const;
 
 /** Material chips shown on the case brief. */
-export const BRIEF_REFS: MaterialSectionId[] = ["infrastructure", "iot", "fiveg"];
+export const BRIEF_REFS: MaterialSectionId[] = ["lever", "impact"];

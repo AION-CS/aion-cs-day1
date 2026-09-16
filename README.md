@@ -1,18 +1,21 @@
 # AION Green IT — Day 13
 
-**Module 8: Energy-Efficient Networks, IoT Sustainability & 5G** — the interactive working
+**Module 9 (Day 1 of 1): Designing Sustainable Digital Processes** — the interactive working
 companion for Day 13.
 
-Day 13 continues the two-route standard introduced on Day 11: **Route 1 carries levels 1 and 2**
-as one engagement, **Route 2 carries level 3**. Every route has the same shape — the case once, one
-material block with all of the teaching, one task, one export.
+Two routes, the standard shape from Day 11 on: **Route 1 carries levels 1 and 2**, **Route 2
+carries level 3**. Route 1 is bootstrapped from Day 11's triage-escalate-deep-dive pattern (not
+Day 12's zone-routing board) because this module's curriculum Task 1 is a single-part exercise,
+not a two-part diagnose-then-decide engagement — so Route 1 deliberately inverts Day 11's
+material-to-task ratio (~30 min material, ~20 min task, not ~60/~30). Route 2 is bootstrapped from
+Day 11's Route 2 and keeps its ~60-minute material depth in full.
 
 ## Routes
 
 | Route | Levels | Case | Material | Task | Export |
 |---|---|---|---|---|---|
-| `/route-1-diagnose-and-decide` | 1 + 2 | SmartLink Operations | S1–S7, ~120 min | Part 1 Diagnose — Signal Board (~15 min) → handover → Part 2 Decide — Decision Scorecard (~15 min) | `1-{name}-day13-l1l2task1.json` + `.html` |
-| `/route-2-management-decision` | 3 | NetSphere Industrial Systems GmbH (worked example) → Vertex Connected Industries (task) | A–F, ~80 min | Seven input sections, board memo assembling live | `1-{name}-day13-l3task1.json` + `.html` |
+| `/route-1-diagnose-and-decide` | 1 + 2 | ProcessNova Services | S1–S4, ~30 min | Triage (7 signals) → Escalate (2) → Deep dive, ~20 min, one part, no Decide stage | `1-{name}-day13-l1l2task1.json` + `.html` |
+| `/route-2-management-decision` | 3 | EcoFlow Administration GmbH (worked example) → Synervia Process Group (task) | A–D, ~60 min | Five exercises, ~90 min, board memo assembling live | `1-{name}-day13-l3task1.json` + `.html` |
 
 Neither route gates the other. Route 2 shows a soft order-suggestion banner until Route 1 has been
 exported, and nothing more.
@@ -25,155 +28,144 @@ case brief + learner name (stated once)
 MATERIAL — one continuous block, all teaching, facilitator-led
       ↓
 TASK — one continuous scroll
-      Route 1: Part 1 — Diagnose → inline handover → Part 2 — Decide
-      Route 2: seven input sections, the board memo assembling beside them
+      Route 1: Triage all 7 → Escalate 2 → Deep dive on those 2 (no second part)
+      Route 2: five exercises, none gating another, the board memo assembling beside them
       ↓
 ONE EXPORT
 ```
 
-There is no material between the two parts of Route 1: the handover is a small inline panel built
-from the learner's own answers. Standards: `../CLAUDE.md` §12, `../CURRICULUM-GUIDE.md` §2–§3, and
-the day-local copy in [`UX-STANDARDS.md`](UX-STANDARDS.md) §12.
+Standards: `../CLAUDE.md` §12–§13, `../CURRICULUM-GUIDE.md` §2–§3, and the day-local copy in
+[`UX-STANDARDS.md`](UX-STANDARDS.md).
 
-## Route 1 — Diagnose & Decide (SmartLink Operations)
+## Route 1 — Diagnose & Decide (ProcessNova Services)
 
-**Material, seven sections.**
+**Material, four sections.**
 
-- **S1 — Why network infrastructure is a sustainability factor.** Networks are dimensioned for
-  peak but powered for uptime, so a link at a tenth of its capacity does not draw a tenth of its
-  power. Covers the legacy-generation overlap (2G/3G/4G/5G running in parallel) and how network
-  layers scale with load differently.
-- **S2 — Levers of energy-efficient network technology.** Seven levers (load, protocol, control,
-  redundancy, hardware and more), each with a mechanism, a precondition and a failure mode — and
-  the standard that says an efficiency figure without a stated boundary is not comparable.
-- **S3 — IoT sustainability across the lifecycle.** Per device the impact is trivial; per fleet it
-  is device count × lifetime × replacement rate × data generated, and most of that is decided
-  before the first sensor is switched on (manufacture, deployment, power, connectivity, data).
-- **S4 — 5G: efficiency promise and system-level risk.** Up to roughly 90% less energy per bit is a
-  design target for one factor of a product — total energy is energy per bit multiplied by bits,
-  and adoption-growth scenarios (conservative / observed / aggressive) can still raise total
-  consumption.
-- **S5 — Technological potential vs. real system impact.** A component can be demonstrably more
-  efficient while the system it joins consumes more. Four leak mechanisms decide which way it
-  goes: rebound, layer stacking, displacement, complexity.
-- **S6 — The 7-criteria decision lens.** Seven criteria, seven diagnostic questions, seven common
-  misuses — the tool Part 2 uses directly, built so no single option leads on every criterion.
-- **S7 — Decision-making under incomplete information.** Waiting for complete data is a decision
-  too: decide what is reversible now, stage what is not, and say in advance what would prove you
-  wrong (worked through a building-management sensor pilot).
+- **S1 — Digitalisation as a sustainability lever.** Five enabler mechanisms (transparency,
+  efficiency, monitoring & management, automation, data-based optimisation), each tap-revealing a
+  concrete industry example. The rule a Positive signal must satisfy: name a concrete reduction, or
+  it's just new capability.
+- **S2 — Direct vs. indirect environmental impact.** A two-band diagram (direct: energy, hardware,
+  compute, storage, network — indirect: behaviour change, data growth, new services, accelerated
+  processes) and the one-line test: does it happen because the system runs, or because people or
+  processes changed around it?
+- **S3 — The rebound effect and trade-offs.** A predicted-vs-actual curve converging toward zero,
+  Jevons paradox named once as background, and the five-way trade-off (convenience, speed,
+  automation, transparency, resource use) that explains why an efficiency gain doesn't
+  automatically stay banked.
+- **S4 — The six-area diagnostic framework.** Six tap-to-reveal tiles (Process Efficiency, Data
+  Use, Infrastructure, User Behaviour, Complexity, Management) — the direct source of the deep
+  dive's Area field, right down to the worked mini-example on each tile.
 
-**Part 1 — Diagnose: the Signal Board.** Six signals from SmartLink's plan. Placement is the
-*result* of a diagnosis, not a click into a bucket: the learner answers two diagnostic questions —
-potential or risk, and the primary area affected — and the card routes itself to the chosen zone
-among seven (Network Operations, IoT, Data, Energy, Lifecycle, 5G, Management). Then, in place,
-three required inputs: an improvement approach, the root cause and the time horizon. "Check my
-routing" reads patterns across the whole board and gives clues; it never names a zone. Ground
-truth, clues and the mentor answer key per signal live in `lib/route1/partOne.ts`.
+**Task — one part, three steps** (no Handover, no Decide stage — the curriculum's Task 1 is fully
+covered by triage and deep dive alone):
 
-**Handover.** Inline, never a gate: the learner's own tally carried forward as a small SVG plus one
-line of teaching into Part 2.
+1. **Triage all 7 signals** (~8 min). Tag each Positive/Negative and tap the phrase that proves it.
+   One set-level check — how many hold, never which — a clue that marks every decisive phrase at
+   once, and "show the reasoning" after two genuine checks.
+2. **Escalate 2** (~3 min). Click to select up to two, click again to deselect — never discarding
+   any deep-dive work already written for a re-selected signal — plus a required one-line
+   leverage-based justification.
+3. **Deep dive on those 2** (~9 min). Area (six-way, from S4) + Direct/Indirect effect (from S2) +
+   a free-text improvement approach. Checked per signal (area and effect together); clue and
+   two-checks-then-reveal, same convention as Step 1.
 
-**Part 2 — Decide: the Decision Scorecard.** Three competing lines of measures (A / B / C), one of
-which SmartLink can prioritise, stated against five real constraints (limited budget, visible
-innovation progress expected, incomplete data, departments wanting new applications quickly,
-IT/operations fearing complexity). For each of the seven S6 criteria the learner ranks A, B and C
-1–2–3 — no ties, no sliders — and a live radar draws the three profiles out of those ranks. Then the
-commit: one option, a justification, two follow-up decisions, and two risks of whichever option the
-learner's own ranking marks as most attractive short-term. Nothing is scored automatically; the
-expected ranks exist for the mentor answer key and the export only. Data lives in
-`lib/route1/partTwo.ts`.
+Ground truth, clues and the mentor answer key per signal live in `lib/route1/partOne.ts`.
 
 **Export.** One JSON with `meta` (day, route, levels `[1,2]`, schema version `day13.route1.v1`),
-`partOne` (per signal: routing answers, approach, root cause, horizon, check attempts) and
-`partTwo` (per-criterion ranking, the live radar profiles, the commit). One print-ready HTML report.
+`triage` (all 7 rows), `escalation` (the 2 chosen + justification) and `analysis` (the deep-dive
+workup). One print-ready HTML report.
 
-## Route 2 — Management Decision (NetSphere → Vertex)
+## Route 2 — Management Decision (EcoFlow → Synervia)
 
-**Material, six sections (A–F).**
+**Material, four sections (A–D), plus the EcoFlow worked example read after them.**
 
-- **A — Why this is a management question, not a technology question.** Efficiency is a ratio;
-  consumption is an absolute — a board that confuses the two has approved nothing.
-- **B — The NetSphere infrastructure map.** NetSphere Industrial Systems GmbH is expanding across
-  production, logistics and building management: six hotspots, one company, no obviously wrong
-  decision anywhere.
-- **C — The six-dimension analysis.** Every hotspot from section B lands in exactly one of six
-  dimensions; governance is where the other five compound.
-- **D — The four biggest levers.** Four moves in the order that makes the others work — one of the
-  four makes the other three possible, and the other three do not make it unnecessary.
-- **E — The prioritised first measure, and why.** The reasoning to transfer, not the answer to
-  copy: the argument stated so it can be defended, and so it can be proven wrong.
-- **F — Short / medium / structural roadmap.** A measure without an owner and an evidence test is
-  an intention, not a plan.
+- **A — Why this reaches a board at all.** Six management levers above, engineering/operational
+  symptoms below — no arrow terminates in the lower layer.
+- **B — Prioritising digitalisation measures under trade-offs.** Three lanes — Accelerate, Assess &
+  Govern, Consolidate — each rated on strategic leverage, feasibility, controllability and risk.
+  Names the "attractive short-term, structurally weak" trap directly.
+- **C — Decision architecture: RACI and governance.** The sandbox RACI grid, plus the two failure
+  modes (diffused accountability, accountability without authority).
+- **D — Holding a decision together under incomplete information.** The clickable 2×2 (information
+  × cost of delay), the five-part defensible recommendation, the three anchors against pilot
+  purgatory.
+- **EcoFlow Administration GmbH** — read-only, dark-bannered, rendered directly after D: situation,
+  four levers, the prioritised measure ("introduce an assessment framework before further
+  digitalisation momentum is reinforced unchecked") and its justification, the option not chosen,
+  and the short/medium/structural sequence.
 
-**The Vertex case** (Vertex Connected Industries, head of infrastructure & connectivity strategy —
-CIO/CTO advisor) is briefed once, directly above the task, with the name field. Vertex's general
-conditions and what's specific to Vertex are stated up front — the warning is explicit: NetSphere's
-answer is not Vertex's answer.
+**The Synervia case** (Synervia Process Group, head of digital strategy / CIO / transformation
+advisor) is briefed once, directly above the task, with the name field.
 
-**Task — seven input sections**, with the Vertex Board Memo assembling live beside them:
+**Task — five exercises**, none gating another, with the Synervia Board Memo assembling live
+beside them:
 
-1. **Strategic relevance** — which factors (cost, compliance, reliability, irreversibility,
-   innovation, …) actually apply to Vertex's situation.
-2. **Three guiding decisions** — the decisions that will bind every team going forward.
-3. **Decision logic** — a self-contained 7-criteria set applied to Vertex, not copied from
-   NetSphere.
-4. **Central trade-offs** — the tension picker, forcing an explicit choice on the trade-offs that
-   matter here.
-5. **First measure** — Vertex's own prioritised measure and its justification.
-6. **Governance** — a RACI grid for ownership of the efficiency and architecture standard.
-7. **The decision to take now** — decision, assumption, falsifier, cost of waiting.
+1. **Prioritise & defend** (~25 min, the anchor exercise). Choose one of the three lanes, work
+   through a seven-criterion assessment grid (rating + one-line argument per row), then defend the
+   choice, name the follow-up decisions it creates, and state two risks of an attractive-but-weak
+   choice. Free-text and argument-graded — no live check; the mentor key carries the assessment
+   criteria and a worked strong/weak example.
+2. **Rank the guiding decisions** (~15 min). Three of seven candidates, full undo/redo, "test my
+   ranking" asks a diagnostic about the learner's own #1 rather than grading the order.
+3. **The trade-off map** (~20 min). Five digitalisation initiatives, two yes/no diagnostics each,
+   checked per initiative. Undo/redo, remove-and-retry, required justification for every initiative
+   landing in Strategic bets.
+4. **RACI** for the digital-sustainability assessment standard, across six roles.
+5. **The decision that cannot wait** (~15 min). Decision, assumption, falsifier, cost of waiting.
 
-**Export.** JSON with the answers and derived state from all seven sections (schema version
-`day13.route2.v1`); HTML as a real board memo — recommendation, guiding decisions, trade-offs, RACI
-table and the decision required now — printable to A4.
+**Export.** JSON with `prioritisation`, `rankedDecisions`, `tradeOffMap`, `raci` and `decisionNow`
+(schema version `day13.route2.v1`); HTML as a real board memo, printable to A4.
 
 ## Shared components (from Day 11 on)
 
-- `lib/materialSection.ts` — the section type both routes use (adds `code`, `standfirst`, `body`,
-  `minutes`, and a reference `detail`).
+- `lib/materialSection.ts` — the section type both routes use.
 - `components/ui/MaterialBlock.tsx` — renders the diagram before the prose.
 - `components/ui/MiniNav.tsx` — sticky section dots and the top progress bar.
 - `components/ui/LivePanel.tsx` — a sticky deliverable column on desktop, an expandable strip on
   mobile.
-- `components/ui/RaciGrid.tsx` — the interactive, structure-only-validating RACI grid.
+- `components/ui/RaciGrid.tsx` — the interactive, structure-only-validating RACI grid, reused by
+  Route 2's material demo and Exercise 4.
 - `components/ui/MissingList.tsx` — `MissingItem.before` opens a closed container before scrolling.
-- `components/ui/RadarChart.tsx` — `ringCount` for 0–10 scales, `showGrid` for fade-in overlays, and
-  the `"option"` series tone for Day 13's A / B / C profiles.
+- `lib/usePlacementHistory.ts` — per-exercise undo/redo, used independently by Route 2's ranking
+  and trade-off-map exercises.
 
 ## Standards both routes implement
 
-- **Itemized missing items**, every one a button that scrolls to and flashes the exact field —
-  opening a collapsed card or hidden tab on the way when needed.
+- **Itemized missing items**, every one a button that scrolls to and flashes the exact field.
 - **Export buttons are never disabled.** From an empty state they open the missing list and jump
   to the first gap.
-- **Check on demand, clue not answer.**
+- **Check on demand, clue not answer** — except Route 2 Exercises 1 and 5, which are free-text and
+  argument-graded by design, with no live check.
 - **Undo/redo and retry** on every placement; completed cards stay editable.
-- **No hard locks** between routes or parts.
+- **No hard locks** between routes.
 - **Mentor tools once per route** — one auto-fill for everything, answer keys per exercise, shared
   passcode `muchson123` in plaintext on purpose. The unlock flag is session-only, so a reload
   re-locks the keys.
 - **Field instructions below the label**, never only in a placeholder.
-- **Material traceability** — `MaterialRefs` chips on every task step.
+- **Material traceability** — `MaterialRefs` chips on every task step; every material section is
+  referenced by at least one exercise or the case brief.
 
 ## Layout
 
 ```
 app/
   page.tsx                          two route cards, labelled with the levels they cover
-  route-1-diagnose-and-decide/      SmartLink Operations
-  route-2-management-decision/      NetSphere → Vertex
+  route-1-diagnose-and-decide/      ProcessNova Services
+  route-2-management-decision/      EcoFlow → Synervia
 lib/
   routes.ts                         day identity + the two-entry registry
   materialSection.ts                shared material section type
-  route1/  index · sections · material (S1–S7) · partOne · partTwo
-  route2/  index · sections · material (A–F) · task
+  route1/  index · sections · material (S1–S4) · partOne (signals, triage/escalate/analysis)
+  route2/  index · sections · material (A–D + EcoFlow) · task (5 exercises)
   downloadFile.ts                   exportFilename(name, levels[], taskNumber) + Blob download
   store.ts                          Zustand + localStorage (key aion-greenit-day13), useHydrated()
 components/
-  route1/   CaseBrief · Material · PartOne · SignalBoard · SignalCard · PartTwo · CommitPanel ·
-            ExportBar · MentorTools · diagrams · …
-  route2/   Material · CaseBrief · Task · GuidingDecisionsSection · TradeOffSection ·
-            GovernanceSection · DecisionNowSection · MemoPreview · ExportBar · MentorTools · …
+  route1/   CaseBrief · Material · MaterialDiagrams · PartOne · TriageBlock · TriageRow ·
+            EscalatePicker · DeepDiveCard · ReportPanel · ExportBar · MentorTools · …
+  route2/   Material · MaterialDiagrams · CaseBrief · Task · PrioritiseExercise · RankExercise ·
+            MapExercise · TradeoffMapSvg · RaciExercise · DecideNow · BoardMemo · ExportBar ·
+            MentorTools · …
   ui/       cross-day shared components
 ```
 

@@ -1,89 +1,57 @@
 "use client";
 
-import { useState } from "react";
 import { useProgress } from "@/lib/store";
 import { MentorFillButton } from "@/components/ui/MentorFillButton";
 import { AnswerKeyButton } from "@/components/ui/AnswerKeyButton";
-import { COMMIT, CRITERIA, R1, R1_KEY_PREFIXES, SAMPLE_RANKS, SIGNALS } from "@/lib/route1";
-import { serialiseSlots } from "./ranking";
+import { ESCALATE, R1, SIGNALS } from "@/lib/route1";
 
 /**
- * The route's mentor bar (§13): one demo auto-fill for both parts, the answer
- * keys, and a "Reset to empty" that clears every r1 key in one click behind a
- * confirm. All three sit behind the shared passcode — deliberately visually
- * minor, a convenience gate against accidental clicks, not a security
- * boundary.
+ * The route's mentor bar: one demo auto-fill for the whole engagement plus
+ * the answer keys, both behind the shared passcode. Deliberately visually
+ * minor and out of the way — a convenience gate against accidental clicks,
+ * not a security boundary.
  *
- * The fill writes plausible practitioner work, not the key: routing includes
- * one defensible-but-debatable placement (S4 → Management Logic, per its
- * sample data), the ranking never puts one option first on everything, and
- * the chosen option is B. `R1.mentorSample` is set true and stamps every
- * export made while it is active; "Reset to empty" clears it too.
+ * One fill, everything (CLAUDE.md #12): triage all seven with the correct
+ * tag and its decisive phrase, escalate the two the mentor key recommends
+ * most strongly, then run the deep dive on those two. It calls the store's
+ * raw actions for every persisted field the route writes, so it exercises
+ * exactly the code path a learner does.
  */
 export function MentorTools() {
   const setNote = useProgress((s) => s.setNote);
   const choose = useProgress((s) => s.choose);
-  const markSeen = useProgress((s) => s.markSeen);
-  const toggleCheck = useProgress((s) => s.toggleCheck);
-  const resetPrefixes = useProgress((s) => s.resetPrefixes);
-  const [confirmReset, setConfirmReset] = useState(false);
 
   const fill = () => {
     setNote(R1.name, "Muchson");
-    toggleCheck(R1.mentorSample, true);
 
-    // -- Part 1: all six signals, plausible but not uniform ------------------
+    // -- Step 1: triage all seven with the correct tag and its decisive phrase --
     for (const s of SIGNALS) {
-      const demo = s.sample;
-      choose(R1.reading(s.id), demo.reading);
-      if (demo.bothWhy) setNote(R1.bothWhy(s.id), demo.bothWhy);
-      choose(R1.zone(s.id), demo.zone);
-      markSeen(R1.routed, s.id);
-      setNote(R1.approach(s.id), demo.approach);
-      choose(R1.rootCause(s.id), demo.rootCause);
-      choose(R1.horizon(s.id), demo.horizon);
+      choose(R1.triageTag(s.id), s.sentiment);
+      const decisiveIndex = s.segments.findIndex((seg) => typeof seg !== "string" && seg.decisive);
+      choose(R1.triageEvidence(s.id), String(decisiveIndex));
     }
 
-    // -- Part 2: a complete ranking that never puts one option first everywhere
-    for (const c of CRITERIA) {
-      choose(R1.rank(c.id), serialiseSlots(SAMPLE_RANKS[c.id]));
-    }
-    choose(R1.chosen, "B");
-    setNote(R1.justification, COMMIT.justification.sample);
-    setNote(R1.followUp(1), COMMIT.followUp.samples[0]);
-    setNote(R1.followUp(2), COMMIT.followUp.samples[1]);
-    setNote(R1.risk(1), COMMIT.risks.samples[0]);
-    setNote(R1.risk(2), COMMIT.risks.samples[1]);
-  };
+    // -- Step 2: escalate the two the mentor key recommends most strongly ----
+    const escalate = ["s5", "s6"].slice(0, ESCALATE.limit);
+    setNote(R1.escalate, escalate.join("|"));
+    setNote(
+      R1.escalateWhy,
+      "Signal 5 explains why fixes elsewhere keep failing to simplify things, and Signal 6 is the missing review loop that would have caught it — together they argue from structural leverage rather than from what's easiest to fix.",
+    );
 
-  const reset = () => {
-    resetPrefixes(R1_KEY_PREFIXES);
-    setConfirmReset(false);
+    // -- Step 3: the deep dive on those two -----------------------------------
+    for (const id of escalate) {
+      const s = SIGNALS.find((sig) => sig.id === id)!;
+      choose(R1.area(id), s.area);
+      choose(R1.effect(id), s.effect);
+      setNote(R1.approach(id), s.sampleApproach);
+    }
   };
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <MentorFillButton onFill={fill} />
       <AnswerKeyButton />
-      {!confirmReset ? (
-        <button
-          type="button"
-          onClick={() => setConfirmReset(true)}
-          className="rounded-full border border-dashed border-line px-3 py-1 text-micro font-semibold text-ash transition-colors duration-150 hover:border-ash hover:text-ink"
-        >
-          Reset to empty
-        </button>
-      ) : (
-        <span className="flex items-center gap-2 rounded-full border border-danger/40 bg-danger/5 px-2 py-1">
-          <span className="text-micro text-danger">Clear every answer on this route?</span>
-          <button type="button" onClick={reset} className="text-micro font-semibold text-danger underline underline-offset-2">
-            Yes, clear it
-          </button>
-          <button type="button" onClick={() => setConfirmReset(false)} className="text-micro text-ash hover:text-ink">
-            Cancel
-          </button>
-        </span>
-      )}
     </div>
   );
 }

@@ -2,15 +2,15 @@
 
 import { useProgress, useHydrated } from "@/lib/store";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
-import { BRIEF_REFS, NAME_FIELD, R2, VERTEX, VERTEX_GENERAL_CONDITIONS, VERTEX_SPECIFIC, VERTEX_SPECIFIC_HEADING, materialRefs } from "@/lib/route2";
+import { NAME_FIELD, R2, SYNERVIA, materialRefs } from "@/lib/route2";
 import { useRoute2, domId } from "./useRoute2";
 
 /**
- * Vertex — the case the learner actually works, stated once, directly above
- * the task (CLAUDE.md #12). NetSphere is read-only material above; Vertex is
- * briefed here, once, with its own name field. The five Vertex-specific
- * conditions render visually distinct from the six general ones, because they
- * are what makes copying NetSphere's answer insufficient (§6).
+ * Synervia — the case the learner actually works, stated once, directly
+ * above the task. It deliberately sits after the EcoFlow worked example
+ * rather than above the material, so the two companies are never on screen
+ * as one blurred brief. Its MaterialRefs chip grounds section A, since no
+ * exercise below references it directly (§B–D each carry their own).
  */
 export function CaseBrief() {
   const hydrated = useHydrated();
@@ -20,19 +20,16 @@ export function CaseBrief() {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-line bg-mist p-5">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">{VERTEX.heading}</p>
-        {VERTEX.paragraphs.map((p, i) => (
-          <p key={i} className="mt-1.5 max-w-prose text-body text-ash">
-            {p}
-          </p>
-        ))}
-        <p className="mt-3 max-w-prose rounded-xl border-l-4 border-l-accent bg-accentSoft px-4 py-2.5 text-caption font-semibold text-ink">
-          {VERTEX.warning}
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">{SYNERVIA.heading}</p>
+        <p className="mt-1 text-caption text-ash">
+          You take the role of <span className="font-semibold text-ink">{SYNERVIA.role}</span> for{" "}
+          <span className="font-semibold text-ink">{SYNERVIA.company}</span>.
         </p>
+        <p className="mt-2 max-w-prose text-body text-ash">{SYNERVIA.brief}</p>
 
-        <p className="mt-4 text-micro font-semibold uppercase tracking-wide text-ash">General conditions</p>
+        <p className="mt-3 text-micro font-semibold uppercase tracking-wide text-ash">General conditions</p>
         <ul className="mt-1.5 grid gap-1.5 md:grid-cols-2">
-          {VERTEX_GENERAL_CONDITIONS.map((c) => (
+          {SYNERVIA.conditions.map((c) => (
             <li key={c} className="flex gap-2 text-caption text-ink">
               <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-ash" />
               <span>{c}</span>
@@ -40,17 +37,8 @@ export function CaseBrief() {
           ))}
         </ul>
 
-        <p className="mt-4 text-micro font-semibold uppercase tracking-wide text-warn">{VERTEX_SPECIFIC_HEADING}</p>
-        <ul className="mt-1.5 space-y-1.5">
-          {VERTEX_SPECIFIC.map((c) => (
-            <li key={c.id} className="flex gap-2 rounded-lg border border-warn/30 bg-warn/5 px-3 py-2 text-caption font-semibold text-ink">
-              <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-warn" />
-              <span>{c.text}</span>
-            </li>
-          ))}
-        </ul>
-
-        <MaterialRefs refs={materialRefs(BRIEF_REFS)} lead="Grounded in" />
+        <p className="mt-3 text-body font-semibold text-ink">{SYNERVIA.mandate}</p>
+        <MaterialRefs refs={materialRefs(["board", "worked"])} lead="Grounded in" />
       </div>
 
       <div id={domId.name} className="scroll-mt-24 rounded-2xl border border-line bg-paper p-5">
@@ -67,31 +55,6 @@ export function CaseBrief() {
           className="mt-2 w-full max-w-sm rounded-xl border border-line bg-paper px-3 py-2.5 text-caption text-ink"
         />
       </div>
-    </div>
-  );
-}
-
-/** A compact rail version of the same conditions, for the sticky sidebar beside the task (§8.1). */
-export function VertexConditionsRail() {
-  return (
-    <div className="space-y-3 rounded-2xl border border-line bg-paper p-4">
-      <p className="text-micro font-semibold uppercase tracking-wide text-ash">Vertex conditions</p>
-      <ul className="space-y-1">
-        {VERTEX_GENERAL_CONDITIONS.map((c) => (
-          <li key={c} className="flex gap-2 text-micro text-ink">
-            <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-ash" />
-            <span>{c}</span>
-          </li>
-        ))}
-      </ul>
-      <p className="text-micro font-semibold uppercase tracking-wide text-warn">{VERTEX_SPECIFIC_HEADING}</p>
-      <ul className="space-y-1.5">
-        {VERTEX_SPECIFIC.map((c) => (
-          <li key={c.id} className="rounded-lg border border-warn/30 bg-warn/5 px-2.5 py-1.5 text-micro font-semibold text-ink">
-            {c.text}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

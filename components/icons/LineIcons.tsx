@@ -213,6 +213,18 @@ function Sensor({ className }: P) {
   );
 }
 
+// --- Day 13: the six-area diagnostic framework's User Behaviour tile -------
+
+/** A single person, head and shoulders — what people do differently. */
+function Person({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="7.2" r="3.4" />
+      <path d="M5 20v-1.6c0-3 3.1-5.4 7-5.4s7 2.4 7 5.4V20" />
+    </svg>
+  );
+}
+
 const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   coins: Coins,
   factory: Factory,
@@ -232,6 +244,7 @@ const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   gauge: Gauge,
   antenna: Antenna,
   sensor: Sensor,
+  person: Person,
 };
 
 export function Icon({ name, className }: { name: IconKey; className?: string }) {

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { ROUTES } from "@/lib/routes";
-import { BANNER, PAGE_INTRO } from "@/lib/route2";
+import { PAGE_INTRO } from "@/lib/route2";
 import { LeafMark } from "@/components/chrome/Icons";
-import { DismissibleBanner } from "@/components/ui/DismissibleBanner";
+import { RouteGate } from "@/components/chrome/RouteGate";
 import { Material } from "@/components/route2/Material";
 import { CaseBrief } from "@/components/route2/CaseBrief";
 import { Task } from "@/components/route2/Task";
@@ -14,45 +14,50 @@ const ROUTE = ROUTES[1];
 export const metadata: Metadata = {
   title: `AION Green IT — Day 13 · ${ROUTE.tag}`,
   description:
-    "Level 3 for Module 8: NetSphere Industrial Systems GmbH's full reasoning chain from six management dimensions to one prioritised measure — then the Vertex Connected Industries Board Memo Builder.",
+    "Level 3: why digitalisation reaches a board, prioritising measures under trade-offs, RACI in full, deciding under incomplete information, the EcoFlow worked example — then the Synervia board memo.",
 };
 
 /**
- * Route 2 — level 3 (CLAUDE.md #12). The case once (NetSphere read-only in
- * the material, Vertex briefed once above the task), one material block, one
- * task, one export. Self-contained per §13 — reachable with Route 1 untouched.
+ * Route 2 — level 3. Material A–D, the EcoFlow worked example, then the
+ * Synervia case once, then the five exercises with the memo assembling
+ * beside them, then one export. Reachable with Route 1 untouched: the gate
+ * renders a soft suggestion, never a wall (CLAUDE.md #6).
  */
 export default function Route2Page() {
   return (
     <div className="space-y-16 py-12">
       <MentorTools />
 
-      <div className="max-w-prose">
-        <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
-          <LeafMark className="h-4 w-4" /> {PAGE_INTRO.tag} — 2 of 2
-        </p>
-        <h1 className="text-display text-ink">{PAGE_INTRO.title}</h1>
-        <p className="mt-4 text-body text-ash">{PAGE_INTRO.body}</p>
-      </div>
+      <RouteGate routeN={2}>
+        <div className="max-w-prose">
+          <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
+            <LeafMark className="h-4 w-4" /> {PAGE_INTRO.tag}
+          </p>
+          <h1 className="text-display text-ink">{PAGE_INTRO.title}</h1>
+          <p className="mt-4 text-body text-ash">{PAGE_INTRO.body}</p>
+        </div>
 
-      <DismissibleBanner storageKey="r2:bannerDismissed" label={BANNER.label} text={BANNER.text} />
+        <div className="mt-16 space-y-16">
+          <hr className="border-line" />
 
-      <Material />
+          <Material />
 
-      <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
-        <p className="text-body font-semibold text-ink">You have seen the reasoning. Now run it on a company you have never met.</p>
-        <a href="#r2-case" className="btn-accent mt-3 inline-flex">
-          Open the Vertex brief
-        </a>
-      </div>
+          <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
+            <p className="text-body font-semibold text-ink">You have seen the reasoning. Now run it on a company you have never met.</p>
+            <a href="#r2-case" className="btn-accent mt-3 inline-flex">
+              Open the Synervia brief
+            </a>
+          </div>
 
-      <div id="r2-case" className="scroll-mt-24">
-        <CaseBrief />
-      </div>
+          <div id="r2-case" className="scroll-mt-24">
+            <CaseBrief />
+          </div>
 
-      <Task />
+          <Task />
 
-      <ExportBar />
+          <ExportBar />
+        </div>
+      </RouteGate>
     </div>
   );
 }

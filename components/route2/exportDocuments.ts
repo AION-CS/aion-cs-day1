@@ -1,130 +1,174 @@
 import {
+  ASSESSMENT_DIMENSIONS,
+  DECIDE_NOW_FIELDS,
   EXPORT,
-  RESPONSIBILITIES,
-  ROLES,
-  SELF_ASSESSMENT_ITEMS,
-  VERTEX,
-  criterionById,
-  factorLabel,
-  optionById,
-  relevanceLabel,
+  MAP_QUESTIONS,
+  QUADRANTS,
+  RACI_ROWS,
+  SYNERVIA,
+  TASK_RACI_ROLES,
+  decisionById,
+  quadrantById,
 } from "@/lib/route2";
 import { CASE } from "@/lib/routes";
+import { MAP, MID_X, MID_Y, quadrantRect, slotPosition } from "./mapLayout";
 import type { Route2State } from "./useRoute2";
 
 /**
- * Route 2's single export: one JSON for grading, one print-ready board memo
- * for reading — the full composed memo exactly as the live preview shows it,
- * plus the criteria ranking, the trade-off links as an inline SVG, the RACI
- * table, confidence, the self-assessment block, and the reflection appendix
- * only if the learner opted in (§8.6). Never disabled: an `incomplete` flag
- * stamps both documents (§8.6's "STATUS: INCOMPLETE DRAFT").
- *
- * The reflection journal is deliberately absent from `useRoute2` (§7.8: never
- * validated, never part of the graded state), so its answers and the opt-in
- * flag are read directly from the store by the caller (ExportBar) and passed
- * in here — never read back out of storage by this module.
+ * Route 2's export: a JSON for grading and a print-ready board memo — not a
+ * worksheet dump. The memo reads top-down the way a board would: the
+ * recommendation and its defence, the guiding decisions behind it, what it
+ * costs, who owns it, and what cannot wait.
  */
 
-export type ReflectionExport = { question: string; answer: string }[] | null;
-
-export function buildMemoJson(r2: Route2State, filename: string, incomplete: boolean, reflection: ReflectionExport): string {
-  const chosen = r2.firstMeasure ? optionById(r2.firstMeasure) : null;
+export function buildMemoJson(r2: Route2State, filename: string): string {
   const payload = {
     meta: {
       day: CASE.day,
       route: 2,
-      level: 3,
+      levels: EXPORT.filenameLevels,
       task: EXPORT.filenameTask,
       schemaVersion: EXPORT.schemaVersion,
       filename,
-      status: incomplete ? "incomplete-draft" : "complete",
-      mentorSample: r2.mentorSample,
       name: r2.name,
-      case: VERTEX.company,
-      role: VERTEX.role,
+      case: SYNERVIA.company,
+      role: SYNERVIA.role,
       exportedAt: new Date().toISOString(),
     },
-    strategicRelevance: { drivers: r2.relevanceSelected.map((id) => ({ id, label: relevanceLabel(id) })), rationale: r2.relevanceRationale },
-    guidingDecisions: r2.guidingDecisions,
-    decisionLogic: { rankedCriteria: r2.criteriaOrder.map((id) => ({ id, name: criterionById(id).name })), boundary: r2.boundary },
-    tradeOffs: r2.tradeOffLinks.map((l) => ({ a: l.a, aLabel: factorLabel(l.a), b: l.b, bLabel: factorLabel(l.b), note: l.note })),
-    firstMeasure: { option: r2.firstMeasure, text: chosen?.text ?? null, justification: r2.justification, committedBudgetAnswer: r2.committedBudgetAnswer },
-    governance: {
-      raci: RESPONSIBILITIES.map((resp) => ({
-        responsibility: resp.id,
-        label: resp.label,
-        assignments: Object.fromEntries(ROLES.map((role) => [role.id, r2.raciValue(resp.id, role.id) || null])),
-      })),
-      reviewMechanism: r2.reviewMechanism,
+    prioritisation: {
+      lane: r2.lane,
+      laneLabel: r2.chosenLane?.label ?? null,
+      assessment: ASSESSMENT_DIMENSIONS.map((d) => {
+        const row = r2.ratingRows.find((r) => r.dim.key === d.key)!;
+        return { key: d.key, label: d.label, rating: row.rating, argument: row.note };
+      }),
+      justification: r2.justification,
+      followUp: r2.followUp,
+      risks: r2.risks.filter(Boolean),
     },
-    decisionNow: { decision: r2.decisionNow, confidence: r2.confidence, changeMyMind: r2.changeMyMind },
-    selfAssessment: SELF_ASSESSMENT_ITEMS.map((item) => ({ id: item.id, label: item.label, rating: r2.selfAssessment[item.id] })),
-    ...(reflection ? { reflectionAppendix: reflection } : {}),
+    rankedDecisions: {
+      order: r2.ranking,
+      labels: r2.ranking.map((id) => decisionById(id).label),
+      justificationOfFirst: r2.rankWhy,
+      diagnosticAnswer: r2.rankCheck,
+    },
+    tradeOffMap: r2.mapStates.map((s) => ({
+      id: s.measure.id,
+      measure: s.measure.label,
+      momentumCostAnswer: s.q1,
+      momentumCostCorrect: s.q1Correct,
+      structuralImpactAnswer: s.q2,
+      structuralImpactCorrect: s.q2Correct,
+      quadrant: s.placed,
+      expectedQuadrant: s.measure.quadrant,
+      retries: s.retries,
+      strategicBetJustification: s.placed === "bet" ? s.bet : null,
+    })),
+    raci: {
+      grid: RACI_ROWS.map((row) => ({
+        row: row.id,
+        decisionObject: row.label,
+        assignments: Object.fromEntries(TASK_RACI_ROLES.map((role) => [role.id, r2.raciValue(row.id, role.id) || null])),
+      })),
+      validation: {
+        structuralIssues: r2.raciStructuralIssues.map((v) => ({ row: v.rowId, kind: v.kind })),
+        authorityQuestions: r2.raciAuthorityWarnings.map((v) => ({ row: v.rowId, kind: v.kind })),
+        valid: r2.raciStructuralIssues.length === 0 && RACI_ROWS.every((row) => r2.raciTouched(row.id)),
+      },
+    },
+    decisionNow: Object.fromEntries(DECIDE_NOW_FIELDS.map((f) => [f.key, r2.decideNow[f.key] ?? ""])),
   };
   return JSON.stringify(payload, null, 2);
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const nl2br = (s: string) => esc(s).replace(/\n/g, "<br/>");
 
-/** The trade-off links as a standalone inline SVG (§8.6), the same ring layout as the live picker. */
-function tradeoffSvg(r2: Route2State): string {
-  const VW = 420;
-  const VH = 420;
-  const CX = 210;
-  const CY = 210;
-  const R = 150;
-  const ids = ["connectivity", "innovation", "energy", "dataGrowth", "investment", "controllability", "reliability", "complexity"] as const;
-  const point = (i: number) => {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / ids.length;
-    return [CX + R * Math.cos(a), CY + R * Math.sin(a)] as const;
-  };
-  const idx = (id: string) => ids.indexOf(id as (typeof ids)[number]);
-  const nodes = ids
-    .map((id, i) => {
-      const [x, y] = point(i);
-      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="20" fill="#16191D"/><text x="${x.toFixed(1)}" y="${(y + 34).toFixed(1)}" text-anchor="middle" font-size="11" fill="#16191D">${esc(factorLabel(id as never))}</text>`;
+/** The trade-off map as an inline SVG string, drawn from the same geometry as the live map. */
+function mapSvg(r2: Route2State): string {
+  const quadrants = QUADRANTS.map((q) => {
+    const r = quadrantRect(q.id);
+    const warm = q.id === "quick" || q.id === "bet";
+    return `<rect x="${r.x + 2}" y="${r.y + 2}" width="${r.w - 4}" height="${r.h - 4}" rx="10" fill="${warm ? "#E7F2EC" : "#EEF1F3"}" stroke="#E2E5E9" />
+      <text x="${r.x + 12}" y="${r.y + 24}" font-size="14" font-weight="700" fill="${warm ? "#0E7A5A" : "#5E6670"}">${esc(q.label)}</text>`;
+  }).join("");
+
+  const dots = r2.mapStates
+    .filter((s) => s.placed)
+    .map((s) => {
+      const p = slotPosition(s.placed!, s.slotIndex, s.slotCount);
+      return `<circle cx="${p.x}" cy="${p.y}" r="18" fill="#0E7A5A" stroke="#fff" stroke-width="2.5" />
+        <text x="${p.x}" y="${p.y + 5}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${s.measure.id.toUpperCase()}</text>`;
     })
     .join("");
-  const lines = r2.tradeOffLinks
-    .map((l) => {
-      const [ax, ay] = point(idx(l.a));
-      const [bx, by] = point(idx(l.b));
-      return `<line x1="${ax.toFixed(1)}" y1="${ay.toFixed(1)}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" stroke="#0E7A5A" stroke-width="2.6"/>`;
-    })
-    .join("");
-  return `<svg viewBox="0 0 ${VW} ${VH}" width="100%" style="max-width:360px;display:block;margin:8px auto" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">${lines}${nodes}</svg>`;
+
+  return `<svg viewBox="0 0 ${MAP.w} ${MAP.h}" width="100%" style="max-width:520px;display:block;margin:8px auto" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+    ${quadrants}
+    <text x="${MAP.x0}" y="${MAP.h - 12}" font-size="12.5" fill="#5E6670">low</text>
+    <text x="${MID_X}" y="${MAP.h - 12}" text-anchor="middle" font-size="13" font-weight="600" fill="#16191D">Momentum cost →</text>
+    <text x="${MAP.x1}" y="${MAP.h - 12}" text-anchor="end" font-size="12.5" fill="#5E6670">high</text>
+    <text x="18" y="${MID_Y}" text-anchor="middle" transform="rotate(-90 18 ${MID_Y})" font-size="13" font-weight="600" fill="#16191D">Structural impact →</text>
+    ${dots}
+  </svg>`;
 }
 
-export function buildMemoHtml(r2: Route2State, incomplete: boolean, reflection: ReflectionExport): string {
+export function buildMemoHtml(r2: Route2State): string {
   const date = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const chosen = r2.firstMeasure ? optionById(r2.firstMeasure) : null;
-  const stampLine = [incomplete ? EXPORT.incompleteStamp : null, r2.mentorSample ? EXPORT.mentorStamp : null].filter(Boolean).join(" · ");
+  const first = r2.ranking[0] ? decisionById(r2.ranking[0]) : null;
 
-  const guidingRows = r2.guidingDecisions
-    .map((g, i) =>
-      g.text.trim()
-        ? `<li><strong>${esc(g.text)}</strong><div class="muted">${g.owner ? esc(ROLES.find((r) => r.id === g.owner)?.label ?? "") : "owner not set"} · ${g.quarter ?? "quarter not set"}</div></li>`
-        : `<li class="muted">Guiding decision ${i + 1} not written.</li>`,
+  const assessmentRows = ASSESSMENT_DIMENSIONS.map((d) => {
+    const row = r2.ratingRows.find((r) => r.dim.key === d.key)!;
+    return `<tr>
+      <td>${esc(d.label)}</td>
+      <td class="nowrap">${row.rating ? row.rating[0].toUpperCase() + row.rating.slice(1) : "—"}</td>
+      <td>${row.note ? esc(row.note) : '<span class="muted">not written</span>'}</td>
+    </tr>`;
+  }).join("");
+
+  const ranked = r2.ranking.length
+    ? `<ol>${r2.ranking
+        .map((id, i) => {
+          const d = decisionById(id);
+          return `<li><strong>${esc(d.label)}</strong> — <span class="muted">${esc(d.detail)}</span>${
+            i === 0 && r2.rankWhy ? `<div class="why">${esc(r2.rankWhy)}</div>` : ""
+          }</li>`;
+        })
+        .join("")}</ol>`
+    : `<p class="muted">No guiding decisions ranked.</p>`;
+
+  const mapRows = r2.mapStates
+    .map(
+      (s) => `<tr>
+        <td><strong>${esc(s.measure.label)}</strong></td>
+        <td class="nowrap">${s.q1 ? (s.q1 === "yes" ? "High" : "Low") : "—"}</td>
+        <td class="nowrap">${s.q2 ? (s.q2 === "yes" ? "High" : "Low") : "—"}</td>
+        <td class="nowrap">${s.placed ? esc(quadrantById(s.placed).label) : "Not placed"}</td>
+      </tr>${
+        s.placed === "bet"
+          ? `<tr class="why-row"><td colspan="4"><span class="muted">If only one bet is funded — </span>${
+              s.bet ? esc(s.bet) : '<span class="muted">not written</span>'
+            }</td></tr>`
+          : ""
+      }`,
     )
     .join("");
 
-  const criteriaRows = r2.criteriaOrder.length ? `<ol>${r2.criteriaOrder.map((id) => `<li>${esc(criterionById(id).name)}</li>`).join("")}</ol>` : `<p class="muted">Not ranked.</p>`;
+  const raciHead = TASK_RACI_ROLES.map((r) => `<th class="num">${esc(r.short)}</th>`).join("");
+  const raciRows = RACI_ROWS.map((row) => {
+    const issues = r2.raciViolations.filter((v) => v.rowId === row.id);
+    return `<tr>
+      <td>${esc(row.label)}${issues.length ? `<div class="flag">${issues.map((v) => esc(v.text)).join("<br/>")}</div>` : ""}</td>
+      ${TASK_RACI_ROLES.map((role) => {
+        const v = r2.raciValue(row.id, role.id);
+        return `<td class="num${v === "A" ? " acc" : ""}">${v || "·"}</td>`;
+      }).join("")}
+    </tr>`;
+  }).join("");
 
-  const tradeoffRows = r2.tradeOffLinks.length
-    ? `<ul>${r2.tradeOffLinks.map((l) => `<li><strong>${esc(factorLabel(l.a))} ↔ ${esc(factorLabel(l.b))}:</strong> ${l.note ? esc(l.note) : '<span class="muted">note not written</span>'}</li>`).join("")}</ul>`
-    : `<p class="muted">No trade-offs drawn.</p>`;
-
-  const raciHead = ROLES.map((r) => `<th class="num">${esc(r.label.split(" ")[0])}</th>`).join("");
-  const raciRows = RESPONSIBILITIES.map(
-    (resp) => `<tr><td>${esc(resp.label)}</td>${ROLES.map((role) => {
-      const v = r2.raciValue(resp.id, role.id);
-      return `<td class="num${v === "A" ? " acc" : ""}">${v || "·"}</td>`;
-    }).join("")}</tr>`,
+  const decide = DECIDE_NOW_FIELDS.map(
+    (f) => `<div class="field"><p class="label">${esc(f.label)}</p><p>${
+      r2.decideNow[f.key] ? esc(r2.decideNow[f.key]) : '<span class="muted">Not written.</span>'
+    }</p></div>`,
   ).join("");
-
-  const selfAssessRows = SELF_ASSESSMENT_ITEMS.map((item) => `<tr><td>${esc(item.label)}</td><td class="num">${r2.selfAssessment[item.id] ?? "—"}</td></tr>`).join("");
 
   return `<!doctype html>
 <html lang="en">
@@ -136,33 +180,42 @@ export function buildMemoHtml(r2: Route2State, incomplete: boolean, reflection: 
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 40px 24px; background: #F5F6F7; color: #16191D;
-         font-family: Georgia, Cambria, "Times New Roman", Times, serif; font-size: 15px; line-height: 1.65; }
-  .sheet { max-width: 900px; margin: 0 auto; background: #FFFDF8; border: 1px solid #E2E5E9; border-radius: 16px; padding: 40px; }
-  .memohead { border-bottom: 2px solid #16191D; padding-bottom: 14px; font-family: "Segoe UI", Arial, sans-serif; }
-  .kicker { margin: 0 0 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: #0E7A5A; font-family: "Segoe UI", Arial, sans-serif; }
-  h1 { margin: 0 0 6px; font-size: 24px; line-height: 1.25; }
-  .stamp { margin: 8px 0 0; display: inline-block; padding: 4px 10px; border-radius: 999px; background: #B87514; color: #fff;
-           font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-family: "Segoe UI", Arial, sans-serif; }
-  .meta { margin: 10px 0 0; font-size: 13px; color: #5E6670; font-family: "Segoe UI", Arial, sans-serif; }
-  h2 { margin: 28px 0 10px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5E6670;
-       border-top: 1px solid #E2E5E9; padding-top: 16px; font-family: "Segoe UI", Arial, sans-serif; }
+         font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.6; }
+  .sheet { max-width: 860px; margin: 0 auto; background: #fff; border: 1px solid #E2E5E9; border-radius: 16px; padding: 40px; }
+  .memohead { border-bottom: 2px solid #16191D; padding-bottom: 14px; }
+  .kicker { margin: 0 0 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: #0E7A5A; }
+  h1 { margin: 0 0 6px; font-size: 27px; line-height: 1.2; }
+  .meta { display: grid; grid-template-columns: 90px 1fr; gap: 2px 12px; margin: 10px 0 0; font-size: 13px; }
+  .meta dt { color: #5E6670; text-transform: uppercase; letter-spacing: .05em; font-size: 11px; padding-top: 2px; }
+  .meta dd { margin: 0; }
+  h2 { margin: 30px 0 10px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: #5E6670; border-top: 1px solid #E2E5E9; padding-top: 16px; }
   .rec { padding: 16px 18px; border: 1px solid #E2E5E9; border-left: 4px solid #0E7A5A; border-radius: 10px; background: #E7F2EC; }
-  .rec strong { display: block; font-size: 16px; margin-bottom: 4px; }
-  ol, ul { margin: 6px 0 0; padding-left: 22px; }
-  li { margin-bottom: 6px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; font-family: "Segoe UI", Arial, sans-serif; }
-  th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #5E6670;
-       border-bottom: 1px solid #E2E5E9; padding: 8px 10px 8px 0; font-weight: 700; }
-  th.num, td.num { text-align: center; width: 60px; padding-right: 0; }
+  .rec strong { display: block; font-size: 17px; margin-bottom: 4px; }
+  ol { margin: 6px 0 0; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  .why { margin-top: 4px; font-style: italic; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #5E6670; border-bottom: 1px solid #E2E5E9; padding: 8px 10px 8px 0; font-weight: 700; }
+  th.num, td.num { text-align: center; width: 62px; padding-right: 0; }
   td { vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid #EEF1F3; }
   td.acc { font-weight: 700; color: #0E7A5A; background: #E7F2EC; }
-  .muted { color: #5E6670; font-style: italic; }
-  footer { margin-top: 32px; border-top: 1px solid #E2E5E9; padding-top: 14px; color: #5E6670; font-size: 11px; font-family: "Segoe UI", Arial, sans-serif; }
-  @media (max-width: 560px) { body { padding: 12px 8px; } .sheet { padding: 18px 14px; border-radius: 12px; } }
+  tr.why-row td { padding-top: 0; font-style: italic; }
+  .flag { margin-top: 4px; font-size: 11.5px; color: #B87514; }
+  .muted { color: #5E6670; font-size: 12px; font-style: normal; }
+  .nowrap { white-space: nowrap; }
+  .field { margin-top: 10px; }
+  .field .label { margin: 0; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #5E6670; font-weight: 700; }
+  .field p { margin: 2px 0 0; }
+  footer { margin-top: 32px; border-top: 1px solid #E2E5E9; padding-top: 14px; color: #5E6670; font-size: 11px; }
+  @media (max-width: 560px) {
+    body { padding: 12px 8px; }
+    .sheet { padding: 18px 14px; border-radius: 12px; }
+    th.num, td.num { width: 44px; }
+  }
   @media print {
     body { background: #fff; padding: 0; }
-    .sheet { border: 0; border-radius: 0; padding: 0; max-width: none; background: #fff; }
-    .rec, td.acc, .stamp { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sheet { border: 0; border-radius: 0; padding: 0; max-width: none; }
+    .rec, td.acc { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     h2, table, svg { break-inside: avoid; }
     @page { size: A4; margin: 16mm; }
   }
@@ -171,63 +224,58 @@ export function buildMemoHtml(r2: Route2State, incomplete: boolean, reflection: 
 <body>
 <div class="sheet">
   <div class="memohead">
-    <p class="kicker">AION Green IT · ${esc(CASE.module)} · Route 2 · Level 3 · Board memo</p>
-    <h1>Management Proposal — Connected Infrastructure Strategy</h1>
-    <p class="meta">${esc(VERTEX.company)} · Prepared by ${esc(r2.name.trim() || "learner")} · ${esc(date)} · ${esc(VERTEX.role)}</p>
-    ${stampLine ? `<span class="stamp">${esc(stampLine)}</span>` : ""}
+    <p class="kicker">AION Green IT · Day ${CASE.day} · Route 2 · Level 3 · Board memo</p>
+    <h1>${esc(EXPORT.docHeading)}</h1>
+    <dl class="meta">
+      <dt>To</dt><dd>Management board, ${esc(SYNERVIA.company)}</dd>
+      <dt>From</dt><dd>${esc(r2.name.trim() || "learner")} — ${esc(SYNERVIA.role)}</dd>
+      <dt>Date</dt><dd>${esc(date)}</dd>
+    </dl>
   </div>
 
-  <h2>1. Executive summary</h2>
+  <h2>Recommendation</h2>
   <div class="rec">
-    <strong>${chosen ? `Option ${esc(chosen.id)} — ${esc(chosen.text)}` : "No first measure selected."}</strong>
-    ${r2.relevanceRationale ? nl2br(r2.relevanceRationale) : '<span class="muted">No rationale written.</span>'}
+    <strong>${r2.chosenLane ? esc(r2.chosenLane.label) : "No line of measures chosen."}</strong>
+    ${r2.justification ? esc(r2.justification) : '<span class="muted">No defence written.</span>'}
   </div>
 
-  <h2>2. Strategic rationale</h2>
-  <p>${r2.relevanceSelected.length ? r2.relevanceSelected.map((id) => esc(relevanceLabel(id))).join(" · ") : '<span class="muted">No drivers selected.</span>'}</p>
-  <p>${r2.relevanceRationale ? nl2br(r2.relevanceRationale) : ""}</p>
-
-  <h2>3. Guiding decisions, next 12 months</h2>
-  <ol>${guidingRows}</ol>
-
-  <h2>4. Decision logic and assessment criteria</h2>
-  ${criteriaRows}
-  <p><strong>Boundary.</strong> ${r2.boundary ? esc(r2.boundary) : '<span class="muted">Not stated.</span>'}</p>
-
-  <h2>5. Central trade-offs</h2>
-  ${tradeoffSvg(r2)}
-  ${tradeoffRows}
-
-  <h2>6. Recommended first measure</h2>
-  <div class="rec">
-    <strong>${chosen ? `Option ${esc(chosen.id)} — ${esc(chosen.text)}` : "No option chosen."}</strong>
-    ${r2.justification ? nl2br(r2.justification) : '<span class="muted">No justification written.</span>'}
-  </div>
-  <p><strong>Committed budget.</strong> ${r2.committedBudgetAnswer ? esc(r2.committedBudgetAnswer) : '<span class="muted">Not answered.</span>'}</p>
-
-  <h2>7. Governance: roles, approval, review</h2>
-  <table><thead><tr><th>Responsibility</th>${raciHead}</tr></thead><tbody>${raciRows}</tbody></table>
-  <p class="muted">R Responsible · A Accountable · C Consulted · I Informed. Exactly one A per row.</p>
-  <p><strong>Review mechanism.</strong> ${r2.reviewMechanism ? esc(r2.reviewMechanism) : '<span class="muted">Not described.</span>'}</p>
-
-  <h2>8. Decision taken now under uncertainty</h2>
-  <p>${r2.decisionNow ? esc(r2.decisionNow) : '<span class="muted">Not written.</span>'}</p>
-  <p class="muted">Confidence: ${r2.confidence}/100${r2.changeMyMind ? ` · Would change with: ${esc(r2.changeMyMind)}` : ""}</p>
-
-  <h2>Self-assessment</h2>
-  <table><thead><tr><th>Rubric question</th><th class="num">Rating</th></tr></thead><tbody>${selfAssessRows}</tbody></table>
-
+  <h2>Assessment grid</h2>
+  <table>
+    <thead><tr><th>Criterion</th><th>Rating</th><th>Argument</th></tr></thead>
+    <tbody>${assessmentRows}</tbody>
+  </table>
   ${
-    reflection
-      ? `<h2>Appendix: reflection journal</h2>${reflection
-          .map((r) => `<p><strong>${esc(r.question)}</strong><br/>${r.answer ? nl2br(r.answer) : '<span class="muted">Not answered.</span>'}</p>`)
-          .join("")}`
+    r2.followUp || r2.risks.some(Boolean)
+      ? `<div class="field">
+          ${r2.followUp ? `<p class="label">Follow-up decisions</p><p>${esc(r2.followUp)}</p>` : ""}
+          ${r2.risks.filter(Boolean).length ? `<p class="label" style="margin-top:8px">Risks of the attractive-but-weak trap</p><ul>${r2.risks.filter(Boolean).map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+        </div>`
       : ""
   }
 
+  <h2>Guiding decisions, ranked</h2>
+  ${ranked}
+
+  <h2>Trade-off assessment</h2>
+  ${mapSvg(r2)}
+  <table>
+    <thead><tr><th>Initiative</th><th>${esc(MAP_QUESTIONS.q1.label)}</th><th>${esc(MAP_QUESTIONS.q2.label)}</th><th>Quadrant</th></tr></thead>
+    <tbody>${mapRows}</tbody>
+  </table>
+
+  <h2>Ownership</h2>
+  <table>
+    <thead><tr><th>Decision object</th>${raciHead}</tr></thead>
+    <tbody>${raciRows}</tbody>
+  </table>
+  <p class="muted">R Responsible · A Accountable · C Consulted · I Informed. Exactly one A per row.</p>
+
+  <h2>Decision required now</h2>
+  ${decide}
+
   <footer>
-    AION Green IT — ${esc(CASE.module)}, Route 2 (Management Decision), level 3.
-    ${esc(VERTEX.company)} is a fictional case for training use. Prepared by the learner named above.
+    AION Green IT — Day ${CASE.day}, Route 2 (Management Decision), level 3.
+    ${esc(SYNERVIA.company)} is a fictional case for training use. Prepared by the learner named above.
   </footer>
 </div>
 </body>

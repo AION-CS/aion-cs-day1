@@ -3,301 +3,231 @@
 import { useProgress, useHydrated } from "@/lib/store";
 import type { MissingItem } from "@/components/ui/MissingList";
 import {
-  APPROACH_FIELD,
-  COMMIT,
-  CRITERIA,
-  OPTION_IDS,
+  AREAS,
+  ESCALATE,
   R1,
   SIGNALS,
-  ZONES,
-  analyseJustification,
-  isOptionId,
-  isZoneId,
-  signalExcerpt,
-  type CriterionId,
-  type Horizon,
-  type OptionId,
-  type Rank,
-  type Reading,
-  type RootCause,
+  areaById,
+  type AreaId,
+  type Effect,
+  type Sentiment,
   type Signal,
-  type ZoneId,
 } from "@/lib/route1";
-import { parseSlots, type Slots } from "./ranking";
 
-/** DOM ids the missing list, the clues and the reference chips scroll to. */
+/** DOM ids the missing-item list scrolls to and flashes. */
 export const domId = {
   name: "r1-name",
 
-  // Part 1
-  partOne: "part-1",
-  board: "r1-board",
-  routingCheck: "r1-routing-check",
-  signal: (id: string) => `r1-signal-${id}`,
-  /** The Step B wrapper — present whether the questions are open or folded into the routed summary. */
-  stepB: (id: string) => `r1-signal-${id}-stepb`,
-  reading: (id: string) => `r1-signal-${id}-reading`,
-  bothWhy: (id: string) => `r1-signal-${id}-bothwhy`,
-  zone: (id: string) => `r1-signal-${id}-zone`,
-  /** Placeholder shown where Step D will open once the signal is routed. */
-  stepD: (id: string) => `r1-signal-${id}-stepd`,
-  approach: (id: string) => `r1-signal-${id}-approach`,
-  rootCause: (id: string) => `r1-signal-${id}-root`,
-  horizon: (id: string) => `r1-signal-${id}-horizon`,
+  task: "task",
+  triage: "r1-triage",
+  triageRow: (id: string) => `r1-triage-${id}`,
+  triageEvidence: (id: string) => `r1-triage-${id}-evidence`,
+  triageTag: (id: string) => `r1-triage-${id}-tag`,
+  triageCheck: "r1-triage-check",
 
-  handover: "r1-handover",
+  escalate: "r1-escalate",
+  escalateWhy: "r1-escalate-why",
 
-  // Part 2
-  partTwo: "part-2",
-  matrix: "r1-matrix",
-  criterion: (id: CriterionId) => `r1-rank-${id}`,
-  chosen: "r1-chosen",
-  justification: "r1-justification",
-  followUp: (n: 1 | 2) => `r1-followup-${n}`,
-  risks: "r1-risks",
-  risk: (n: 1 | 2) => `r1-risk-${n}`,
-  reasoningCheck: "r1-reasoning-check",
+  // Step 3: deep dive (reuses one id shape per signal)
+  analysis: (id: string) => `r1-analysis-${id}`,
+  area: (id: string) => `r1-analysis-${id}-area`,
+  effect: (id: string) => `r1-analysis-${id}-effect`,
+  approach: (id: string) => `r1-analysis-${id}-approach`,
 
   export: "r1-export",
 };
 
-export type SignalState = {
+// ---------------------------------------------------------------------------
+// Step 1 — triage
+// ---------------------------------------------------------------------------
+
+export type TriageRowState = {
   signal: Signal;
-  reading: Reading | null;
-  bothWhy: string;
-  zone: ZoneId | null;
-  /** Both diagnostic questions answered — the card has left the intake. */
-  routed: boolean;
+  tag: Sentiment | null;
+  /** Index into signal.segments of the tapped phrase, or null. */
+  evidence: number | null;
+  evidenceText: string | null;
+  complete: boolean;
+  /** Ground truth — tag correct and the tapped phrase is the decisive one. Only ever surfaced when reasoning is visible. */
+  holds: boolean;
+};
+
+// ---------------------------------------------------------------------------
+// Step 3 — deep dive
+// ---------------------------------------------------------------------------
+
+export type Analysis = {
+  signal: Signal;
+  triage: TriageRowState;
+  area: AreaId | null;
+  effect: Effect | null;
   approach: string;
-  approachLength: number;
-  rootCause: RootCause | null;
-  horizon: Horizon | null;
+  checks: number;
+  fresh: boolean;
+  verdict: "holds" | "wrong" | null;
+  revealed: boolean;
+  reasoningVisible: boolean;
   complete: boolean;
 };
 
-export type RiskTarget = { option: OptionId; mode: "notChosen" | "chosen" };
-
-const NO_STRINGS: Record<string, string> = {};
-const NO_BOOLS: Record<string, boolean> = {};
-
-const asReading = (v?: string): Reading | null => (v === "potential" || v === "risk" || v === "both" ? v : null);
-const asRoot = (v?: string): RootCause | null => (v === "technology" || v === "governance" ? v : null);
-const asHorizon = (v?: string): Horizon | null => (v === "short" || v === "structural" ? v : null);
-
 /**
- * Joins the shared progress store to Route 1's content — both parts, one hook.
+ * Joins the shared progress store to Route 1's content, one hook.
  *
- * Until the store has hydrated it reads as empty, so the first client render
- * matches the statically exported HTML. One route has one `missing` list and
- * one definition of done (CLAUDE.md #12); entries pointing into a collapsed
- * signal card carry a `before` that opens it first.
+ * One route has one `missing` list and one definition of done (CLAUDE.md
+ * §12). The task's own checks (triage, then per-signal deep dive) are
+ * set/pair-level so neither one ever names which specific answer is wrong —
+ * only how many hold — and both open onto a "show the reasoning" option
+ * after two genuine checks, which is recorded in the export.
  */
 export function useRoute1() {
   const hydrated = useHydrated();
-  const rawNotes = useProgress((s) => s.notes);
-  const rawChoices = useProgress((s) => s.choices);
-  const rawChecks = useProgress((s) => s.checks);
-  const choose = useProgress((s) => s.choose);
-
-  const notes = hydrated ? rawNotes : NO_STRINGS;
-  const choices = hydrated ? rawChoices : NO_STRINGS;
-  const checks = hydrated ? rawChecks : NO_BOOLS;
+  const notes = useProgress((s) => s.notes);
+  const choices = useProgress((s) => s.choices);
+  const checks = useProgress((s) => s.checks);
 
   const name = notes[R1.name] ?? "";
 
-  // -- Part 1 ---------------------------------------------------------------
-  const signals: SignalState[] = SIGNALS.map((signal) => {
-    const reading = asReading(choices[R1.reading(signal.id)]);
-    const zoneRaw = choices[R1.zone(signal.id)];
-    const zone = isZoneId(zoneRaw) ? zoneRaw : null;
-    const bothWhy = notes[R1.bothWhy(signal.id)] ?? "";
-    const approach = notes[R1.approach(signal.id)] ?? "";
-    const approachLength = approach.trim().length;
-    const rootCause = asRoot(choices[R1.rootCause(signal.id)]);
-    const horizon = asHorizon(choices[R1.horizon(signal.id)]);
-    const routed = !!reading && !!zone;
-    const complete =
-      routed &&
-      approachLength >= APPROACH_FIELD.min &&
-      !!rootCause &&
-      !!horizon &&
-      (reading !== "both" || bothWhy.trim().length > 0);
-    return { signal, reading, bothWhy, zone, routed, approach, approachLength, rootCause, horizon, complete };
+  // -- Step 1: triage ---------------------------------------------------------
+  const triage: TriageRowState[] = SIGNALS.map((signal) => {
+    const rawTag = choices[R1.triageTag(signal.id)];
+    const tag = rawTag === "positive" || rawTag === "negative" ? (rawTag as Sentiment) : null;
+    const rawEv = choices[R1.triageEvidence(signal.id)];
+    const evidence = rawEv !== undefined && rawEv !== "" ? Number(rawEv) : null;
+    const seg = evidence !== null ? signal.segments[evidence] : null;
+    const evidenceText = seg && typeof seg !== "string" ? seg.text : null;
+    const decisive = seg && typeof seg !== "string" ? seg.decisive : false;
+    return {
+      signal,
+      tag,
+      evidence,
+      evidenceText,
+      complete: !!tag && evidence !== null,
+      holds: tag === signal.sentiment && decisive,
+    };
   });
 
-  const routedSignals = signals.filter((s) => s.routed);
-  const zoneCounts = Object.fromEntries(
-    ZONES.map((z) => [z.id, routedSignals.filter((s) => s.zone === z.id).length]),
-  ) as Record<ZoneId, number>;
-  const countRouted = (pred: (s: SignalState) => boolean) => routedSignals.filter(pred).length;
+  const triageById = (id: string) => triage.find((t) => t.signal.id === id)!;
+  const triageCompleteCount = triage.filter((t) => t.complete).length;
+  const triageSignature = triage.map((t) => `${t.signal.id}:${t.tag ?? "-"}:${t.evidence ?? "-"}`).join("|");
 
-  const tally = {
-    total: SIGNALS.length,
-    routed: routedSignals.length,
-    complete: signals.filter((s) => s.complete).length,
-    zonesUsed: ZONES.filter((z) => zoneCounts[z.id] > 0).length,
-    technology: countRouted((s) => s.rootCause === "technology"),
-    governance: countRouted((s) => s.rootCause === "governance"),
-    short: countRouted((s) => s.horizon === "short"),
-    structural: countRouted((s) => s.horizon === "structural"),
-    potential: countRouted((s) => s.reading === "potential"),
-    risk: countRouted((s) => s.reading === "risk"),
-    both: countRouted((s) => s.reading === "both"),
-  };
+  const triageChecks = Number(notes[R1.triageChecks] ?? "0") || 0;
+  const triageLastSig = notes[R1.triageLastSig] ?? "";
+  const triageLastOk = Number(notes[R1.triageLastOk] ?? "0") || 0;
+  const triageFresh = triageChecks > 0 && triageLastSig === triageSignature;
+  const triageAllHold = triageFresh && triageLastOk === SIGNALS.length;
+  const triageClue = checks[R1.triageClue] === true;
+  const triageRevealed = checks[R1.triageReveal] === true;
+  const triageRevealAt = Number(notes[R1.triageRevealAt] ?? "0") || 0;
+  const triageReasoningVisible = triageAllHold || triageRevealed;
 
-  // -- Part 2 ---------------------------------------------------------------
-  const slots = Object.fromEntries(CRITERIA.map((c) => [c.id, parseSlots(choices[R1.rank(c.id)])])) as Record<
-    CriterionId,
-    Slots
-  >;
-  const ranks = Object.fromEntries(
-    CRITERIA.map((c) => [
-      c.id,
-      Object.fromEntries(
-        OPTION_IDS.map((o) => {
-          const i = slots[c.id].indexOf(o);
-          return [o, i >= 0 ? ((i + 1) as Rank) : null];
-        }),
-      ),
-    ]),
-  ) as Record<CriterionId, Record<OptionId, Rank | null>>;
+  // -- Step 2: escalate ---------------------------------------------------------
+  const escalated = (notes[R1.escalate] ?? "")
+    .split("|")
+    .filter((id) => SIGNALS.some((s) => s.id === id))
+    .slice(0, ESCALATE.limit);
+  const escalateWhy = (notes[R1.escalateWhy] ?? "").trim();
 
-  const placedIn = (c: CriterionId) => slots[c].filter(Boolean).length;
-  const rankedRows = CRITERIA.filter((c) => placedIn(c.id) === 3).length;
-  const rankSums = Object.fromEntries(
-    OPTION_IDS.map((o) => [o, CRITERIA.reduce((sum, c) => sum + (ranks[c.id][o] ?? 0), 0)]),
-  ) as Record<OptionId, number>;
-  const rankedFor = Object.fromEntries(
-    OPTION_IDS.map((o) => [o, CRITERIA.filter((c) => ranks[c.id][o] !== null).length]),
-  ) as Record<OptionId, number>;
-  const firstPlaces = Object.fromEntries(
-    OPTION_IDS.map((o) => [o, CRITERIA.filter((c) => ranks[c.id][o] === 1).length]),
-  ) as Record<OptionId, number>;
+  // -- Step 3: deep dive (only the escalated signals) --------------------------
+  const analyses: Analysis[] = escalated.map((id) => {
+    const signal = SIGNALS.find((s) => s.id === id)!;
+    const rawArea = choices[R1.area(id)];
+    const area = rawArea && AREAS.some((a) => a.id === rawArea) ? (rawArea as AreaId) : null;
+    const rawEffect = choices[R1.effect(id)];
+    const effect = rawEffect === "direct" || rawEffect === "indirect" ? (rawEffect as Effect) : null;
+    const approach = (notes[R1.approach(id)] ?? "").trim();
 
-  const chosenRaw = choices[R1.chosen];
-  const chosen: OptionId | null = isOptionId(chosenRaw) ? chosenRaw : null;
-  const justification = notes[R1.justification] ?? "";
-  const justificationLength = justification.trim().length;
-  const justificationSignals = analyseJustification(justification);
-  const followUps: [string, string] = [notes[R1.followUp(1)] ?? "", notes[R1.followUp(2)] ?? ""];
-  const risks: [string, string] = [notes[R1.risk(1)] ?? "", notes[R1.risk(2)] ?? ""];
+    const signature = `${area ?? "-"}:${effect ?? "-"}`;
+    const analysisChecks = Number(notes[R1.analysisChecks(id)] ?? "0") || 0;
+    const lastSig = notes[R1.analysisLastSig(id)] ?? "";
+    const fresh = analysisChecks > 0 && lastSig === signature;
+    const verdict: "holds" | "wrong" | null = !fresh
+      ? null
+      : area === signal.area && effect === signal.effect
+        ? "holds"
+        : "wrong";
+    const revealed = checks[R1.analysisReveal(id)] === true;
 
-  // The short-term-attractive option: lowest combined rank on Innovation + Feasibility.
-  let riskTarget: RiskTarget | null = null;
-  if (placedIn("innovation") === 3 && placedIn("feasibility") === 3) {
-    const score = (o: OptionId) => (ranks.innovation[o] ?? 3) + (ranks.feasibility[o] ?? 3);
-    const best = [...OPTION_IDS].sort(
-      (a, b) => score(a) - score(b) || (ranks.innovation[a] ?? 3) - (ranks.innovation[b] ?? 3) || a.localeCompare(b),
-    )[0];
-    riskTarget = { option: best, mode: chosen === best ? "chosen" : "notChosen" };
-  }
+    return {
+      signal,
+      triage: triageById(id),
+      area,
+      effect,
+      approach,
+      checks: analysisChecks,
+      fresh,
+      verdict,
+      revealed,
+      reasoningVisible: verdict === "holds" || revealed,
+      complete: !!area && !!effect && approach.length > 0,
+    };
+  });
 
-  // -- Missing list (standard #1: one entry per concrete gap, in page order) --
-  const openSignal = (id: string) => () => choose(R1.openSignal, id);
-  const missingPartOne: MissingItem[] = [];
+  const analysisById = (id: string) => analyses.find((a) => a.signal.id === id);
+  const analysisCompleteCount = analyses.filter((a) => a.complete).length;
 
-  for (const s of signals) {
-    const who = `Signal ${s.signal.n} — "${signalExcerpt(s.signal)}"`;
-    const before = openSignal(s.signal.id);
-    if (!s.reading) {
-      missingPartOne.push({ id: domId.reading(s.signal.id), label: `${who}: potential/risk reading not selected`, before });
-    }
-    if (s.reading === "both" && !s.bothWhy.trim()) {
-      missingPartOne.push({
-        id: domId.bothWhy(s.signal.id),
-        label: `${who}: "Both" was selected but no one-line justification given`,
-        before,
-      });
-    }
-    if (!s.zone) {
-      missingPartOne.push({ id: domId.zone(s.signal.id), label: `${who}: area not selected, card still in Intake`, before });
-    }
-    const stepTarget = (field: string) => (s.routed ? field : domId.stepD(s.signal.id));
-    if (s.approachLength < APPROACH_FIELD.min) {
-      missingPartOne.push({
-        id: stepTarget(domId.approach(s.signal.id)),
-        label: `${who}: improvement approach is ${s.approachLength} characters, needs at least ${APPROACH_FIELD.min}`,
-        before,
-      });
-    }
-    if (!s.rootCause) {
-      missingPartOne.push({ id: stepTarget(domId.rootCause(s.signal.id)), label: `${who}: root cause not tagged`, before });
-    }
-    if (!s.horizon) {
-      missingPartOne.push({ id: stepTarget(domId.horizon(s.signal.id)), label: `${who}: time horizon not tagged`, before });
-    }
-  }
+  // -- Missing list ---------------------------------------------------------
+  // Standard #1: one entry per concretely-missing thing, named, in page order.
+  const missing: MissingItem[] = [];
+  if (!name.trim()) missing.push({ id: domId.name, label: "Your name — needed to label the export" });
 
-  const missingPartTwo: MissingItem[] = [];
-  for (const c of CRITERIA) {
-    const n = placedIn(c.id);
-    if (n < 3) {
-      missingPartTwo.push({
-        id: domId.criterion(c.id),
-        label: `Criterion "${c.name}": ranking incomplete (${n} of 3 options placed)`,
-      });
-    }
-  }
-  if (!chosen) missingPartTwo.push({ id: domId.chosen, label: "Prioritised option not selected" });
-  if (justificationLength < COMMIT.justification.min) {
-    missingPartTwo.push({
-      id: domId.justification,
-      label: `Justification is ${justificationLength} characters, needs at least ${COMMIT.justification.min}`,
+  for (const t of triage) {
+    if (t.complete) continue;
+    const who = `Signal ${t.signal.n} — ${t.signal.title}`;
+    missing.push({
+      id: t.tag ? domId.triageEvidence(t.signal.id) : domId.triageTag(t.signal.id),
+      label: !t.tag && t.evidence === null ? `Triage for ${who} — tag and evidence` : !t.tag ? `Triage tag for ${who}` : `Triage evidence for ${who}`,
     });
   }
-  ([1, 2] as const).forEach((n) => {
-    if (!followUps[n - 1].trim()) missingPartTwo.push({ id: domId.followUp(n), label: `Follow-up decision ${n} is empty` });
-  });
-  ([1, 2] as const).forEach((n) => {
-    if (!risks[n - 1].trim()) {
-      missingPartTwo.push({
-        id: domId.risk(n),
-        label: riskTarget
-          ? `Risk ${n} for Option ${riskTarget.option} is empty`
-          : `Risk ${n} is empty — rank Innovation benefit and Feasibility first so the option can be identified`,
-      });
-    }
-  });
-
-  const missing: MissingItem[] = [
-    ...(name.trim() ? [] : [{ id: domId.name, label: "Participant name not entered — export filename will be incomplete" }]),
-    ...missingPartOne,
-    ...missingPartTwo,
-  ];
+  if (escalated.length < ESCALATE.limit) {
+    missing.push({
+      id: domId.escalate,
+      label: `Escalate ${ESCALATE.limit} signals for a deeper look — ${escalated.length} of ${ESCALATE.limit} chosen`,
+    });
+  }
+  if (!escalateWhy) {
+    missing.push({ id: domId.escalateWhy, label: "Justification for your two escalated signals" });
+  }
+  for (const a of analyses) {
+    const who = `Signal ${a.signal.n} — ${a.signal.title}`;
+    if (!a.area) missing.push({ id: domId.area(a.signal.id), label: `Area for ${who}` });
+    if (!a.effect) missing.push({ id: domId.effect(a.signal.id), label: `Direct/indirect effect for ${who}` });
+    if (!a.approach) missing.push({ id: domId.approach(a.signal.id), label: `Improvement approach for ${who}` });
+  }
 
   return {
     hydrated,
     name,
-    mentorSample: !!checks[R1.mentorSample],
 
-    // Part 1
-    signals,
-    signalState: (id: string) => signals.find((s) => s.signal.id === id)!,
-    zoneCounts,
-    tally,
-    openSignalId: choices[R1.openSignal] || null,
+    // Step 1
+    triage,
+    triageById,
+    triageCompleteCount,
+    triageSignature,
+    triageChecks,
+    triageFresh,
+    triageLastOk,
+    triageAllHold,
+    triageClue,
+    triageRevealed,
+    triageRevealAt,
+    triageReasoningVisible,
+    totalSignals: SIGNALS.length,
 
-    // Part 2
-    slots,
-    ranks,
-    placedIn,
-    rankedRows,
-    rankSums,
-    rankedFor,
-    firstPlaces,
-    chosen,
-    justification,
-    justificationLength,
-    justificationSignals,
-    followUps,
-    risks,
-    riskTarget,
+    // Step 2
+    escalated,
+    escalateWhy,
 
-    // Route-wide
-    missingPartOne,
-    missingPartTwo,
+    // Step 3
+    analyses,
+    analysisById,
+    analysisCompleteCount,
+
+    // route-wide
     missing,
     allComplete: missing.length === 0,
+
+    // helpers components need
+    areaName: (id: AreaId | null) => (id ? areaById(id).name : "— not assigned"),
   };
 }
 

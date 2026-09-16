@@ -22,13 +22,13 @@ export default function DayLanding() {
         </p>
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
-          Module 8. A network is capacity that has to be provisioned, powered, maintained, replaced and disposed of —
-          whether or not anyone is using it. Route 1 teaches what actually drives network energy, the levers and the
-          measurement standard behind them, IoT impact across a device&apos;s whole life, and the rebound mechanism behind
-          5G&apos;s efficiency claim — then puts you inside SmartLink Operations to diagnose six signals and commit to one
-          line of measures. Route 2 steps up to the board: a complete worked reasoning chain through NetSphere Industrial
-          Systems GmbH, then a live Board Memo built for Vertex Connected Industries, under conditions that will not let
-          you simply copy the worked example.
+          Module 9, day one of one. Digitalisation is a lever, not a guarantee — which way it moves depends on what it
+          actually removes. Route 1 teaches the five mechanisms that make it a genuine sustainability lever, the line
+          between what a system itself consumes and what changes around it, why an efficiency gain doesn&apos;t
+          automatically stay banked, and the six-area framework that sorts a finding before it can be acted on — then
+          puts you inside ProcessNova Services to triage seven signals and take two of them further. Route 2 steps up
+          to the board: a complete worked reasoning chain through EcoFlow Administration GmbH, then a live Board Memo
+          built for Synervia Process Group, under conditions that will not let you simply copy the worked example.
         </p>
       </div>
 

@@ -2,282 +2,261 @@
 
 import { useProgress, useHydrated } from "@/lib/store";
 import type { MissingItem } from "@/components/ui/MissingList";
+import { validate, type RaciCell, type RowViolation } from "@/components/ui/RaciGrid";
 import {
-  MEMO_SECTIONS,
-  QUARTERS,
+  ASSESSMENT_DIMENSIONS,
+  CAPACITY_ROWS,
+  DECIDE_NOW_FIELDS,
+  GUIDING_DECISIONS,
+  MAP_MEASURES,
+  MEASURE_LANES,
   R2,
+  RACI_EXERCISE,
+  RACI_ROWS,
   RANK_SLOTS,
-  RELEVANCE_DRIVERS,
-  RELEVANCE_REQUIRED,
-  RESPONSIBILITIES,
-  ROLES,
-  SECTION_1,
-  SECTION_2,
-  SECTION_3,
-  SECTION_5,
-  SECTION_6,
-  SECTION_7,
-  SELF_ASSESSMENT_ITEMS,
-  TRADEOFF_MIN,
-  factorLabel,
-  isOptionId,
-  isQuarter,
-  isRoleId,
-  isSelfAssessmentValue,
-  type OptionId,
-  type Quarter,
-  type RelevanceId,
-  type ResponsibilityId,
-  type RoleId,
-  type SelfAssessmentValue,
+  TASK_RACI_ROLES,
+  decisionById,
+  quadrantFor,
+  type LaneId,
+  type MapMeasure,
+  type QuadrantId,
 } from "@/lib/route2";
-import type { RaciCell } from "@/components/ui/RaciGrid";
-import { validate as validateRaci } from "@/components/ui/RaciGrid";
-import { parseCriteriaOrder } from "./ranking";
-import { parseLinks } from "./tradeoffs";
+import type { RatingLevel } from "@/lib/route2/material";
 
-/** DOM ids the missing list, clues and reference chips scroll to. */
+/** DOM ids the missing-item list scrolls to and flashes. */
 export const domId = {
   name: "r2-name",
-  task: "r2-task",
+  task: "task",
 
-  relevance: "r2-s1",
-  relevanceDriver: "r2-s1-drivers",
-  relevanceRationale: "r2-s1-rationale",
+  prioritise: "r2-prioritise",
+  lane: "r2-prioritise-lane",
+  grid: "r2-prioritise-grid",
+  rating: (key: string) => `r2-prioritise-rating-${key}`,
+  justify: "r2-prioritise-justify",
+  followUp: "r2-prioritise-followup",
+  risk: (n: 1 | 2) => `r2-prioritise-risk-${n}`,
 
-  guiding: "r2-s2",
-  guidingText: (n: 1 | 2 | 3) => `r2-s2-${n}-text`,
-  guidingOwner: (n: 1 | 2 | 3) => `r2-s2-${n}-owner`,
-  guidingQuarter: (n: 1 | 2 | 3) => `r2-s2-${n}-quarter`,
+  rank: "r2-rank",
+  rankSlots: "r2-rank-slots",
+  rankWhy: "r2-rank-why",
+  rankCheck: "r2-rank-check",
 
-  logic: "r2-s3",
-  criteriaRank: "r2-s3-rank",
-  boundary: "r2-s3-boundary",
+  map: "r2-map",
+  mapMeasure: (id: string) => `r2-map-${id}`,
+  q1: (id: string) => `r2-map-${id}-q1`,
+  q2: (id: string) => `r2-map-${id}-q2`,
+  bet: (id: string) => `r2-map-${id}-bet`,
 
-  tradeoffs: "r2-s4",
-  tradeoffNote: (a: string, b: string) => `r2-s4-note-${a}-${b}`,
+  raci: "r2-raci",
+  raciRow: (rowId: string) => `r2-raci-row-${rowId}`,
 
-  measure: "r2-s5",
-  firstMeasure: "r2-s5-option",
-  justification: "r2-s5-justification",
-  committedBudget: "r2-s5-budget",
-
-  governance: "r2-s6",
-  raciRow: (id: string) => `r2-s6-row-${id}`,
-  reviewMechanism: "r2-s6-review",
-
-  decideNow: "r2-s7",
-  decisionNow: "r2-s7-decision",
-  confidence: "r2-s7-confidence",
-  changeMyMind: "r2-s7-changemymind",
-
-  selfAssessment: "r2-selfassessment",
-  checkMemo: "r2-check",
-  memo: "r2-memo",
-  memoSection: (n: number) => `r2-memo-${n}`,
+  decide: "r2-decide",
+  decideField: (key: string) => `r2-decide-${key}`,
 
   export: "r2-export",
 };
 
-const NO_STRINGS: Record<string, string> = {};
-const NO_BOOLS: Record<string, boolean> = {};
+export type Answer = "yes" | "no";
 
-export type GuidingDecision = { text: string; owner: RoleId | null; quarter: Quarter | null };
+export type RatingRow = {
+  dim: (typeof ASSESSMENT_DIMENSIONS)[number];
+  rating: RatingLevel | null;
+  note: string;
+};
+
+export type MapMeasureState = {
+  measure: MapMeasure;
+  q1: Answer | null;
+  q2: Answer | null;
+  q1Correct: boolean | null;
+  q2Correct: boolean | null;
+  placed: QuadrantId | null;
+  slotIndex: number;
+  slotCount: number;
+  retries: number;
+  bet: string;
+};
+
+const asAnswer = (v: string | undefined): Answer | null => (v === "yes" || v === "no" ? v : null);
+const asRating = (v: string | undefined): RatingLevel | null =>
+  v === "low" || v === "mid" || v === "high" ? v : null;
 
 /**
- * Joins the shared progress store to Route 2's content — the material's
- * read/opened state and the whole seven-section task, one hook. Until the
- * store has hydrated it reads as empty, matching the statically exported HTML
- * (Route 1's useRoute1 does the same, for the same hydration-safety reason).
+ * Joins the shared progress store to Route 2's content: five exercises, one
+ * derived `missing` list, one definition of done.
+ *
+ * Nothing here is graded live. Exercise 1 is argument-graded (mentor key
+ * only), the map position is a consequence of two answers, the RACI check
+ * reports structure only, and the ranking test asks about the learner's own
+ * first choice rather than scoring the order.
  */
 export function useRoute2() {
   const hydrated = useHydrated();
-  const rawNotes = useProgress((s) => s.notes);
-  const rawChoices = useProgress((s) => s.choices);
-  const rawChecks = useProgress((s) => s.checks);
+  const notes = useProgress((s) => s.notes);
+  const choices = useProgress((s) => s.choices);
   const choose = useProgress((s) => s.choose);
 
-  const notes = hydrated ? rawNotes : NO_STRINGS;
-  const choices = hydrated ? rawChoices : NO_STRINGS;
-  const checks = hydrated ? rawChecks : NO_BOOLS;
-
   const name = notes[R2.name] ?? "";
-  const mentorSample = !!checks[R2.mentorSample];
 
-  // -- Material ---------------------------------------------------------------
-  const hotspotsRead = ["h1", "h2", "h3", "h4", "h5", "h6"].filter((id) => checks[R2.hotspotRead(id)]).length;
+  // -- Exercise 1 — prioritise & defend ---------------------------------------
+  const rawLane = choices[R2.prioritiseLane];
+  const lane: LaneId | null =
+    rawLane === "accelerate" || rawLane === "assess" || rawLane === "consolidate" ? rawLane : null;
+  const chosenLane = lane ? MEASURE_LANES.find((l) => l.id === lane) ?? null : null;
 
-  // -- Section 1: strategic relevance ------------------------------------------
-  const relevanceSelected = RELEVANCE_DRIVERS.map((d) => d.id).filter((id) => checks[R2.relevance(id)]) as RelevanceId[];
-  const relevanceRationale = notes[R2.relevanceRationale] ?? "";
+  const ratingRows: RatingRow[] = ASSESSMENT_DIMENSIONS.map((dim) => ({
+    dim,
+    rating: asRating(choices[R2.rating(dim.key)]),
+    note: (notes[R2.ratingNote(dim.key)] ?? "").trim(),
+  }));
+  const ratingCompleteCount = ratingRows.filter((r) => r.rating && r.note).length;
 
-  // -- Section 2: guiding decisions ---------------------------------------------
-  const guidingDecisions: GuidingDecision[] = ([1, 2, 3] as const).map((n) => {
-    const owner = choices[R2.guidingOwner(n)];
-    const quarter = choices[R2.guidingQuarter(n)];
+  const justification = (notes[R2.justification] ?? "").trim();
+  const followUp = (notes[R2.followUp] ?? "").trim();
+  const risks: [string, string] = [(notes[R2.risk(1)] ?? "").trim(), (notes[R2.risk(2)] ?? "").trim()];
+
+  const prioritiseComplete =
+    !!lane && ratingCompleteCount === ASSESSMENT_DIMENSIONS.length && !!justification && !!followUp && !!risks[0] && !!risks[1];
+
+  // -- Exercise 2 — ranking -------------------------------------------------
+  const ranking = (notes[R2.ranking] ?? "")
+    .split("|")
+    .filter((id) => GUIDING_DECISIONS.some((d) => d.id === id))
+    .slice(0, RANK_SLOTS);
+  const rankWhy = (notes[R2.rankWhy] ?? "").trim();
+  const rankCheck = choices[R2.rankCheck] || null;
+
+  // -- Exercise 3 — the trade-off map ---------------------------------------
+  const base = MAP_MEASURES.map((measure) => {
+    const q1 = asAnswer(choices[R2.q1(measure.id)]);
+    const q2 = asAnswer(choices[R2.q2(measure.id)]);
     return {
-      text: notes[R2.guidingText(n)] ?? "",
-      owner: isRoleId(owner) ? owner : null,
-      quarter: isQuarter(quarter) ? quarter : null,
+      measure,
+      q1,
+      q2,
+      q1Correct: q1 === null ? null : (q1 === "yes") === measure.momentumHigh,
+      q2Correct: q2 === null ? null : (q2 === "yes") === measure.structuralHigh,
+      placed: q1 && q2 ? quadrantFor(q1 === "yes", q2 === "yes") : null,
+      retries: Number(notes[R2.retries(measure.id)] ?? "0") || 0,
+      bet: (notes[R2.bet(measure.id)] ?? "").trim(),
     };
   });
 
-  // -- Section 3: decision logic -------------------------------------------------
-  const criteriaOrder = parseCriteriaOrder(notes[R2.criteriaRank]);
-  const boundary = notes[R2.boundary] ?? "";
+  const mapStates: MapMeasureState[] = base.map((s) => {
+    const sharing = base.filter((o) => o.placed !== null && o.placed === s.placed);
+    return {
+      ...s,
+      slotIndex: s.placed ? sharing.findIndex((o) => o.measure.id === s.measure.id) : 0,
+      slotCount: s.placed ? sharing.length : 0,
+    };
+  });
 
-  // -- Section 4: trade-offs -------------------------------------------------------
-  const tradeOffLinks = parseLinks(notes[R2.tradeOffs]);
-  const pendingLink = choices[R2.pendingLink] || null;
+  const placedCount = mapStates.filter((s) => s.placed).length;
+  const openMeasureId = choices[R2.openMeasure] || null;
 
-  // -- Section 5: first measure ---------------------------------------------------
-  const rawMeasure = choices[R2.firstMeasure];
-  const firstMeasure: OptionId | null = isOptionId(rawMeasure) ? rawMeasure : null;
-  const justification = notes[R2.justification] ?? "";
-  const committedBudgetAnswer = notes[R2.committedBudget] ?? "";
-
-  // -- Section 6: governance --------------------------------------------------------
-  const raciValue = (responsibilityId: string, roleId: string): RaciCell => {
-    const v = choices[R2.raci(responsibilityId, roleId)];
+  // -- Exercise 4 — RACI ----------------------------------------------------
+  const raciValue = (rowId: string, roleId: string): RaciCell => {
+    const v = choices[R2.raci(rowId, roleId)];
     return v === "R" || v === "A" || v === "C" || v === "I" ? v : "";
   };
-  const raciRoles = ROLES.map((r) => ({ id: r.id, name: r.label, short: r.label.split(" ")[0], canBindCapacity: true }));
-  const raciViolations = validateRaci(RESPONSIBILITIES, raciRoles, raciValue, [], {
-    manyA: "More than one Accountable in this row.",
-    noA: "No Accountable in this row.",
-    noR: "No Responsible in this row.",
-    authority: "",
-  });
-  const raciTouched = (id: string) => ROLES.some((r) => raciValue(id, r.id) !== "");
-  const reviewMechanism = notes[R2.reviewMechanism] ?? "";
+  const raciViolations: RowViolation[] = validate(RACI_ROWS, TASK_RACI_ROLES, raciValue, CAPACITY_ROWS, RACI_EXERCISE.violations);
+  const raciTouched = (rowId: string) => TASK_RACI_ROLES.some((role) => raciValue(rowId, role.id) !== "");
+  const accountableFor = (rowId: string) => TASK_RACI_ROLES.filter((role) => raciValue(rowId, role.id) === "A");
+  const raciStructuralIssues = raciViolations.filter((v) => v.kind !== "authority");
+  const raciAuthorityWarnings = raciViolations.filter((v) => v.kind === "authority");
 
-  // -- Section 7: decide now -------------------------------------------------------
-  const decisionNow = notes[R2.decisionNow] ?? "";
-  // Confidence has no "unset" state — 0 is itself a meaningful reading, unlike
-  // Route 1's 1..N predict sliders where 0 means "not touched". It is also not
-  // a required field (§10 never lists it), so it simply defaults to a midpoint.
-  const confidence = Number(choices[R2.confidence] ?? "50") || 0;
-  const changeMyMind = notes[R2.changeMyMind] ?? "";
+  // -- Exercise 5 — the decision that cannot wait ---------------------------
+  const decideNow = Object.fromEntries(
+    DECIDE_NOW_FIELDS.map((f) => [f.key, (notes[R2.decideNow(f.key)] ?? "").trim()]),
+  ) as Record<string, string>;
 
-  // -- Self-assessment (never validated) -------------------------------------------
-  const selfAssessment = Object.fromEntries(
-    SELF_ASSESSMENT_ITEMS.map((item) => {
-      const v = choices[R2.selfAssess(item.id)];
-      return [item.id, isSelfAssessmentValue(v) ? v : null];
-    }),
-  ) as Record<string, SelfAssessmentValue | null>;
-
-  // -- Memo section "drafted" state, for the live preview's placeholders ------------
-  const drafted = {
-    1: relevanceRationale.trim().length > 0 || !!firstMeasure, // executive summary composes from both
-    2: relevanceSelected.length > 0 && relevanceRationale.trim().length > 0,
-    3: guidingDecisions.some((g) => g.text.trim()),
-    4: criteriaOrder.length > 0 || boundary.trim().length > 0,
-    5: tradeOffLinks.length > 0,
-    6: !!firstMeasure && justification.trim().length > 0,
-    7: RESPONSIBILITIES.some((r) => raciTouched(r.id)) || reviewMechanism.trim().length > 0,
-    8: decisionNow.trim().length > 0,
-  } as Record<number, boolean>;
-
-  // -- Missing list (§10, literal strings; standard #1: one per concrete gap) ------
+  // -- Missing list — one entry per concretely missing thing, in page order --
+  const openMeasure = (id: string) => () => choose(R2.openMeasure, id);
   const missing: MissingItem[] = [];
 
-  if (!name.trim()) missing.push({ id: domId.name, label: "Participant name not entered — export filename will be incomplete" });
+  if (!name.trim()) missing.push({ id: domId.name, label: "Your name — needed to label the export" });
 
-  if (relevanceSelected.length !== RELEVANCE_REQUIRED) {
-    missing.push({ id: domId.relevanceDriver, label: `Section 1 — Strategic relevance: ${relevanceSelected.length} of ${RELEVANCE_REQUIRED} drivers selected` });
+  if (!lane) {
+    missing.push({ id: domId.lane, label: "Prioritise — choose one line of measures" });
   }
-  if (relevanceRationale.trim().length < SECTION_1.rationale.min) {
-    missing.push({ id: domId.relevanceRationale, label: `Section 1 — Rationale is ${relevanceRationale.trim().length} characters, needs at least ${SECTION_1.rationale.min}` });
-  }
-
-  guidingDecisions.forEach((g, i) => {
-    const n = i + 1;
-    if (!g.text.trim()) missing.push({ id: domId.guidingText(n as 1 | 2 | 3), label: `Section 2 — Guiding decision ${n}: text empty` });
-    if (!g.owner) missing.push({ id: domId.guidingOwner(n as 1 | 2 | 3), label: `Section 2 — Guiding decision ${n}: owner not assigned` });
-    if (!g.quarter) missing.push({ id: domId.guidingQuarter(n as 1 | 2 | 3), label: `Section 2 — Guiding decision ${n}: quarter not assigned` });
-  });
-
-  if (criteriaOrder.length < RANK_SLOTS) {
-    missing.push({ id: domId.criteriaRank, label: `Section 3 — Criteria ranking incomplete (${criteriaOrder.length} of ${RANK_SLOTS} placed)` });
-  }
-  if (boundary.trim().length < SECTION_3.boundary.min) {
-    missing.push({ id: domId.boundary, label: "Section 3 — Assessment boundary not stated" });
-  }
-
-  if (tradeOffLinks.length < TRADEOFF_MIN) {
-    missing.push({ id: domId.tradeoffs, label: `Section 4 — Only ${tradeOffLinks.length} trade-off drawn, at least ${TRADEOFF_MIN} required` });
-  }
-  for (const link of tradeOffLinks) {
-    if (!link.note.trim()) {
+  for (const r of ratingRows) {
+    if (!r.rating || !r.note) {
       missing.push({
-        id: domId.tradeoffNote(link.a, link.b),
-        label: `Section 4 — Trade-off "${factorLabel(link.a)} ↔ ${factorLabel(link.b)}": note empty`,
+        id: domId.rating(r.dim.key),
+        label: !r.rating ? `Assessment rating for ${r.dim.label}` : `Assessment argument for ${r.dim.label}`,
       });
     }
   }
+  if (!justification) missing.push({ id: domId.justify, label: "Defence of your prioritised choice" });
+  if (!followUp) missing.push({ id: domId.followUp, label: "Follow-up decisions your choice creates" });
+  if (!risks[0]) missing.push({ id: domId.risk(1), label: "First risk of an attractive-but-weak choice" });
+  if (!risks[1]) missing.push({ id: domId.risk(2), label: "Second risk of an attractive-but-weak choice" });
 
-  if (!firstMeasure) missing.push({ id: domId.firstMeasure, label: "Section 5 — First measure not selected" });
-  if (justification.trim().length < SECTION_5.justification.min) {
-    missing.push({ id: domId.justification, label: `Section 5 — Justification is ${justification.trim().length} characters, needs at least ${SECTION_5.justification.min}` });
+  if (ranking.length < RANK_SLOTS) {
+    missing.push({ id: domId.rankSlots, label: `Guiding decisions — ${ranking.length} of ${RANK_SLOTS} positions filled` });
   }
-  if (committedBudgetAnswer.trim().length < SECTION_5.budgetQuestion.min) {
-    missing.push({ id: domId.committedBudget, label: "Section 5 — Committed-budget question not answered" });
+  if (!rankWhy) {
+    missing.push({
+      id: domId.rankWhy,
+      label: ranking[0] ? `Justification for your #1 — ${decisionById(ranking[0]).label}` : "Justification for your #1 guiding decision",
+    });
   }
 
-  for (const resp of RESPONSIBILITIES) {
-    const accountable = ROLES.filter((r) => raciValue(resp.id, r.id) === "A");
-    if (accountable.length !== 1) {
-      missing.push({
-        id: domId.raciRow(resp.id),
-        label: `Section 6 — Responsibility "${resp.label}": ${accountable.length === 0 ? "no accountable role assigned" : "more than one accountable role assigned"}`,
-      });
+  for (const s of mapStates) {
+    if (!s.q1) missing.push({ id: domId.q1(s.measure.id), label: `Momentum-cost question for ${s.measure.label}`, before: openMeasure(s.measure.id) });
+    if (!s.q2) missing.push({ id: domId.q2(s.measure.id), label: `Structural-impact question for ${s.measure.label}`, before: openMeasure(s.measure.id) });
+    if (s.placed === "bet" && !s.bet) {
+      missing.push({ id: domId.bet(s.measure.id), label: `Strategic-bet line for ${s.measure.label.split(" — ")[0]}`, before: openMeasure(s.measure.id) });
     }
   }
-  if (reviewMechanism.trim().length < SECTION_6.review.min) {
-    missing.push({ id: domId.reviewMechanism, label: "Section 6 — Review mechanism not described" });
+
+  for (const row of RACI_ROWS) {
+    if (!raciTouched(row.id)) {
+      missing.push({ id: domId.raciRow(row.id), label: `RACI — ${row.label}: not assigned yet` });
+      continue;
+    }
+    for (const v of raciStructuralIssues.filter((x) => x.rowId === row.id)) {
+      const what = v.kind === "manyA" ? "more than one Accountable" : v.kind === "noA" ? "no Accountable" : "no Responsible";
+      missing.push({ id: domId.raciRow(row.id), label: `RACI — ${row.label}: ${what}` });
+    }
   }
 
-  if (decisionNow.trim().length < SECTION_7.decision.min) {
-    missing.push({ id: domId.decisionNow, label: `Section 7 — Decision under uncertainty is ${decisionNow.trim().length} characters, needs at least ${SECTION_7.decision.min}` });
-  }
-  if (!changeMyMind.trim()) {
-    missing.push({ id: domId.changeMyMind, label: 'Section 7 — "What would change your mind?" is empty' });
+  for (const f of DECIDE_NOW_FIELDS) {
+    if (!decideNow[f.key]) missing.push({ id: domId.decideField(f.key), label: `Decision now — ${f.label.toLowerCase()}` });
   }
 
   return {
     hydrated,
     name,
-    mentorSample,
-    hotspotsRead,
 
-    relevanceSelected,
-    relevanceRationale,
-    guidingDecisions,
-    criteriaOrder,
-    boundary,
-    tradeOffLinks,
-    pendingLink,
-    firstMeasure,
+    lane,
+    chosenLane,
+    ratingRows,
+    ratingCompleteCount,
     justification,
-    committedBudgetAnswer,
+    followUp,
+    risks,
+    prioritiseComplete,
+
+    ranking,
+    rankWhy,
+    rankCheck,
+
+    mapStates,
+    placedCount,
+    openMeasureId,
+
     raciValue,
-    raciRoles,
     raciViolations,
+    raciStructuralIssues,
+    raciAuthorityWarnings,
     raciTouched,
-    reviewMechanism,
-    decisionNow,
-    confidence,
-    changeMyMind,
-    selfAssessment,
-    drafted,
-    memoSections: MEMO_SECTIONS,
-    quarters: QUARTERS,
+    accountableFor,
+
+    decideNow,
 
     missing,
     allComplete: missing.length === 0,
-
-    choose,
   };
 }
 

@@ -1,12 +1,13 @@
 /**
  * Day 13 route registry.
  *
- * From Day 11 on, a day ships exactly two routes (CLAUDE.md #12,
- * CURRICULUM-GUIDE.md §2): Route 1 carries levels 1 and 2 as one continuous
- * engagement on a single case, Route 2 carries level 3. The `levels` field is
- * what keeps that legible to a mentor — the learner never sees a level
- * boundary inside a route, but the registry, the export filename and the
- * export JSON all still say which objectives a route covers.
+ * Module 9, Day 1 of 1: two routes, same shape as Day 11 on (CLAUDE.md §12).
+ * Route 1 carries levels 1 and 2 as a single triage-escalate-deep-dive
+ * engagement ("ProcessNova Services"), not a two-part diagnose-then-decide
+ * one — see lib/route1/sections.ts for why. Route 2 carries level 3 alone
+ * ("Synervia Process Group"). The `levels` field keeps that legible to a
+ * mentor: the export filename and JSON both say which objectives a route
+ * covers.
  */
 
 export const CASE = {
@@ -14,8 +15,8 @@ export const CASE = {
   /** Curriculum day number. The export filename reads it (CURRICULUM-GUIDE.md §7). */
   day: 13,
   module: "Day 13",
-  moduleNumber: 8,
-  moduleTitle: "Energy-Efficient Networks, IoT Sustainability & 5G",
+  moduleNumber: 9,
+  moduleTitle: "Designing Sustainable Digital Processes",
 } as const;
 
 /** Icon keys resolved by components/icons/LineIcons.tsx. */
@@ -30,16 +31,18 @@ export type IconKey =
   | "certificate"
   | "link"
   | "layers"
-  // Material section and area glyphs used by both routes.
+  // Material section and area glyphs used across days.
   | "blueprint"
   | "database"
   | "drive"
   | "network"
   | "cycle"
   | "gauge"
-  // Day 13: radio access and connected devices.
+  // Day 12: radio access and connected devices.
   | "antenna"
-  | "sensor";
+  | "sensor"
+  // Day 13: the six-area diagnostic framework's User Behaviour tile.
+  | "person";
 
 export type Route = {
   n: 1 | 2;
@@ -71,10 +74,10 @@ export const ROUTES: Route[] = [
     title: "Route 1 — Diagnose & Decide",
     cardTitle: "Diagnose & Decide",
     cardBlurb:
-      "What actually drives network energy, the levers that move it and the standard that measures it, IoT impact across a device's whole life, and why 5G's per-bit efficiency can still raise total consumption — then SmartLink Operations: six signals to route across the Signal Board, and one line of measures to rank, choose and defend.",
-    deliverable: "SmartLink Signal Report & Decision Memo",
+      "Digitalisation as a sustainability lever, direct vs. indirect impact, the rebound effect and the trade-offs it forces, and the six-area framework that sorts a finding before it can be acted on — then ProcessNova Services: triage seven signals, escalate two for a full workup, and file the report.",
+    deliverable: "ProcessNova Signal Triage & Deep-Dive Report",
     levels: [1, 2],
-    minutes: 150,
+    minutes: 50,
     available: true,
   },
   {
@@ -85,10 +88,10 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "NetSphere Industrial Systems GmbH's full reasoning chain — six management dimensions, four levers, one prioritised measure, fully justified — then Vertex Connected Industries: a decision-ready Board Memo built live, section by section, under conditions NetSphere's answer does not automatically fit.",
-    deliverable: "Vertex Board Memo",
+      "EcoFlow Administration GmbH's full reasoning chain — six management levers, three competing lines of measures, one prioritised framework, fully justified — then Synervia Process Group: a decision-ready Board Memo built live, section by section, under conditions EcoFlow's answer does not automatically fit.",
+    deliverable: "Synervia Board Memo",
     levels: [3],
-    minutes: 80,
+    minutes: 150,
     available: true,
   },
 ];
