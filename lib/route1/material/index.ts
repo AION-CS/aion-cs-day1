@@ -1,7 +1,7 @@
 /**
  * Route 1 material — seven sections, all taught before the task starts.
  *
- * Day 12's material is about twice the volume of Day 11's, so each section
+ * Day 13's material is about twice the volume of Day 11's, so each section
  * lives in its own file with its diagram data and its micro-check. This index
  * is the single list the rest of the route reads.
  */

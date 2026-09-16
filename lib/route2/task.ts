@@ -310,7 +310,7 @@ export const MEMO_SECTIONS = [
 export const EXPORT = {
   filenameLevels: [3],
   filenameTask: 1,
-  schemaVersion: "day12.route2.v1",
+  schemaVersion: "day13.route2.v1",
   docHeading: "Vertex Board Memo",
   buttonLabel: "Export the Board Memo",
   anywayLabel: "Export anyway (incomplete)",

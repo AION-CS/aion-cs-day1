@@ -187,7 +187,7 @@ function Gauge({ className }: P) {
   );
 }
 
-// --- Day 12: network, IoT and 5G glyphs ------------------------------------
+// --- Day 13: network, IoT and 5G glyphs ------------------------------------
 
 /** A radio mast with two pairs of emission arcs — 5G and mobile radio access. */
 function Antenna({ className }: P) {

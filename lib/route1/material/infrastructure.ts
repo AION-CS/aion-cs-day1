@@ -1,7 +1,7 @@
 /**
  * S1 — Why network infrastructure is a sustainability factor.
  *
- * Every figure in this file comes from the Day 12 fact bank and carries its
+ * Every figure in this file comes from the Day 13 fact bank and carries its
  * source label where it is rendered. Diagram profiles are illustrative and are
  * labelled as such.
  */

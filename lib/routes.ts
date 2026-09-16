@@ -1,5 +1,5 @@
 /**
- * Day 12 route registry.
+ * Day 13 route registry.
  *
  * From Day 11 on, a day ships exactly two routes (CLAUDE.md #12,
  * CURRICULUM-GUIDE.md §2): Route 1 carries levels 1 and 2 as one continuous
@@ -12,8 +12,8 @@
 export const CASE = {
   company: "AION Green IT",
   /** Curriculum day number. The export filename reads it (CURRICULUM-GUIDE.md §7). */
-  day: 12,
-  module: "Day 12",
+  day: 13,
+  module: "Day 13",
   moduleNumber: 8,
   moduleTitle: "Energy-Efficient Networks, IoT Sustainability & 5G",
 } as const;
@@ -37,7 +37,7 @@ export type IconKey =
   | "network"
   | "cycle"
   | "gauge"
-  // Day 12: radio access and connected devices.
+  // Day 13: radio access and connected devices.
   | "antenna"
   | "sensor";
 

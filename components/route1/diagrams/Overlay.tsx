@@ -4,7 +4,7 @@ import clsx from "clsx";
  * An HTML label pinned to a point in an SVG's coordinate system.
  *
  * SVG text scales with the viewBox, so a diagram that is legible on a laptop
- * shrinks to unreadable on a 360 px phone. The Day 12 diagrams therefore draw
+ * shrinks to unreadable on a 360 px phone. The Day 13 diagrams therefore draw
  * shapes in SVG and set their words in HTML on top, positioned in percentages
  * of the viewBox — the words stay at their CSS size at every width.
  *

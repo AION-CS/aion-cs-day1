@@ -10,7 +10,7 @@ import { useAnimatedValues } from "@/lib/useAnimatedValues";
  * Three series tones:
  *  - "ghost": dashed, no fill — a prediction or a comparison profile.
  *  - "real": solid with a translucent accent fill — the profile that matters.
- *  - "option": one of several peers (Day 12's A / B / C). Each carries its own
+ *  - "option": one of several peers (Day 13's A / B / C). Each carries its own
  *    colour, dash pattern and marker shape, so the chart never relies on colour
  *    alone to tell them apart.
  *

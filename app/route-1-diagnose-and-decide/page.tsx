@@ -14,7 +14,7 @@ import { MentorTools } from "@/components/route1/MentorTools";
 const ROUTE = ROUTES[0];
 
 export const metadata: Metadata = {
-  title: `AION Green IT — Day 12 · ${ROUTE.tag}`,
+  title: `AION Green IT — Day 13 · ${ROUTE.tag}`,
   description:
     "Energy-efficient networks, IoT sustainability and 5G — then the SmartLink Operations engagement: six signals to route on the Signal Board, and one line of measures to rank, choose and defend on the Decision Scorecard.",
 };

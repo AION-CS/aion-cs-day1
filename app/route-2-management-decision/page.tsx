@@ -12,7 +12,7 @@ import { MentorTools } from "@/components/route2/MentorTools";
 const ROUTE = ROUTES[1];
 
 export const metadata: Metadata = {
-  title: `AION Green IT — Day 12 · ${ROUTE.tag}`,
+  title: `AION Green IT — Day 13 · ${ROUTE.tag}`,
   description:
     "Level 3 for Module 8: NetSphere Industrial Systems GmbH's full reasoning chain from six management dimensions to one prioritised measure — then the Vertex Connected Industries Board Memo Builder.",
 };

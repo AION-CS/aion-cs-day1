@@ -2,7 +2,7 @@
  * Route 1 — the SmartLink Operations engagement. One case, one arc, one
  * deliverable.
  *
- * Day 12 ships two routes (CLAUDE.md #12, CURRICULUM-GUIDE.md §2): this one
+ * Day 13 ships two routes (CLAUDE.md #12, CURRICULUM-GUIDE.md §2): this one
  * carries curriculum levels 1 and 2, Route 2 carries level 3. The shape is
  * material-first — all seven sections are taught before any interaction — then
  * one task with two internal parts on a single continuous scroll (Part 1, the
@@ -146,7 +146,7 @@ export const HANDOVER = {
 export const EXPORT = {
   filenameLevels: [1, 2],
   filenameTask: 1,
-  schemaVersion: "day12.route1.v1",
+  schemaVersion: "day13.route1.v1",
   docHeading: "SmartLink Signal Report & Decision Memo",
   buttonLabel: "Export the Signal Report & Decision Memo",
   anywayLabel: "Export anyway (incomplete)",
