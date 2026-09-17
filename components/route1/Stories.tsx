@@ -4,18 +4,21 @@ import { useState } from "react";
 import clsx from "clsx";
 
 /**
- * One click-through narrative per S4 area — the example lived out step by
- * step, not summarised in a sentence. Two shapes cover all six areas:
+ * Shared click-through narratives — every material example lived out step by
+ * step, not summarised in a sentence. Used by both S1's lever demos
+ * (LeverDemos.tsx) and S4's area examples below. Three shapes:
  *
  *  - ChainStory: click through N real steps (people, systems, copies) one at
  *    a time, watching a cost accumulate, then either collapse the whole
- *    chain into one resolved step (the "old way vs. digital way" areas) or
- *    land on a punchline stat (the areas where the accumulation itself is
+ *    chain into one resolved step (the "old way vs. digital way" cases) or
+ *    land on a punchline stat (the cases where the accumulation itself is
  *    the finding — nothing resolves it).
  *  - TimelineStory: step through a year month by month, watching a bar grow
  *    and a check that never gets ticked.
+ *  - JourneyCompare: pick "old way" or "new way", click through each one's
+ *    real steps, compare the totals.
  *
- * Both reset with a "Replay" control so the story can be watched again.
+ * All three reset with a "Replay" control so the story can be watched again.
  */
 
 /** Only ever rendered once it should be visible — mounting fresh is what re-triggers .reveal-in each time. */
@@ -38,13 +41,14 @@ function Badge({ label, tone }: { label: string; tone: "pending" | "done" | "acc
 // ChainStory
 // ---------------------------------------------------------------------------
 
-type ChainStep = { label: string; cost: number };
+export type ChainStep = { label: string; cost: number };
 
-function ChainStory({
+export function ChainStory({
   costUnit,
   costUnitPlural,
   steps,
   ending,
+  onComplete,
 }: {
   costUnit: string;
   costUnitPlural: string;
@@ -53,11 +57,24 @@ function ChainStory({
   ending:
     | { kind: "collapse"; buttonLabel: string; resolvedLabel: string; resolvedDetail: string }
     | { kind: "punchline"; text: string };
+  /** Fires once, the moment the story reaches its resolved/punchline state — never on Replay. */
+  onComplete?: () => void;
 }) {
   const [n, setN] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
   const allRevealed = n >= steps.length;
   const totalCost = steps.slice(0, n).reduce((sum, s) => sum + s.cost, 0);
+
+  const advance = () => {
+    const next = n + 1;
+    setN(next);
+    if (next >= steps.length && ending.kind === "punchline") onComplete?.();
+  };
+
+  const goDigital = () => {
+    setCollapsed(true);
+    onComplete?.();
+  };
 
   const reset = () => {
     setN(0);
@@ -88,12 +105,12 @@ function ChainStory({
 
       <div className="flex flex-wrap items-center gap-2">
         {!collapsed && !allRevealed && (
-          <button type="button" onClick={() => setN((v) => v + 1)} className="btn-ghost">
+          <button type="button" onClick={advance} className="btn-ghost">
             Next: {steps[n].label}
           </button>
         )}
         {!collapsed && allRevealed && ending.kind === "collapse" && (
-          <button type="button" onClick={() => setCollapsed(true)} className="btn-accent">
+          <button type="button" onClick={goDigital} className="btn-accent">
             {ending.buttonLabel}
           </button>
         )}
@@ -112,7 +129,7 @@ function ChainStory({
 // never lands
 // ---------------------------------------------------------------------------
 
-function TimelineStory({
+export function TimelineStory({
   months,
   barLabel,
   barValues,
@@ -185,7 +202,7 @@ function TimelineStory({
 // each other
 // ---------------------------------------------------------------------------
 
-function JourneyCompare({
+export function JourneyCompare({
   oldTitle,
   oldSteps,
   oldTotal,

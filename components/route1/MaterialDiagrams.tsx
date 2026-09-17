@@ -13,12 +13,14 @@ import {
 } from "./LeverDemos";
 import {
   BehaviourStory,
+  ChainStory,
   ComplexityStory,
   DataUseStory,
   InfrastructureStory,
   ManagementStory,
   ProcessEfficiencyStory,
-} from "./AreaStories";
+  type ChainStep,
+} from "./Stories";
 
 // ---------------------------------------------------------------------------
 // S1 — the five enabler mechanisms, each with a live "watch it happen" demo
@@ -159,11 +161,77 @@ function AreaGlyph({ id, cx, cy, className }: { id: string; cx: number; cy: numb
 // S2 — direct vs. indirect: an SVG two-zone sorter with a live tally
 // ---------------------------------------------------------------------------
 
-const IMPACT_SCENARIOS = [
-  { id: "servers", glyph: "servers" as const, text: "The new platform's servers run around the clock.", answer: "direct" as const, why: "This is the system's own hardware and energy draw." },
-  { id: "reports", glyph: "mail" as const, text: "A department now emails a report daily instead of monthly.", answer: "indirect" as const, why: "The system didn't do this — a person changed their routine." },
-  { id: "storage", glyph: "storage" as const, text: "The platform's own storage use grows every day it runs.", answer: "direct" as const, why: "Storage filling up is the system running, not a behaviour change." },
-  { id: "hoarding", glyph: "files" as const, text: "Staff keep every file version because storage now feels free.", answer: "indirect" as const, why: "The habit changed because the system exists — the system itself isn't doing this." },
+const IMPACT_SCENARIOS: {
+  id: string;
+  glyph: "servers" | "mail" | "storage" | "files";
+  text: string;
+  answer: "direct" | "indirect";
+  costUnit: string;
+  costUnitPlural: string;
+  steps: ChainStep[];
+  punchline: string;
+}[] = [
+  {
+    id: "servers",
+    glyph: "servers",
+    text: "The new platform's servers run around the clock.",
+    answer: "direct",
+    costUnit: "hour running",
+    costUnitPlural: "hours running",
+    steps: [
+      { label: "00:00 — servers running", cost: 1 },
+      { label: "06:00 — servers running", cost: 1 },
+      { label: "12:00 — servers running", cost: 1 },
+      { label: "18:00 — servers running", cost: 1 },
+    ],
+    punchline: "Direct — 24 hours running is the system's own hardware and energy draw. Nobody chooses this daily; it's just what running means.",
+  },
+  {
+    id: "reports",
+    glyph: "mail",
+    text: "A department now emails a report daily instead of monthly.",
+    answer: "indirect",
+    costUnit: "report this month",
+    costUnitPlural: "reports this month",
+    steps: [
+      { label: "Day 1 — report sent", cost: 1 },
+      { label: "Day 8 — report sent", cost: 1 },
+      { label: "Day 15 — report sent", cost: 1 },
+      { label: "Day 22 — report sent", cost: 1 },
+      { label: "Day 29 — report sent", cost: 1 },
+    ],
+    punchline: "Indirect — 5 reports this month where 1 used to go out. The system didn't decide to send these; a person chose to check more often.",
+  },
+  {
+    id: "storage",
+    glyph: "storage",
+    text: "The platform's own storage use grows every day it runs.",
+    answer: "direct",
+    costUnit: "GB added",
+    costUnitPlural: "GB added",
+    steps: [
+      { label: "Week 1 — 40GB used", cost: 40 },
+      { label: "Week 2 — 58GB used", cost: 18 },
+      { label: "Week 3 — 71GB used", cost: 13 },
+      { label: "Week 4 — 90GB used", cost: 19 },
+    ],
+    punchline: "Direct — storage filling up is the system running, not a person's choice each week.",
+  },
+  {
+    id: "hoarding",
+    glyph: "files",
+    text: "Staff keep every file version because storage now feels free.",
+    answer: "indirect",
+    costUnit: "version kept",
+    costUnitPlural: "versions kept",
+    steps: [
+      { label: "v1 saved", cost: 1 },
+      { label: "v2 saved — v1 kept", cost: 1 },
+      { label: "v3 saved — v1, v2 kept", cost: 1 },
+      { label: "v4 saved — v1–v3 kept", cost: 1 },
+    ],
+    punchline: "Indirect — 4 versions of one file, none ever deleted. The habit changed because storage now feels free, not because the system requires it.",
+  },
 ];
 
 /** A small illustration per finding — what it looks like, not just what it says. */
@@ -210,9 +278,10 @@ function ScenarioGlyph({ id, className }: { id: "servers" | "mail" | "storage" |
 }
 
 export function ImpactLayers() {
-  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
-  const directCount = IMPACT_SCENARIOS.filter((s) => revealed[s.id] && s.answer === "direct").length;
-  const indirectCount = IMPACT_SCENARIOS.filter((s) => revealed[s.id] && s.answer === "indirect").length;
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const directCount = IMPACT_SCENARIOS.filter((s) => completed[s.id] && s.answer === "direct").length;
+  const indirectCount = IMPACT_SCENARIOS.filter((s) => completed[s.id] && s.answer === "indirect").length;
 
   return (
     <div className="space-y-3">
@@ -244,36 +313,50 @@ export function ImpactLayers() {
         </g>
       </svg>
 
-      <p className="text-micro text-ash">Tap each finding — watch it land on the correct side above.</p>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <p className="text-micro text-ash">Tap each finding, then click through it — watch it land on the correct side above.</p>
+      <div className="space-y-2">
         {IMPACT_SCENARIOS.map((s) => {
-          const shown = revealed[s.id];
+          const open = expanded[s.id];
+          const done = completed[s.id];
           const direct = s.answer === "direct";
           return (
-            <button
+            <div
               key={s.id}
-              type="button"
-              onClick={() => setRevealed((r) => ({ ...r, [s.id]: !r[s.id] }))}
-              aria-pressed={shown}
               className={clsx(
-                "flex items-start gap-2.5 rounded-xl border p-3 text-left transition-colors duration-150",
-                shown ? (direct ? "border-accent bg-accentSoft" : "border-line bg-mist") : "border-line bg-paper hover:border-ash",
+                "rounded-xl border transition-colors duration-150",
+                done ? (direct ? "border-accent bg-accentSoft" : "border-line bg-mist") : "border-line bg-paper",
               )}
             >
-              <ScenarioGlyph
-                id={s.glyph}
-                className={clsx("h-8 w-8 shrink-0", shown ? (direct ? "text-accent" : "text-ink") : "text-ash")}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="text-caption text-ink">{s.text}</span>
-                {shown && (
-                  <span className="reveal-in block text-micro">
-                    <span className={clsx("font-semibold", direct ? "text-accent" : "text-ink")}>{direct ? "Direct — " : "Indirect — "}</span>
-                    <span className="text-ash">{s.why}</span>
-                  </span>
-                )}
-              </span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setExpanded((r) => ({ ...r, [s.id]: !r[s.id] }))}
+                aria-expanded={open}
+                className="flex w-full items-start gap-2.5 p-3 text-left"
+              >
+                <ScenarioGlyph id={s.glyph} className={clsx("h-8 w-8 shrink-0", done ? (direct ? "text-accent" : "text-ink") : "text-ash")} />
+                <span className="min-w-0 flex-1">
+                  <span className="text-caption text-ink">{s.text}</span>
+                  {done && (
+                    <span className={clsx("reveal-in mt-0.5 block text-micro font-semibold", direct ? "text-accent" : "text-ink")}>
+                      {direct ? "Direct" : "Indirect"} — click to review again
+                    </span>
+                  )}
+                  {!done && <span className="mt-0.5 block text-micro text-ash">{open ? "Walk through it below" : "Tap to walk through it"}</span>}
+                </span>
+              </button>
+
+              {open && (
+                <div className="reveal-in border-t border-line p-3 pt-2.5">
+                  <ChainStory
+                    costUnit={s.costUnit}
+                    costUnitPlural={s.costUnitPlural}
+                    steps={s.steps}
+                    ending={{ kind: "punchline", text: s.punchline }}
+                    onComplete={() => setCompleted((c) => ({ ...c, [s.id]: true }))}
+                  />
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
