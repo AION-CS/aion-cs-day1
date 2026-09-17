@@ -152,11 +152,54 @@ function AreaGlyph({ id, cx, cy, className }: { id: string; cx: number; cy: numb
 // ---------------------------------------------------------------------------
 
 const IMPACT_SCENARIOS = [
-  { id: "servers", text: "The new platform's servers run around the clock.", answer: "direct" as const, why: "This is the system's own hardware and energy draw." },
-  { id: "reports", text: "A department now emails a report daily instead of monthly.", answer: "indirect" as const, why: "The system didn't do this — a person changed their routine." },
-  { id: "storage", text: "The platform's own storage use grows every day it runs.", answer: "direct" as const, why: "Storage filling up is the system running, not a behaviour change." },
-  { id: "hoarding", text: "Staff keep every file version because storage now feels free.", answer: "indirect" as const, why: "The habit changed because the system exists — the system itself isn't doing this." },
+  { id: "servers", glyph: "servers" as const, text: "The new platform's servers run around the clock.", answer: "direct" as const, why: "This is the system's own hardware and energy draw." },
+  { id: "reports", glyph: "mail" as const, text: "A department now emails a report daily instead of monthly.", answer: "indirect" as const, why: "The system didn't do this — a person changed their routine." },
+  { id: "storage", glyph: "storage" as const, text: "The platform's own storage use grows every day it runs.", answer: "direct" as const, why: "Storage filling up is the system running, not a behaviour change." },
+  { id: "hoarding", glyph: "files" as const, text: "Staff keep every file version because storage now feels free.", answer: "indirect" as const, why: "The habit changed because the system exists — the system itself isn't doing this." },
 ];
+
+/** A small illustration per finding — what it looks like, not just what it says. */
+function ScenarioGlyph({ id, className }: { id: "servers" | "mail" | "storage" | "files"; className?: string }) {
+  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (id === "servers") {
+    return (
+      <svg viewBox="0 0 32 32" className={className} {...common}>
+        <rect x="5" y="6" width="22" height="8" rx="1.8" />
+        <rect x="5" y="18" width="22" height="8" rx="1.8" />
+        <circle cx="9.5" cy="10" r="1.1" fill="currentColor" stroke="none" className="animate-pulse" />
+        <circle cx="9.5" cy="22" r="1.1" fill="currentColor" stroke="none" className="animate-pulse" />
+        <path d="M13.5 10h9M13.5 22h9" />
+      </svg>
+    );
+  }
+  if (id === "mail") {
+    return (
+      <svg viewBox="0 0 32 32" className={className} {...common}>
+        <rect x="3" y="9" width="18" height="13" rx="2" />
+        <path d="M3 10.5l9 6.5 9-6.5" />
+        <path d="M25 9.5a5 5 0 1 1-1.8-3.8" />
+        <path d="M25 5.5v3.7h-3.7" />
+      </svg>
+    );
+  }
+  if (id === "storage") {
+    return (
+      <svg viewBox="0 0 32 32" className={className} {...common}>
+        <ellipse cx="16" cy="8" rx="9" ry="3" />
+        <path d="M7 8v14c0 1.7 4 3 9 3s9-1.3 9-3V8" />
+        <path d="M7 15c0 1.7 4 3 9 3s9-1.3 9-3" />
+        <path d="M16 12v9m-3-3.5 3 3.5 3-3.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 32 32" className={className} {...common}>
+      <rect x="11" y="4" width="14" height="18" rx="1.6" opacity="0.45" />
+      <rect x="8" y="7" width="14" height="18" rx="1.6" opacity="0.7" />
+      <rect x="5" y="10" width="14" height="18" rx="1.6" />
+    </svg>
+  );
+}
 
 export function ImpactLayers() {
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
@@ -205,17 +248,23 @@ export function ImpactLayers() {
               onClick={() => setRevealed((r) => ({ ...r, [s.id]: !r[s.id] }))}
               aria-pressed={shown}
               className={clsx(
-                "flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-colors duration-150",
+                "flex items-start gap-2.5 rounded-xl border p-3 text-left transition-colors duration-150",
                 shown ? (direct ? "border-accent bg-accentSoft" : "border-line bg-mist") : "border-line bg-paper hover:border-ash",
               )}
             >
-              <span className="text-caption text-ink">{s.text}</span>
-              {shown && (
-                <span className="reveal-in text-micro">
-                  <span className={clsx("font-semibold", direct ? "text-accent" : "text-ink")}>{direct ? "Direct — " : "Indirect — "}</span>
-                  <span className="text-ash">{s.why}</span>
-                </span>
-              )}
+              <ScenarioGlyph
+                id={s.glyph}
+                className={clsx("h-8 w-8 shrink-0", shown ? (direct ? "text-accent" : "text-ink") : "text-ash")}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="text-caption text-ink">{s.text}</span>
+                {shown && (
+                  <span className="reveal-in block text-micro">
+                    <span className={clsx("font-semibold", direct ? "text-accent" : "text-ink")}>{direct ? "Direct — " : "Indirect — "}</span>
+                    <span className="text-ash">{s.why}</span>
+                  </span>
+                )}
+              </span>
             </button>
           );
         })}
