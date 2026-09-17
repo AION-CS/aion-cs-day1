@@ -23,17 +23,16 @@ export const S1_LEVER: MaterialSection<MaterialSectionId> = {
   standfirst:
     "Digitalisation is not automatically sustainable — it is a lever that can move either way, and which way it moves depends on what it actually removes.",
   definition:
-    "Digitalisation is the shift from analogue, physical or manual ways of working — paper documents, in-person coordination, manual measurement — to digital systems, data and software. As a sustainability lever, it works by reducing something that used to cost material, travel, error-correction or idle time. It does not work simply by existing.",
+    "Digitalisation replaces paper, manual coordination or manual measurement with digital systems. As a lever it works by removing a real cost — material, travel, error-correction, idle time. It does not work simply by existing.",
   insight:
-    "Five mechanisms carry that reduction: transparency (you can now see what you couldn't before), efficiency (a task takes fewer resources to complete), monitoring and management (a system steers itself instead of running on assumption), automation (a manual step disappears entirely), and data-based optimisation (a decision improves because it now has real evidence behind it). Each is a genuine, well-documented channel for reduced impact — and each can just as easily add a new digital layer on top of an unchanged physical one, which produces cost without reduction.",
+    "Five mechanisms carry that reduction — transparency, efficiency, monitoring & management, automation, data-based optimisation — each shown below with a live example. Each can also just add a digital layer on top of an unchanged physical one: cost without reduction.",
   takeaway:
-    "Before crediting a digitalisation initiative as a sustainability win, name the specific thing it removed — a trip, a form, a redundant measurement, an idle asset. If nothing concrete disappeared, the initiative added capability, which is a different claim.",
+    "Before crediting an initiative as a win, name what it actually removed. Nothing removed means new capability, not sustainability.",
   body: [
     {
       heading: "Why 'digital' and 'sustainable' are not synonyms",
       paragraphs: [
-        "A dashboard that reports data nobody acts on still consumes storage and compute, for a transparency benefit that is never actually realised. A monitoring platform that nobody reviews on a cadence produces the same problem in a different area. Digitalisation is a lever with two ends; assessing any one initiative means checking which end actually got pulled, not assuming the sustainable end is the default.",
-        "This is also why the same five mechanisms recur across very different initiatives — an automated approval workflow and a real-time equipment monitor both claim 'automation', but only one of them necessarily removes a physical cost that used to exist.",
+        "A dashboard nobody reviews still consumes storage for a transparency benefit never realised. Digitalisation is a lever with two ends — check which one an initiative actually pulled.",
       ],
     },
   ],
@@ -72,17 +71,16 @@ export const S2_IMPACT: MaterialSection<MaterialSectionId> = {
   standfirst:
     "If it happens because the digital system itself runs, it's direct. If it happens because people or processes change around it, it's indirect.",
   definition:
-    "Direct impact is the resource draw of the digital system itself: the energy its servers and devices use, the hardware it requires, the compute it runs, the storage it fills, the network capacity it occupies. Indirect impact is what changes in the world because the system exists: behaviour that shifts, data that grows because it's now easy to collect, new services built on top of it, processes that speed up and therefore run more often.",
+    "Direct impact is the system's own resource draw — energy, hardware, compute, storage, network. Indirect impact is what changes around it — behaviour, data growth, new services, faster processes.",
   insight:
-    "The two are not competing categories — most digital initiatives produce both. A new dashboard has a direct footprint (the compute and storage it uses) and, if it changes what people decide or how often they check something, an indirect one too. Treating a finding as only direct or only indirect usually means the indirect half was never asked about.",
+    "Most initiatives produce both. A finding marked only direct or only indirect usually means the other half was never asked about — tap each example below to practise the split.",
   takeaway:
-    "Apply one test: did this happen because the system itself was running, or because a person or a process changed what they do as a result of the system existing? The first is direct; the second is indirect.",
+    "One test: did this happen because the system itself is running, or because a person or process changed around it? The first is direct; the second is indirect.",
   body: [
     {
       heading: "Why the boundary matters for accountability",
       paragraphs: [
-        "Direct impact is owned by whoever runs the infrastructure — IT, a cloud vendor, a facilities team — and is fixed with a technical lever: better hardware, more efficient storage, a smaller footprint per workload. Indirect impact is owned by whoever changed their behaviour — a department that now runs a report daily instead of monthly because it's easy to, a team that keeps every version of a file because storage now feels free to them — and is fixed with a process or policy lever instead.",
-        "A finding sorted into the wrong half gets escalated to the wrong owner and fixed with the wrong lever, which is why the test has to be applied to what the signal actually describes, not to which team happens to be mentioned in it.",
+        "Direct impact is fixed with a technical lever — better hardware, a smaller footprint. Indirect impact is fixed with a process lever — a habit, a policy. A finding sorted into the wrong half gets escalated to the wrong owner.",
       ],
     },
   ],
@@ -121,17 +119,16 @@ export const S3_REBOUND: MaterialSection<MaterialSectionId> = {
   standfirst:
     "An efficiency gain is not automatically banked as savings — it is usually spent, in part or in full, unless something actively stops that from happening.",
   definition:
-    "The rebound effect is the tendency for an efficiency gain to be partly or fully offset by increased use of the now-cheaper resource, rather than banked as a net saving. It takes its name from the 19th-century economist William Stanley Jevons, who first observed it for coal: steam-engine efficiency lowered the effective cost of using coal, and total coal consumption rose rather than fell — the Jevons paradox.",
+    "The rebound effect: an efficiency gain gets partly or fully spent through increased use, instead of banked as a saving — named after economist William Stanley Jevons, who observed cheaper coal use raise total coal consumption in the 19th century.",
   insight:
-    "A digital process that becomes ten times cheaper to run does not automatically produce a tenth of the resource use — it often produces something close to the same use, because the lower cost removes the reason anyone had to ration it. Five effects recur wherever this happens, and four of them pull in the same direction: gains in convenience, speed, automation and transparency each tend to increase resource use even as they solve a real problem, unless the fifth — resource use itself — is actively managed rather than left to absorb the difference.",
+    "Four gains — convenience, speed, automation, transparency — tend to raise resource use even while solving a real problem. The fifth, resource use itself, is where the bill lands unless someone deliberately caps it. Step through the stages below to watch it happen.",
   takeaway:
-    "An efficiency claim is incomplete until it says what stops the freed-up capacity from being used elsewhere. If nothing stops it, expect rebound — partial or full — and treat the trade-off as something to manage, not something to assume away.",
+    "An efficiency claim is incomplete until it says what stops the freed-up capacity being used elsewhere.",
   body: [
     {
-      heading: "The five-way trade-off",
+      heading: "A ratio claim vs. an absolute claim",
       paragraphs: [
-        "A faster report gets run more often. An automated task runs on a fixed schedule instead of on someone's judgement about whether it's needed. A transparent dashboard invites more queries than the one report it replaced. None of convenience, speed, automation or transparency are wrong to pursue — each solves a real problem. But each one has to be paid for somewhere, and the fifth item in the trade-off, resource use, is usually where the bill lands unless someone deliberately caps it.",
-        "This is also why 'we made it more efficient' and 'we reduced total resource use' are different claims. The first is a statement about a ratio; the second is a statement about an absolute, and rebound is exactly the gap that can open up between them.",
+        "'We made it more efficient' and 'we reduced total resource use' are different claims — the first about a ratio, the second about an absolute. Rebound is the gap that can open between them.",
       ],
     },
   ],
@@ -170,17 +167,16 @@ export const S4_FRAMEWORK: MaterialSection<MaterialSectionId> = {
   standfirst:
     "Digitalisation effects need to be sorted by area before they can be acted on — and management's role is to prioritise across areas, not just react to individual findings.",
   definition:
-    "The six-area framework sorts any digitalisation finding into exactly one of six areas: Process Efficiency (how work moves through the organisation), Data Use (how much data is collected, duplicated and kept), Infrastructure (the hardware, compute, storage and network a system runs on), User Behaviour (what people do differently because a system exists), Complexity (how many systems, integrations and exceptions have accumulated), and Management (whether any of the above is reviewed, owned and acted on).",
+    "Six areas sort any finding: Process Efficiency, Data Use, Infrastructure, User Behaviour, Complexity — and Management, whether any of the other five gets reviewed, owned and acted on. Tap a tile below for each one's example.",
   insight:
-    "A finding sorted into the wrong area gets escalated to the wrong owner and fixed with the wrong lever — a data-growth problem handed to Infrastructure gets more storage bought, not less data generated. Management is not a seventh technical category alongside the other five; it is the question of whether anyone is deciding across them at all. A finding belongs there when what's missing is a review cadence, an owner or a rule — not a specific technical or behavioural fix.",
+    "A finding in the wrong area gets the wrong owner and the wrong fix — a data-growth problem handed to Infrastructure just gets more storage bought. Management isn't a seventh technical area; it's whether anyone decides across the other five at all.",
   takeaway:
-    "Sort each finding by the defect it actually describes, not by the department you'd expect to own the fix or the cause you suspect sits behind it.",
+    "Sort by the defect a finding actually describes, not the department you'd expect to own the fix.",
   body: [
     {
       heading: "Why Management is not just another area",
       paragraphs: [
-        "A finding that belongs in Process Efficiency, Data Use, Infrastructure, User Behaviour or Complexity describes something specific enough to fix directly — a step to remove, a dataset to archive, a server to right-size, a habit to change, an integration to retire. A finding that belongs in Management describes an absence instead — no review cadence, no named owner, no rule — which is exactly why findings in the other five areas keep recurring even after one instance of each has been fixed.",
-        "A finding can look technical on the surface and still belong in Management: 'infrastructure spend keeps rising and nobody reviews the trend' is not an infrastructure defect, it is a missing review loop wearing infrastructure's clothing.",
+        "A finding that names a missing review, owner or rule belongs in Management — even next to a technical-looking symptom. 'Infrastructure spend keeps rising and nobody reviews it' is a missing review loop, not an infrastructure defect.",
       ],
     },
   ],
