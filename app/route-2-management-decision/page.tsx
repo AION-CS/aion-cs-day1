@@ -1,63 +1,38 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
-import { PAGE_INTRO } from "@/lib/route2";
 import { LeafMark } from "@/components/chrome/Icons";
-import { RouteGate } from "@/components/chrome/RouteGate";
-import { Material } from "@/components/route2/Material";
-import { CaseBrief } from "@/components/route2/CaseBrief";
-import { Task } from "@/components/route2/Task";
-import { ExportBar } from "@/components/route2/ExportBar";
-import { MentorTools } from "@/components/route2/MentorTools";
 
 const ROUTE = ROUTES[1];
 
 export const metadata: Metadata = {
-  title: `AION Green IT — Day 13 · ${ROUTE.tag}`,
-  description:
-    "Level 3: why digitalisation reaches a board, prioritising measures under trade-offs, RACI in full, deciding under incomplete information, the EcoFlow worked example — then the Synervia board memo.",
+  title: `AION Green IT — Day 14 · ${ROUTE.tag}`,
+  description: "Level 3 for Module 10 — the management decision — has not been written yet.",
 };
 
 /**
- * Route 2 — level 3. Material A–D, the EcoFlow worked example, then the
- * Synervia case once, then the five exercises with the memo assembling
- * beside them, then one export. Reachable with Route 1 untouched: the gate
- * renders a soft suggestion, never a wall (CLAUDE.md #6).
+ * Route 2 / Level 3 for Module 10 has not been authored yet (a separate,
+ * later prompt). This stub keeps the URL reachable — CLAUDE.md §6 never
+ * gates a route, it only says honestly when a route's content isn't built —
+ * rather than 404ing or silently reusing Day 13's EcoFlow/Synervia content
+ * under a Day 14 banner.
  */
 export default function Route2Page() {
   return (
-    <div className="space-y-16 py-12">
-      <MentorTools />
-
-      <RouteGate routeN={2}>
-        <div className="max-w-prose">
-          <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
-            <LeafMark className="h-4 w-4" /> {PAGE_INTRO.tag}
-          </p>
-          <h1 className="text-display text-ink">{PAGE_INTRO.title}</h1>
-          <p className="mt-4 text-body text-ash">{PAGE_INTRO.body}</p>
-        </div>
-
-        <div className="mt-16 space-y-16">
-          <hr className="border-line" />
-
-          <Material />
-
-          <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
-            <p className="text-body font-semibold text-ink">You have seen the reasoning. Now run it on a company you have never met.</p>
-            <a href="#r2-case" className="btn-accent mt-3 inline-flex">
-              Open the Synervia brief
-            </a>
-          </div>
-
-          <div id="r2-case" className="scroll-mt-24">
-            <CaseBrief />
-          </div>
-
-          <Task />
-
-          <ExportBar />
-        </div>
-      </RouteGate>
+    <div className="space-y-6 py-12">
+      <div className="max-w-prose">
+        <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
+          <LeafMark className="h-4 w-4" /> {ROUTE.tag}
+        </p>
+        <h1 className="text-display text-ink">Not built yet</h1>
+        <p className="mt-4 text-body text-ash">
+          Level 3 for Module 10 — the management decision that follows Route 1's diagnosis — hasn&apos;t been written.
+          Route 1&apos;s Level 1 material and Task 1 (the Mercury Office Systems diagnosis board) are ready now.
+        </p>
+        <Link href="/route-1-diagnose-and-decide" className="btn-accent mt-5 inline-flex">
+          Go to Route 1
+        </Link>
+      </div>
     </div>
   );
 }

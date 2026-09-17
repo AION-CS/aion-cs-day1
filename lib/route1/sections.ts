@@ -1,19 +1,23 @@
 /**
  * Route 1's material sections: one continuous block of four, S1–S4, all of it
- * taught before the task begins. Day 13 deliberately inverts Day 11's
- * material-to-task ratio (~30 min material vs. ~20 min task, not ~60 vs. ~30)
- * — the curriculum's Task 1 for Module 9 is a single-part triage-and-deep-dive
- * exercise, not a two-part diagnose-then-decide engagement, so it needs less
- * teaching in front of it, not less depth within each section.
+ * taught before Task 1 begins (~60 minutes — see lib/route1/material.ts for
+ * why this day restores Day 11's fuller material budget instead of Day 13's
+ * inverted, lighter one: Task 1 here draws on six distinct diagnostic areas
+ * plus two extra tagging dimensions, which needs the full teaching block).
  *
  * The ids, labels and anchor ids live above the content so the mini-nav, the
- * MaterialRefs chips on the task's three steps, and the material itself can
- * never disagree about what a section is called.
+ * MaterialRefs chips on the task, and the material itself can never disagree
+ * about what a section is called.
  */
 
-export type MaterialSectionId = "lever" | "impact" | "rebound" | "framework";
+export type MaterialSectionId = "businessCase" | "threeLens" | "behaviourChange" | "regulation";
 
-export const SECTION_ORDER: MaterialSectionId[] = ["lever", "impact", "rebound", "framework"];
+export const SECTION_ORDER: MaterialSectionId[] = [
+  "businessCase",
+  "threeLens",
+  "behaviourChange",
+  "regulation",
+];
 
 /** DOM anchor a MaterialRefs chip or the mini-nav scrolls to. */
 export function materialAnchorId(id: MaterialSectionId): string {
@@ -21,18 +25,18 @@ export function materialAnchorId(id: MaterialSectionId): string {
 }
 
 export const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  lever: "S1 · Digitalisation as a sustainability lever",
-  impact: "S2 · Direct vs. indirect environmental impact",
-  rebound: "S3 · The rebound effect and trade-offs",
-  framework: "S4 · The six-area diagnostic framework",
+  businessCase: "S1 · The Green IT business case",
+  threeLens: "S2 · ROI is not only a financial number",
+  behaviourChange: "S3 · Why technical solutions fail without behavioural change",
+  regulation: "S4 · Regulation as a management framework",
 };
 
 /** Short label for the sticky mini-nav dots. */
 export const MATERIAL_NAV: Record<MaterialSectionId, { code: string; label: string }> = {
-  lever: { code: "S1", label: "Digitalisation as a sustainability lever" },
-  impact: { code: "S2", label: "Direct vs. indirect environmental impact" },
-  rebound: { code: "S3", label: "The rebound effect and trade-offs" },
-  framework: { code: "S4", label: "The six-area diagnostic framework" },
+  businessCase: { code: "S1", label: "The Green IT business case" },
+  threeLens: { code: "S2", label: "ROI is not only a financial number" },
+  behaviourChange: { code: "S3", label: "Technical solutions fail without behavioural change" },
+  regulation: { code: "S4", label: "Regulation as a management framework" },
 };
 
 /** Chips for a task step: which material sections it draws on. */

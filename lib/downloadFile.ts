@@ -69,7 +69,7 @@ const slugify = (v: string) =>
   v.trim().toLowerCase().replace(/\s+/g, "-").replace(/[\\/:*?"<>|]+/g, "-");
 
 /**
- * `{taskNumber}-{name}-day{day}-{levels}task{taskNumber}` e.g. `1-muchson-day13-l1l2task1`.
+ * `{taskNumber}-{name}-day{day}-{levels}task{taskNumber}` e.g. `1-muchson-day14-l1task1`.
  *
  * The leading number is the task's number *within its route*. `levels` lists
  * every curriculum level that route covers, in order — Route 1 merges L1 and

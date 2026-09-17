@@ -11,19 +11,15 @@ import { MentorTools } from "@/components/route1/MentorTools";
 const ROUTE = ROUTES[0];
 
 export const metadata: Metadata = {
-  title: `AION Green IT — Day 13 · ${ROUTE.tag}`,
+  title: `AION Green IT — Day 14 · ${ROUTE.tag}`,
   description:
-    "Digitalisation as a sustainability lever, direct vs. indirect impact, the rebound effect and the six-area diagnostic framework — then the ProcessNova engagement: seven signals to triage, two to take further.",
+    "The Green IT business case, why ROI needs three lenses, why technical solutions fail without behavioural change, and regulation as a management framework — then Mercury Office Systems: classify seven indications of stalled implementation by area, root cause and timeframe.",
 };
 
 /**
- * Route 1 — levels 1 and 2 in one continuous engagement, no separate Decide
- * stage (see lib/route1/sections.ts for why this day inverts the usual
- * material-to-task ratio).
- *
- * The page order is the whole design: the case once, then the entire
- * material block, then one task on a single scroll, then one export bar
- * covering everything above it.
+ * Route 1, Level 1 only so far: the case once, the full material block, one
+ * task on a single scroll, then one export bar covering everything above it.
+ * Level 2 (prioritisation) is a separate, later addition to this same page.
  */
 export default function Route1Page() {
   return (
@@ -46,10 +42,10 @@ export default function Route1Page() {
 
       <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
         <p className="text-body font-semibold text-ink">
-          That is the whole teaching block. Now go and read a system you didn&apos;t build.
+          That is the whole teaching block. Now go and read why a sensible set of measures is stalling.
         </p>
         <a href="#task" className="btn-accent mt-3 inline-flex">
-          Start the ProcessNova engagement
+          Start the Mercury Office Systems diagnosis
         </a>
       </div>
 

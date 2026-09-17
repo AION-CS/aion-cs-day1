@@ -58,13 +58,11 @@ export function ExportBar() {
           className="flex flex-wrap items-center gap-x-1.5 text-caption text-ash hover:text-ink"
         >
           <span>
-            <span className="tabular-nums font-semibold text-ink">{r1.triageCompleteCount}</span> /{" "}
-            {r1.totalSignals} triaged
+            <span className="tabular-nums font-semibold text-ink">{r1.placedCount}</span> / {r1.totalChips} classified
           </span>
           <span className="text-ash">·</span>
           <span>
-            <span className="tabular-nums font-semibold text-ink">{r1.analysisCompleteCount}</span> /{" "}
-            {r1.escalated.length || 2} analysed
+            <span className="tabular-nums font-semibold text-ink">{r1.completeCount}</span> / {r1.totalChips} fully tagged
           </span>
           {r1.missing.length > 0 && (
             <>

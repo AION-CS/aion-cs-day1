@@ -1,22 +1,21 @@
 /**
- * Day 13 route registry.
+ * Day 14 route registry.
  *
- * Module 9, Day 1 of 1: two routes, same shape as Day 11 on (CLAUDE.md §12).
- * Route 1 carries levels 1 and 2 as a single triage-escalate-deep-dive
- * engagement ("ProcessNova Services"), not a two-part diagnose-then-decide
- * one — see lib/route1/sections.ts for why. Route 2 carries level 3 alone
- * ("Synervia Process Group"). The `levels` field keeps that legible to a
- * mentor: the export filename and JSON both say which objectives a route
- * covers.
+ * Module 10, Route 1 only so far: Level 1 ("Implementing Sustainability
+ * Economically and in Line with Regulation") as a single material-then-task
+ * engagement at Mercury Office Systems. Level 2 (prioritisation, Part Two of
+ * Route 1) and Route 2 / Level 3 (the management decision) are separate
+ * prompts, not yet built — `levels`/`available` below say so honestly rather
+ * than pretending the day is finished (CLAUDE.md §6, §12).
  */
 
 export const CASE = {
   company: "AION Green IT",
   /** Curriculum day number. The export filename reads it (CURRICULUM-GUIDE.md §7). */
-  day: 13,
-  module: "Day 13",
-  moduleNumber: 9,
-  moduleTitle: "Designing Sustainable Digital Processes",
+  day: 14,
+  module: "Day 14",
+  moduleNumber: 10,
+  moduleTitle: "Implementing Sustainability Economically and in Line with Regulation",
 } as const;
 
 /** Icon keys resolved by components/icons/LineIcons.tsx. */
@@ -74,10 +73,10 @@ export const ROUTES: Route[] = [
     title: "Route 1 — Diagnose & Decide",
     cardTitle: "Diagnose & Decide",
     cardBlurb:
-      "Digitalisation as a sustainability lever, direct vs. indirect impact, the rebound effect and the trade-offs it forces, and the six-area framework that sorts a finding before it can be acted on — then ProcessNova Services: triage seven signals, escalate two for a full workup, and file the report.",
-    deliverable: "ProcessNova Signal Triage & Deep-Dive Report",
-    levels: [1, 2],
-    minutes: 50,
+      "The Green IT business case and why it decides whether measures survive, why ROI is not only a financial number, why technical solutions fail without behavioural change, and regulation as a management framework rather than a compliance burden — then Mercury Office Systems: classify seven indications of stalled implementation by area, root cause and timeframe.",
+    deliverable: "Mercury Office Systems Diagnosis Report",
+    levels: [1],
+    minutes: 75,
     available: true,
   },
   {
@@ -87,12 +86,11 @@ export const ROUTES: Route[] = [
     tag: "Route 2 — Management Decision",
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
-    cardBlurb:
-      "EcoFlow Administration GmbH's full reasoning chain — six management levers, three competing lines of measures, one prioritised framework, fully justified — then Synervia Process Group: a decision-ready Board Memo built live, section by section, under conditions EcoFlow's answer does not automatically fit.",
-    deliverable: "Synervia Board Memo",
+    cardBlurb: "Level 3 for Module 10 has not been written yet — Route 1's Level 1 diagnosis ships first.",
+    deliverable: "Not yet available",
     levels: [3],
-    minutes: 150,
-    available: true,
+    minutes: 0,
+    available: false,
   },
 ];
 

@@ -1,20 +1,16 @@
-import { EFFECTS, ENGAGEMENT, EXPORT, SENTIMENTS, areaById } from "@/lib/route1";
+import { AREAS, ENGAGEMENT, EXPORT, rootCauseLabel, timeframeLabel } from "@/lib/route1";
 import { CASE } from "@/lib/routes";
 import type { Route1State } from "./useRoute1";
 
 /**
- * The route's single export: one print-ready HTML report, opened in a new
- * tab and sent straight to the browser's print dialog — "Save as PDF" is
- * the export (see lib/downloadFile.ts `printHtmlDocument`). No JSON.
+ * The route's single export so far: one print-ready HTML report, sent
+ * straight to the browser's print dialog — "Save as PDF" is the export (see
+ * lib/downloadFile.ts `printHtmlDocument`). No JSON. Grouped by area so the
+ * export reads as a structured diagnosis document, not a log of drags.
  */
-
-const sentimentLabel = (id: string | null) => SENTIMENTS.find((r) => r.id === id)?.label ?? "—";
-const effectLabel = (id: string | null) => EFFECTS.find((e) => e.id === id)?.label ?? "—";
-const areaLabel = (id: string | null) => (id ? areaById(id as never).name : "—");
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** Standalone, print-ready HTML — no external stylesheet, prints cleanly to A4. */
 export function buildEngagementHtml(r1: Route1State): string {
   const date = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
@@ -22,34 +18,32 @@ export function buildEngagementHtml(r1: Route1State): string {
     year: "numeric",
   });
 
-  const triageRows = r1.triage
-    .map(
-      (t) => `<tr>
-      <td><strong>${t.signal.n}. ${esc(t.signal.title)}</strong><div class="muted">${esc(t.signal.source)}</div></td>
-      <td class="nowrap">${esc(sentimentLabel(t.tag))}</td>
-      <td>${t.evidenceText ? `&ldquo;${esc(t.evidenceText)}&rdquo;` : '<span class="muted">not tapped</span>'}</td>
-    </tr>`,
-    )
-    .join("");
-
-  const escalatedTitles = r1.escalated
-    .map((id) => r1.triageById(id))
-    .map((t) => `${t.signal.n}. ${esc(t.signal.title)}`)
-    .join(" and ");
-
-  const analysisRows = r1.analyses
-    .map(
-      (a) => `<tr>
-      <td><strong>${a.signal.n}. ${esc(a.signal.title)}</strong></td>
-      <td>${esc(areaLabel(a.area))}</td>
-      <td class="nowrap">${esc(effectLabel(a.effect))}</td>
+  const areaSections = AREAS.map((area) => {
+    const chips = r1.byArea(area.id);
+    const rows = chips
+      .map(
+        (c) => `<tr>
+      <td><strong>${c.evidence.n}. ${esc(c.evidence.short)}</strong><div class="muted">&ldquo;${esc(c.evidence.text)}&rdquo;</div></td>
+      <td class="nowrap">${esc(rootCauseLabel(c.rootCause))}</td>
+      <td class="nowrap">${esc(timeframeLabel(c.timeframe))}</td>
     </tr>${
-      a.approach
-        ? `<tr class="why"><td colspan="3"><span class="muted">Improvement — </span>&ldquo;${esc(a.approach)}&rdquo;</td></tr>`
+      c.approach
+        ? `<tr class="why"><td colspan="3"><span class="muted">Improvement — </span>&ldquo;${esc(c.approach)}&rdquo;</td></tr>`
         : ""
     }`,
-    )
-    .join("");
+      )
+      .join("");
+
+    return `<h2>${esc(area.name)} — ${chips.length}</h2>
+  ${
+    chips.length
+      ? `<table>
+    <thead><tr><th>Evidence</th><th>Root cause</th><th>Timeframe</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+      : `<p class="muted">Nothing classified here.</p>`
+  }`;
+  }).join("\n");
 
   return `<!doctype html>
 <html lang="en">
@@ -95,49 +89,22 @@ export function buildEngagementHtml(r1: Route1State): string {
 </head>
 <body>
 <div class="sheet">
-  <p class="kicker">AION Green IT · Day ${CASE.day} · Route 1 · Levels 1–2</p>
+  <p class="kicker">AION Green IT · Day ${CASE.day} · Route 1 · Level 1</p>
   <h1>${esc(EXPORT.docHeading)}</h1>
   <p class="meta">${esc(r1.name.trim() || "learner")} · ${esc(date)} · Case: ${esc(
     ENGAGEMENT.company,
   )} · Role: ${esc(ENGAGEMENT.role)}</p>
 
-  <h2>Triage — all seven signals</h2>
-  <table>
-    <thead><tr><th>Signal</th><th>Tag</th><th>Decisive evidence</th></tr></thead>
-    <tbody>${triageRows}</tbody>
-  </table>
-
-  <h2>Escalated for a deeper look</h2>
-  ${
-    r1.escalated.length
-      ? `<p>${escalatedTitles || esc("—")}</p><p class="muted">${
-          r1.escalateWhy ? esc(r1.escalateWhy) : "No justification written."
-        }</p>`
-      : `<p class="muted">No signals escalated.</p>`
-  }
-
-  <h2>Deep-dive analysis</h2>
-  ${
-    r1.analyses.length
-      ? `<table>
-    <thead><tr><th>Signal</th><th>Area</th><th>Effect</th></tr></thead>
-    <tbody>${analysisRows}</tbody>
-  </table>`
-      : `<p class="muted">No deep-dive analysis yet.</p>`
-  }
+  ${areaSections}
 
   <h2>Split</h2>
   <div class="summary">
-    <strong>${r1.triageCompleteCount} of ${r1.totalSignals} signals triaged, ${r1.analysisCompleteCount} of ${
-      r1.escalated.length || 2
-    } escalated signals analysed.</strong>
-    <span class="muted">${r1.triage.filter((t) => t.complete && t.tag === "positive").length} positive signal(s) · ${
-      r1.triage.filter((t) => t.complete && t.tag === "negative").length
-    } negative signal(s) in the triage.</span>
+    <strong>${r1.completeCount} of ${r1.totalChips} indications fully classified — area, root cause, timeframe and improvement approach.</strong>
+    <span class="muted">${r1.placedCount} of ${r1.totalChips} indications assigned to an area.</span>
   </div>
 
   <footer>
-    AION Green IT — Day ${CASE.day}, Route 1 (Diagnose &amp; Decide), covering levels 1 and 2.
+    AION Green IT — Day ${CASE.day}, Route 1 (Diagnose &amp; Decide), Level 1.
     ${esc(ENGAGEMENT.company)} is a fictional case for training use. Prepared by the learner named above.
   </footer>
 </div>
