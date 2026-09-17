@@ -11,6 +11,14 @@ import {
   PredictiveMaintenanceDemo,
   RouteOptimisationDemo,
 } from "./LeverDemos";
+import {
+  BehaviourStory,
+  ComplexityStory,
+  DataUseStory,
+  InfrastructureStory,
+  ManagementStory,
+  ProcessEfficiencyStory,
+} from "./AreaStories";
 
 // ---------------------------------------------------------------------------
 // S1 — the five enabler mechanisms, each with a live "watch it happen" demo
@@ -387,86 +395,20 @@ export function ReboundCurve() {
 // small illustration too, not just a sentence.
 // ---------------------------------------------------------------------------
 
-function AreaExampleGlyph({ id, className }: { id: string; className?: string }) {
-  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-  if (id === "process") {
-    // four hand-offs, faded, collapsing into one checked step
-    return (
-      <svg viewBox="0 0 32 32" className={className} {...common}>
-        <path d="M8 6v18" strokeDasharray="2 3" opacity="0.4" />
-        {[6, 12, 18, 24].map((y) => <circle key={y} cx="8" cy={y} r="1.8" opacity="0.4" />)}
-        <path d="M13 15h6" />
-        <circle cx="24" cy="15" r="5.5" />
-        <path d="M21.5 15.2l1.7 1.8 3.3-3.6" />
-      </svg>
-    );
-  }
-  if (id === "data") {
-    // five stacked, overlapping copies of the same record
-    return (
-      <svg viewBox="0 0 32 32" className={className} {...common}>
-        <rect x="3" y="16" width="11" height="13" rx="1.6" opacity="0.25" />
-        <rect x="7" y="12" width="11" height="13" rx="1.6" opacity="0.45" />
-        <rect x="11" y="8" width="11" height="13" rx="1.6" opacity="0.7" />
-        <rect x="15" y="4" width="11" height="13" rx="1.6" />
-      </svg>
-    );
-  }
-  if (id === "infrastructure") {
-    // a tall provisioned bar, faded, next to the short bar actually used
-    return (
-      <svg viewBox="0 0 32 32" className={className} {...common}>
-        <path d="M3 28h26" />
-        <rect x="6" y="5" width="8" height="23" rx="1.4" opacity="0.3" />
-        <rect x="18" y="21" width="8" height="7" rx="1.4" />
-      </svg>
-    );
-  }
-  if (id === "behaviour") {
-    // a checked-on screen, and a car-with-gauge crossed out beside it
-    return (
-      <svg viewBox="0 0 32 32" className={className} {...common}>
-        <rect x="2" y="7" width="15" height="11" rx="1.6" />
-        <circle cx="9.5" cy="12.5" r="2.3" />
-        <path d="M6 21h7" />
-        <g opacity="0.35">
-          <rect x="20" y="14" width="10" height="6" rx="1.6" />
-          <circle cx="22.5" cy="22" r="1.6" />
-          <circle cx="27.5" cy="22" r="1.6" />
-          <path d="M19 8l12 16" />
-        </g>
-      </svg>
-    );
-  }
-  if (id === "complexity") {
-    // four separate systems, all wired into one question
-    return (
-      <svg viewBox="0 0 32 32" className={className} {...common}>
-        <path d="M7 7l8 8M25 7l-8 8M7 25l8-8M25 25l-8-8" opacity="0.4" />
-        {[[7, 7], [25, 7], [7, 25], [25, 25]].map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="2.4" opacity="0.55" />)}
-        <circle cx="16" cy="16" r="4.2" />
-        <text x="16" y="19" textAnchor="middle" fill="currentColor" stroke="none" style={{ fontSize: 7, fontWeight: 700 }}>?</text>
-      </svg>
-    );
-  }
-  // management: a metric collected (bar chart), a calendar it never reached
-  return (
-    <svg viewBox="0 0 32 32" className={className} {...common}>
-      <path d="M3 28V9" />
-      <path d="M3 28h9" />
-      <rect x="5.5" y="19" width="2.6" height="9" opacity="0.7" />
-      <rect x="9.5" y="13" width="2.6" height="15" />
-      <rect x="17" y="8" width="12" height="11" rx="1.6" opacity="0.4" />
-      <path d="M17 12.5h12" opacity="0.4" />
-      <path d="M20.5 6v4M25.5 6v4" opacity="0.4" />
-    </svg>
-  );
-}
+const AREA_STORIES: Record<string, React.ComponentType> = {
+  process: ProcessEfficiencyStory,
+  data: DataUseStory,
+  infrastructure: InfrastructureStory,
+  behaviour: BehaviourStory,
+  complexity: ComplexityStory,
+  management: ManagementStory,
+};
 
 export function AreaFramework() {
   const [open, setOpen] = useState<string>("process");
   const active = AREAS.find((a) => a.id === open)!;
   const lower = AREAS.filter((a) => a.id !== "management");
+  const Story = AREA_STORIES[active.id];
 
   const boxW = 128;
   const gap = 12;
@@ -517,12 +459,14 @@ export function AreaFramework() {
           {active.name}
         </p>
         <p className="mt-1 text-micro text-ash">{active.note}</p>
-        <div className="mt-2 flex items-start gap-2.5 rounded-lg border border-accent/20 bg-paper p-2.5">
-          <AreaExampleGlyph id={active.id} className="h-8 w-8 shrink-0 text-accent" />
+        <div className="mt-2 rounded-lg border border-accent/20 bg-paper p-2.5">
           <p className="text-micro text-ink">
             <span className="font-semibold">Example. </span>
             {active.example}
           </p>
+          <div className="mt-2.5 border-t border-line pt-2.5">
+            <Story />
+          </div>
         </div>
       </div>
     </div>
