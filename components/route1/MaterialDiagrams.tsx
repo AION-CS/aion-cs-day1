@@ -60,7 +60,95 @@ export function LeverMap() {
 }
 
 // ---------------------------------------------------------------------------
-// S2 — direct vs. indirect impact, as a click-to-classify demo
+// Shared: a few hand-drawn glyphs positioned inline inside a diagram's own
+// coordinate system (translate only, no scale maths) — cheaper and more
+// reliable across browsers than nesting <svg>/<foreignObject> per icon.
+// ---------------------------------------------------------------------------
+
+const iconGroupProps = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+function ServerGlyph({ cx, cy, className }: { cx: number; cy: number; className?: string }) {
+  return (
+    <g transform={`translate(${cx - 12} ${cy - 12})`} className={className} {...iconGroupProps}>
+      <rect x="3.2" y="4.2" width="17.6" height="5.4" rx="1.5" />
+      <rect x="3.2" y="14.4" width="17.6" height="5.4" rx="1.5" />
+      <path d="M6.6 6.9h.01M6.6 17.1h.01" />
+      <path d="M10 6.9h6.4M10 17.1h6.4" />
+    </g>
+  );
+}
+
+function PersonGlyph({ cx, cy, className }: { cx: number; cy: number; className?: string }) {
+  return (
+    <g transform={`translate(${cx - 12} ${cy - 12})`} className={className} {...iconGroupProps}>
+      <circle cx="12" cy="7.2" r="3.4" />
+      <path d="M5 20v-1.6c0-3 3.1-5.4 7-5.4s7 2.4 7 5.4V20" />
+    </g>
+  );
+}
+
+const AREA_GLYPH_PATHS: Record<string, React.ReactNode> = {
+  process: (
+    <>
+      <circle cx="12" cy="12" r="8.3" />
+      <path d="M12 7.4V12l3.1 1.9" />
+      <path d="M19.6 8.6h-3.4V5.2" />
+    </>
+  ),
+  data: (
+    <>
+      <ellipse cx="12" cy="6" rx="7.2" ry="2.6" />
+      <path d="M4.8 6v12c0 1.44 3.22 2.6 7.2 2.6s7.2-1.16 7.2-2.6V6" />
+      <path d="M4.8 12c0 1.44 3.22 2.6 7.2 2.6s7.2-1.16 7.2-2.6" />
+    </>
+  ),
+  infrastructure: (
+    <>
+      <rect x="3.2" y="4.2" width="17.6" height="5.4" rx="1.5" />
+      <rect x="3.2" y="14.4" width="17.6" height="5.4" rx="1.5" />
+      <path d="M6.6 6.9h.01M6.6 17.1h.01" />
+      <path d="M10 6.9h6.4M10 17.1h6.4" />
+    </>
+  ),
+  behaviour: (
+    <>
+      <circle cx="12" cy="7.2" r="3.4" />
+      <path d="M5 20v-1.6c0-3 3.1-5.4 7-5.4s7 2.4 7 5.4V20" />
+    </>
+  ),
+  complexity: (
+    <>
+      <path d="M12 3.5 21 8l-9 4.5L3 8l9-4.5Z" />
+      <path d="m3 12 9 4.5 9-4.5" />
+      <path d="m3 16 9 4.5 9-4.5" />
+    </>
+  ),
+  management: (
+    <>
+      <path d="M8 9.5 13 4.5l3 3-5 5Z" />
+      <path d="M11 12.5 6.5 17a1.8 1.8 0 0 1-2.6-2.5L8.5 10" />
+      <path d="M11.5 13 18 19.5" />
+      <path d="M14 20h6" />
+    </>
+  ),
+};
+
+function AreaGlyph({ id, cx, cy, className }: { id: string; cx: number; cy: number; className?: string }) {
+  return (
+    <g transform={`translate(${cx - 11} ${cy - 11})`} className={className} {...iconGroupProps}>
+      {AREA_GLYPH_PATHS[id]}
+    </g>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// S2 — direct vs. indirect: an SVG two-zone sorter with a live tally
 // ---------------------------------------------------------------------------
 
 const IMPACT_SCENARIOS = [
@@ -72,10 +160,40 @@ const IMPACT_SCENARIOS = [
 
 export function ImpactLayers() {
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const directCount = IMPACT_SCENARIOS.filter((s) => revealed[s.id] && s.answer === "direct").length;
+  const indirectCount = IMPACT_SCENARIOS.filter((s) => revealed[s.id] && s.answer === "indirect").length;
 
   return (
     <div className="space-y-3">
-      <p className="text-micro text-ash">Tap each finding: is it direct or indirect?</p>
+      <svg viewBox="0 0 520 170" className="w-full" role="img" aria-label="Two zones: the system itself, and people or process around it">
+        <rect
+          x="16" y="14" width="228" height="140" rx="16"
+          className={clsx("transition-colors duration-300", directCount > 0 ? "fill-accentSoft stroke-accent" : "fill-canvas stroke-line")}
+          strokeWidth="1.6"
+        />
+        <ServerGlyph cx={130} cy={58} className={directCount > 0 ? "text-accent" : "text-ash"} />
+        <text x="130" y="100" textAnchor="middle" className="fill-ink" style={{ fontSize: 12.5, fontWeight: 700 }}>THE SYSTEM</text>
+        <g key={`d-${directCount}`} className="reveal-in">
+          <text x="130" y="128" textAnchor="middle" className={directCount > 0 ? "fill-accent" : "fill-ash"} style={{ fontSize: 15, fontWeight: 700 }}>
+            {directCount} direct
+          </text>
+        </g>
+
+        <rect
+          x="276" y="14" width="228" height="140" rx="16"
+          className={clsx("transition-colors duration-300", indirectCount > 0 ? "fill-mist stroke-ink/40" : "fill-canvas stroke-line")}
+          strokeWidth="1.6"
+        />
+        <PersonGlyph cx={390} cy={56} className={indirectCount > 0 ? "text-ink" : "text-ash"} />
+        <text x="390" y="100" textAnchor="middle" className="fill-ink" style={{ fontSize: 12.5, fontWeight: 700 }}>PEOPLE &amp; PROCESS</text>
+        <g key={`i-${indirectCount}`} className="reveal-in">
+          <text x="390" y="128" textAnchor="middle" className={indirectCount > 0 ? "fill-ink" : "fill-ash"} style={{ fontSize: 15, fontWeight: 700 }}>
+            {indirectCount} indirect
+          </text>
+        </g>
+      </svg>
+
+      <p className="text-micro text-ash">Tap each finding — watch it land on the correct side above.</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {IMPACT_SCENARIOS.map((s) => {
           const shown = revealed[s.id];
@@ -91,10 +209,7 @@ export function ImpactLayers() {
                 shown ? (direct ? "border-accent bg-accentSoft" : "border-line bg-mist") : "border-line bg-paper hover:border-ash",
               )}
             >
-              <span className="flex items-center gap-2">
-                <Icon name={direct ? "drive" : "person"} className={clsx("h-4 w-4 shrink-0", shown ? (direct ? "text-accent" : "text-ink") : "text-ash")} />
-                <span className="text-caption text-ink">{s.text}</span>
-              </span>
+              <span className="text-caption text-ink">{s.text}</span>
               {shown && (
                 <span className="reveal-in text-micro">
                   <span className={clsx("font-semibold", direct ? "text-accent" : "text-ink")}>{direct ? "Direct — " : "Indirect — "}</span>
@@ -118,7 +233,7 @@ export function ImpactLayers() {
 }
 
 // ---------------------------------------------------------------------------
-// S3 — the rebound curve, stepped interactively, and the five-way trade-off
+// S3 — the rebound curve, stepped interactively, and the trade-off funnel
 // ---------------------------------------------------------------------------
 
 const REBOUND_STAGES = [
@@ -128,123 +243,159 @@ const REBOUND_STAGES = [
 ] as const;
 
 const TRADEOFFS = [
-  { label: "Convenience", text: "A task that used to require effort now happens with one click — and gets done far more often than before." },
-  { label: "Speed", text: "A faster report or process gets run more frequently simply because waiting is no longer the cost it was." },
-  { label: "Automation", text: "A scheduled job runs on a fixed cadence instead of on someone's judgement about whether it's actually needed." },
-  { label: "Transparency", text: "A visible dashboard invites more queries and more dashboards than the one report it replaced." },
-  { label: "Resource use", text: "Usually where the bill lands for the other four — unless it is deliberately capped, it absorbs the difference." },
+  { id: "convenience", label: "Convenience", x: 10, text: "A task that used to require effort now happens with one click — and gets done far more often than before." },
+  { id: "speed", label: "Speed", x: 140, text: "A faster report or process gets run more frequently simply because waiting is no longer the cost it was." },
+  { id: "automation", label: "Automation", x: 270, text: "A scheduled job runs on a fixed cadence instead of on someone's judgement about whether it's actually needed." },
+  { id: "transparency", label: "Transparency", x: 400, text: "A visible dashboard invites more queries and more dashboards than the one report it replaced." },
 ] as const;
 
 export function ReboundCurve() {
   const [stage, setStage] = useState(0);
   const point = REBOUND_STAGES[stage];
-  const [openTradeoff, setOpenTradeoff] = useState<string | null>(null);
+  const [openTradeoff, setOpenTradeoff] = useState<string>(TRADEOFFS[0].id);
+  const activeTradeoff = TRADEOFFS.find((t) => t.id === openTradeoff)!;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        {REBOUND_STAGES.map((s, i) => (
-          <button
-            key={s.label}
-            type="button"
-            onClick={() => setStage(i)}
-            aria-pressed={stage === i}
-            className={clsx(
-              "rounded-full border px-3 py-1 text-micro font-semibold transition-colors duration-150",
-              stage === i ? "border-accent bg-accent text-paper" : "border-line bg-paper text-ash hover:border-accent",
-            )}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      <svg viewBox="0 0 520 220" className="w-full" role="img" aria-label="Predicted savings vs. actual net effect, converging toward zero as use increases">
-        <line x1="40" y1="190" x2="500" y2="190" stroke="var(--color-line, #D8DBDF)" strokeWidth="1.5" />
-        <line x1="40" y1="20" x2="40" y2="190" stroke="var(--color-line, #D8DBDF)" strokeWidth="1.5" />
-        <text x="270" y="212" textAnchor="middle" className="fill-ash text-[11px]">
-          Increased use of the now-cheaper resource →
-        </text>
-        <text x="18" y="105" textAnchor="middle" transform="rotate(-90 18 105)" className="fill-ash text-[11px]">
-          Net saving
-        </text>
-
-        <path d="M 40 40 L 500 40" fill="none" stroke="currentColor" strokeDasharray="5 5" strokeWidth="2" className="text-ash" />
-        <text x="440" y="32" className="fill-ash text-[11px] font-semibold">Predicted saving</text>
-
-        <path d="M 40 40 C 160 70, 260 150, 500 182" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-accent" />
-        <text x="330" y="168" className="fill-accent text-[11px] font-semibold">Actual net effect</text>
-
-        {/* the gap this stage reveals, between predicted and actual */}
-        <line x1={point.x} y1="40" x2={point.x} y2={point.y} stroke="currentColor" className="text-warn" strokeWidth="1.5" strokeDasharray="3 3" style={{ transition: "all 500ms" }} />
-        <circle cx={point.x} cy={point.y} r="6" className="fill-warn transition-all duration-500" />
-      </svg>
-
-      <p className="rounded-lg border border-warn/30 bg-warn/5 px-3 py-2 text-caption text-ink">
-        Net saving remaining: <span className="font-semibold text-warn">{point.saving}%</span> — the rest was absorbed
-        by increased use, not lost, not banked either.
-      </p>
-
-      <div className="grid gap-1.5 sm:grid-cols-2">
-        {TRADEOFFS.map((t) => {
-          const open = openTradeoff === t.label;
-          return (
+    <div className="space-y-5">
+      <div>
+        <div className="flex flex-wrap gap-2">
+          {REBOUND_STAGES.map((s, i) => (
             <button
-              key={t.label}
+              key={s.label}
               type="button"
-              onClick={() => setOpenTradeoff(open ? null : t.label)}
-              aria-pressed={open}
+              onClick={() => setStage(i)}
+              aria-pressed={stage === i}
               className={clsx(
-                "rounded-lg border p-2.5 text-left transition-colors duration-150",
-                open ? "border-accent bg-accentSoft" : "border-line bg-canvas hover:border-ash",
+                "rounded-full border px-3 py-1 text-micro font-semibold transition-colors duration-150",
+                stage === i ? "border-accent bg-accent text-paper" : "border-line bg-paper text-ash hover:border-accent",
               )}
             >
-              <p className={clsx("text-caption font-semibold", open ? "text-accent" : "text-ink")}>{t.label}</p>
-              {open && <p className="reveal-in mt-1 text-micro text-ash">{t.text}</p>}
+              {s.label}
             </button>
-          );
-        })}
+          ))}
+        </div>
+
+        <svg viewBox="0 0 520 220" className="mt-3 w-full" role="img" aria-label="Predicted savings vs. actual net effect, converging toward zero as use increases">
+          <line x1="40" y1="190" x2="500" y2="190" stroke="var(--color-line, #D8DBDF)" strokeWidth="1.5" />
+          <line x1="40" y1="20" x2="40" y2="190" stroke="var(--color-line, #D8DBDF)" strokeWidth="1.5" />
+          <text x="270" y="212" textAnchor="middle" className="fill-ash text-[11px]">
+            Increased use of the now-cheaper resource →
+          </text>
+          <text x="18" y="105" textAnchor="middle" transform="rotate(-90 18 105)" className="fill-ash text-[11px]">
+            Net saving
+          </text>
+
+          <path d="M 40 40 L 500 40" fill="none" stroke="currentColor" strokeDasharray="5 5" strokeWidth="2" className="text-ash" />
+          <text x="440" y="32" className="fill-ash text-[11px] font-semibold">Predicted saving</text>
+
+          <path d="M 40 40 C 160 70, 260 150, 500 182" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-accent" />
+          <text x="330" y="168" className="fill-accent text-[11px] font-semibold">Actual net effect</text>
+
+          <line x1={point.x} y1="40" x2={point.x} y2={point.y} stroke="currentColor" className="text-warn" strokeWidth="1.5" strokeDasharray="3 3" style={{ transition: "all 500ms" }} />
+          <circle cx={point.x} cy={point.y} r="6" className="fill-warn transition-all duration-500" />
+        </svg>
+
+        <p className="mt-3 rounded-lg border border-warn/30 bg-warn/5 px-3 py-2 text-caption text-ink">
+          Net saving remaining: <span className="font-semibold text-warn">{point.saving}%</span> — the rest was absorbed
+          by increased use, not lost, not banked either.
+        </p>
+      </div>
+
+      <div>
+        <p className="text-micro text-ash">Four gains feed one bill. Tap a gain to see how.</p>
+        <svg viewBox="0 0 520 190" className="mt-2 w-full" role="img" aria-label="Convenience, speed, automation and transparency each feed the resource-use bill">
+          {TRADEOFFS.map((t) => {
+            const on = openTradeoff === t.id;
+            const cx = t.x + 55;
+            return (
+              <g key={t.id}>
+                <line x1={cx} y1="66" x2="260" y2="120" className={on ? "text-accent" : "text-line"} stroke="currentColor" strokeWidth={on ? 2.2 : 1.4} strokeDasharray={on ? "6 4" : undefined} style={{ transition: "all 300ms" }} />
+                <g role="button" tabIndex={0} onClick={() => setOpenTradeoff(t.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenTradeoff(t.id); } }} className="cursor-pointer">
+                  <rect x={t.x} y="16" width="110" height="50" rx="10" className={on ? "fill-accent stroke-accent" : "fill-paper stroke-line"} strokeWidth="1.5" />
+                  <text x={cx} y="46" textAnchor="middle" className={on ? "fill-paper" : "fill-ink"} style={{ fontSize: 12.5, fontWeight: 600 }}>{t.label}</text>
+                </g>
+              </g>
+            );
+          })}
+
+          <rect x="160" y="120" width="200" height="54" rx="12" className="fill-warn/10 stroke-warn/50" strokeWidth="1.6" />
+          <text x="260" y="142" textAnchor="middle" className="fill-warn" style={{ fontSize: 12.5, fontWeight: 700 }}>RESOURCE USE</text>
+          <text x="260" y="160" textAnchor="middle" className="fill-ink" style={{ fontSize: 11 }}>where the bill lands</text>
+        </svg>
+
+        <div key={activeTradeoff.id} className="reveal-in mt-2 rounded-lg border border-accent/25 bg-accentSoft px-3 py-2 text-caption text-ink">
+          {activeTradeoff.text}
+        </div>
       </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// S4 — the six-area diagnostic framework
+// S4 — the six-area diagnostic framework, as a two-layer SVG: five areas
+// below, Management above reviewing across all five (same visual language
+// as Route 2's management-levers diagram).
 // ---------------------------------------------------------------------------
 
 export function AreaFramework() {
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<string>("process");
+  const active = AREAS.find((a) => a.id === open)!;
+  const lower = AREAS.filter((a) => a.id !== "management");
+
+  const boxW = 128;
+  const gap = 12;
+  const startX = 12;
+  const boxX = (i: number) => startX + i * (boxW + gap);
+  const boxCx = (i: number) => boxX(i) + boxW / 2;
+  const mgmtCx = 372;
 
   return (
-    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {AREAS.map((a) => {
-        const on = open === a.id;
-        return (
-          <button
-            key={a.id}
-            type="button"
-            onClick={() => setOpen(on ? null : a.id)}
-            aria-pressed={on}
-            className={clsx(
-              "flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors duration-150",
-              on ? "border-accent bg-accentSoft" : "border-line bg-canvas hover:border-ash",
-            )}
-          >
-            <span className="flex items-center gap-2">
-              <Icon name={a.icon} className={clsx("h-4 w-4 shrink-0", on ? "text-accent" : "text-ash")} />
-              <span className={clsx("text-caption font-semibold", on ? "text-accent" : "text-ink")}>{a.name}</span>
-            </span>
-            <span className="text-micro text-ash">{a.note}</span>
-            {on && (
-              <span className="reveal-in mt-1 rounded-lg border border-accent/25 bg-paper px-2.5 py-1.5 text-micro text-ink">
-                <span className="font-semibold">Example. </span>
-                {a.example}
-              </span>
-            )}
-          </button>
-        );
-      })}
+    <div className="space-y-3">
+      <svg viewBox="0 0 720 250" className="w-full" role="img" aria-label="Five areas below, Management above, reviewing across all five">
+        <g role="button" tabIndex={0} onClick={() => setOpen("management")} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setOpen("management"); }} className="cursor-pointer">
+          <rect x="222" y="14" width="300" height="58" rx="14" className={open === "management" ? "fill-accent stroke-accent" : "fill-accentSoft stroke-accent/50"} strokeWidth="1.6" />
+          <AreaGlyph id="management" cx={272} cy={43} className={open === "management" ? "text-paper" : "text-accent"} />
+          <text x="392" y="48" textAnchor="middle" className={open === "management" ? "fill-paper" : "fill-accent"} style={{ fontSize: 14.5, fontWeight: 700 }}>
+            MANAGEMENT
+          </text>
+        </g>
+
+        {lower.map((a, i) => {
+          const on = open === a.id;
+          const cx = boxCx(i);
+          return (
+            <g key={a.id}>
+              <line x1={cx} y1="150" x2={mgmtCx} y2="72" stroke="currentColor" className={on ? "text-accent" : "text-line"} strokeWidth={on ? 2.2 : 1.4} strokeDasharray={on ? "6 4" : undefined} style={{ transition: "all 300ms" }} />
+              <g role="button" tabIndex={0} onClick={() => setOpen(a.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(a.id); } }} className="cursor-pointer">
+                <rect x={boxX(i)} y="150" width={boxW} height="72" rx="12" className={on ? "fill-paper stroke-accent" : "fill-mist stroke-line"} strokeWidth="1.6" />
+                <AreaGlyph id={a.id} cx={cx} cy={178} className={on ? "text-accent" : "text-ash"} />
+                <text x={cx} y="208" textAnchor="middle" className={on ? "fill-accent" : "fill-ink"} style={{ fontSize: 11.5, fontWeight: 600 }}>
+                  {a.name.split(" ")[0]}
+                </text>
+                <text x={cx} y="220" textAnchor="middle" className={on ? "fill-accent" : "fill-ink"} style={{ fontSize: 11.5, fontWeight: 600 }}>
+                  {a.name.split(" ").slice(1).join(" ")}
+                </text>
+              </g>
+            </g>
+          );
+        })}
+
+        <text x="360" y="112" textAnchor="middle" className="fill-ash" style={{ fontSize: 11.5, fontStyle: "italic" }}>
+          reviews and decides across all five
+        </text>
+      </svg>
+
+      <div key={active.id} className="reveal-in rounded-xl border border-accent/25 bg-accentSoft p-3">
+        <p className="flex items-center gap-2 text-caption font-semibold text-accent">
+          <Icon name={active.icon} className="h-4 w-4" />
+          {active.name}
+        </p>
+        <p className="mt-1 text-micro text-ash">{active.note}</p>
+        <p className="mt-1.5 text-micro text-ink">
+          <span className="font-semibold">Example. </span>
+          {active.example}
+        </p>
+      </div>
     </div>
   );
 }
