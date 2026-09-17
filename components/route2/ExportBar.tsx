@@ -4,18 +4,19 @@ import { useState } from "react";
 import clsx from "clsx";
 import { useProgress } from "@/lib/store";
 import { markRouteExported } from "@/lib/routeGating";
-import { exportFilename, downloadTextFile } from "@/lib/downloadFile";
+import { exportFilename, printHtmlDocument } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
 import { MissingList } from "@/components/ui/MissingList";
 import { ChevronDown } from "@/components/icons/LineIcons";
 import { EXPORT, MAP_MEASURES, RANK_SLOTS } from "@/lib/route2";
 import { useRoute2, domId } from "./useRoute2";
-import { buildMemoHtml, buildMemoJson } from "./exportDocuments";
+import { buildMemoHtml } from "./exportDocuments";
 
 /**
  * Sticky export bar. Never disabled (CLAUDE.md #3): an incomplete click opens
  * the itemized missing list and jumps to the first gap, opening a collapsed
- * measure card on the way if that is where the gap is.
+ * measure card on the way if that is where the gap is. The export itself is
+ * PDF only, via the browser's print dialog — no JSON download.
  */
 export function ExportBar() {
   const r2 = useRoute2();
@@ -33,8 +34,7 @@ export function ExportBar() {
       return;
     }
     const filename = exportFilename(r2.name, EXPORT.filenameLevels, EXPORT.filenameTask);
-    downloadTextFile(`${filename}.json`, buildMemoJson(r2, filename), "application/json");
-    downloadTextFile(`${filename}.html`, buildMemoHtml(r2), "text/html");
+    printHtmlDocument(filename, buildMemoHtml(r2));
     markRouteExported(toggleCheck, 2);
     setShowMissing(false);
   };

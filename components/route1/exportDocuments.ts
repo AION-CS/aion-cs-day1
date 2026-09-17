@@ -1,90 +1,16 @@
-import { EFFECTS, ENGAGEMENT, EXPORT, SENTIMENTS, SIGNALS, areaById } from "@/lib/route1";
+import { EFFECTS, ENGAGEMENT, EXPORT, SENTIMENTS, areaById } from "@/lib/route1";
 import { CASE } from "@/lib/routes";
 import type { Route1State } from "./useRoute1";
 
 /**
- * The route's single export: one JSON for grading and one print-ready HTML
- * report for reading, both covering the whole engagement.
- *
- * Route 1 spans curriculum levels 1 and 2 in one continuous task (no separate
- * Decide stage — see lib/route1/sections.ts), so unlike a two-part route the
- * JSON keeps one flat structure: triage (all seven), escalation (the two
- * chosen and why), and analysis (the deep dive on those two) as three
- * sibling blocks, so a grader can see the triage-level judgement separately
- * from the depth of the analysis it led to.
+ * The route's single export: one print-ready HTML report, opened in a new
+ * tab and sent straight to the browser's print dialog — "Save as PDF" is
+ * the export (see lib/downloadFile.ts `printHtmlDocument`). No JSON.
  */
 
 const sentimentLabel = (id: string | null) => SENTIMENTS.find((r) => r.id === id)?.label ?? "—";
 const effectLabel = (id: string | null) => EFFECTS.find((e) => e.id === id)?.label ?? "—";
 const areaLabel = (id: string | null) => (id ? areaById(id as never).name : "—");
-
-export function buildEngagementJson(r1: Route1State, filename: string): string {
-  const payload = {
-    meta: {
-      day: CASE.day,
-      route: 1,
-      levels: EXPORT.filenameLevels,
-      task: EXPORT.filenameTask,
-      schemaVersion: EXPORT.schemaVersion,
-      filename,
-      name: r1.name,
-      case: ENGAGEMENT.company,
-      role: ENGAGEMENT.role,
-      exportedAt: new Date().toISOString(),
-    },
-
-    triage: {
-      rows: r1.triage.map((t) => ({
-        id: t.signal.id,
-        n: t.signal.n,
-        title: t.signal.title,
-        signalText: t.signal.text,
-        tag: t.tag,
-        tagExpected: t.signal.sentiment,
-        evidenceIndex: t.evidence,
-        evidenceText: t.evidenceText,
-        holds: t.holds,
-      })),
-      checks: r1.triageChecks,
-      allHold: r1.triageAllHold,
-      clueUsed: r1.triageClue,
-      reasoningRevealed: r1.triageRevealed,
-      reasoningRevealedAtCheck: r1.triageRevealAt,
-    },
-
-    escalation: {
-      signalIds: r1.escalated,
-      justification: r1.escalateWhy,
-    },
-
-    analysis: r1.analyses.map((a) => ({
-      id: a.signal.id,
-      n: a.signal.n,
-      title: a.signal.title,
-      area: a.area,
-      areaExpected: a.signal.area,
-      areaCorrect: a.area === a.signal.area,
-      effect: a.effect,
-      effectExpected: a.signal.effect,
-      effectCorrect: a.effect === a.signal.effect,
-      improvementApproach: a.approach,
-      checks: a.checks,
-      verdict: a.verdict,
-      reasoningRevealed: a.revealed,
-      complete: a.complete,
-    })),
-
-    tally: {
-      triaged: r1.triageCompleteCount,
-      total: SIGNALS.length,
-      positiveSignals: r1.triage.filter((t) => t.complete && t.tag === "positive").length,
-      negativeSignals: r1.triage.filter((t) => t.complete && t.tag === "negative").length,
-      escalatedCount: r1.escalated.length,
-      analysedComplete: r1.analysisCompleteCount,
-    },
-  };
-  return JSON.stringify(payload, null, 2);
-}
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 

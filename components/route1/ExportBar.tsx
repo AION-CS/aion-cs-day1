@@ -4,20 +4,21 @@ import { useState } from "react";
 import clsx from "clsx";
 import { useProgress } from "@/lib/store";
 import { markRouteExported } from "@/lib/routeGating";
-import { exportFilename, downloadTextFile } from "@/lib/downloadFile";
+import { exportFilename, printHtmlDocument } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
 import { MissingList } from "@/components/ui/MissingList";
 import { ChevronDown } from "@/components/icons/LineIcons";
 import { EXPORT } from "@/lib/route1";
 import { useRoute1, domId } from "./useRoute1";
-import { buildEngagementJson, buildEngagementHtml } from "./exportDocuments";
+import { buildEngagementHtml } from "./exportDocuments";
 
 /**
  * The route's one sticky export bar.
  *
  * Never disabled (CLAUDE.md #3): clicking while incomplete opens the itemized
  * missing list and jumps to the first gap — which may be several screens up
- * in the triage table, the escalation picker, or a deep-dive card.
+ * in the triage table, the escalation picker, or a deep-dive card. The export
+ * itself is PDF only, via the browser's print dialog — no JSON download.
  */
 export function ExportBar() {
   const r1 = useRoute1();
@@ -35,8 +36,7 @@ export function ExportBar() {
       return;
     }
     const filename = exportFilename(r1.name, EXPORT.filenameLevels, EXPORT.filenameTask);
-    downloadTextFile(`${filename}.json`, buildEngagementJson(r1, filename), "application/json");
-    downloadTextFile(`${filename}.html`, buildEngagementHtml(r1), "text/html");
+    printHtmlDocument(filename, buildEngagementHtml(r1));
     markRouteExported(toggleCheck, 1);
     setShowMissing(false);
   };

@@ -26,7 +26,7 @@ const DEMO_RACI: Record<string, Record<string, string>> = {
   r1: { board: "A", sustainability: "R", it: "C", finance: "C", deptHeads: "I", transformation: "I" },
   r2: { board: "C", sustainability: "A", it: "R", finance: "I", deptHeads: "C", transformation: "I" },
   r3: { board: "I", sustainability: "A", it: "R", finance: "I", deptHeads: "R", transformation: "C" },
-  r4: { board: "C", sustainability: "C", it: "I", finance: "A", deptHeads: "I", transformation: "I" },
+  r4: { board: "C", sustainability: "C", it: "I", finance: "A", deptHeads: "I", transformation: "R" },
 };
 
 /** One rating + one-line argument per assessment dimension for the demo lane. */

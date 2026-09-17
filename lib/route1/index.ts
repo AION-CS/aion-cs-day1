@@ -97,18 +97,15 @@ export const NAME_FIELD = {
 } as const;
 
 /**
- * One export for the whole route. Levels 1 and 2 are both covered by this
- * single task, so — unlike a two-part route — the JSON keeps one continuous
- * `task` block rather than a `partOne` / `partTwo` split; `triage`,
- * `escalation` and `analysis` inside it are what keep the three steps
- * separately gradable.
+ * One export for the whole route: a print-ready HTML report sent straight
+ * to the browser's print dialog — "Save as PDF" is the export, no JSON
+ * download (lib/downloadFile.ts `printHtmlDocument`).
  */
 export const EXPORT = {
   filenameLevels: [1, 2],
   filenameTask: 1,
-  schemaVersion: "day13.route1.v1",
   docHeading: "ProcessNova Signal Triage & Deep-Dive Report",
-  buttonLabel: "Export the Signal Triage & Deep-Dive Report",
+  buttonLabel: "Export as PDF",
 } as const;
 
 /** Material chips shown on the case brief. */

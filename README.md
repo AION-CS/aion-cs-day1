@@ -10,12 +10,17 @@ not a two-part diagnose-then-decide engagement — so Route 1 deliberately inver
 material-to-task ratio (~30 min material, ~20 min task, not ~60/~30). Route 2 is bootstrapped from
 Day 11's Route 2 and keeps its ~60-minute material depth in full.
 
+Both routes export **PDF only**, via `window.print()` — not the JSON + HTML pair every day from 7
+through 12 uses. This reinstates the print-based export day3–day6 used before day7 deliberately
+switched to JSON+HTML for machine-gradable raw data; a day copied forward from 13 should decide
+deliberately which convention it wants, not inherit this one by default.
+
 ## Routes
 
 | Route | Levels | Case | Material | Task | Export |
 |---|---|---|---|---|---|
-| `/route-1-diagnose-and-decide` | 1 + 2 | ProcessNova Services | S1–S4, ~30 min | Triage (7 signals) → Escalate (2) → Deep dive, ~20 min, one part, no Decide stage | `1-{name}-day13-l1l2task1.json` + `.html` |
-| `/route-2-management-decision` | 3 | EcoFlow Administration GmbH (worked example) → Synervia Process Group (task) | A–D, ~60 min | Five exercises, ~90 min, board memo assembling live | `1-{name}-day13-l3task1.json` + `.html` |
+| `/route-1-diagnose-and-decide` | 1 + 2 | ProcessNova Services | S1–S4, ~30 min | Triage (7 signals) → Escalate (2) → Deep dive, ~20 min, one part, no Decide stage | `1-{name}-day13-l1l2task1` PDF |
+| `/route-2-management-decision` | 3 | EcoFlow Administration GmbH (worked example) → Synervia Process Group (task) | A–D, ~60 min | Five exercises, ~90 min, board memo assembling live | `1-{name}-day13-l3task1` PDF |
 
 Neither route gates the other. Route 2 shows a soft order-suggestion banner until Route 1 has been
 exported, and nothing more.
@@ -72,9 +77,8 @@ covered by triage and deep dive alone):
 
 Ground truth, clues and the mentor answer key per signal live in `lib/route1/partOne.ts`.
 
-**Export.** One JSON with `meta` (day, route, levels `[1,2]`, schema version `day13.route1.v1`),
-`triage` (all 7 rows), `escalation` (the 2 chosen + justification) and `analysis` (the deep-dive
-workup). One print-ready HTML report.
+**Export.** PDF only — the export button opens the print-ready report in a new tab and triggers the
+browser's print dialog, where "Save as PDF" produces the file. No JSON download.
 
 ## Route 2 — Management Decision (EcoFlow → Synervia)
 
@@ -114,8 +118,8 @@ beside them:
 4. **RACI** for the digital-sustainability assessment standard, across six roles.
 5. **The decision that cannot wait** (~15 min). Decision, assumption, falsifier, cost of waiting.
 
-**Export.** JSON with `prioritisation`, `rankedDecisions`, `tradeOffMap`, `raci` and `decisionNow`
-(schema version `day13.route2.v1`); HTML as a real board memo, printable to A4.
+**Export.** PDF only, same mechanism as Route 1 — a real board memo, opened in a new tab and printed
+straight to A4. No JSON download.
 
 ## Shared components (from Day 11 on)
 
@@ -158,7 +162,7 @@ lib/
   materialSection.ts                shared material section type
   route1/  index · sections · material (S1–S4) · partOne (signals, triage/escalate/analysis)
   route2/  index · sections · material (A–D + EcoFlow) · task (5 exercises)
-  downloadFile.ts                   exportFilename(name, levels[], taskNumber) + Blob download
+  downloadFile.ts                   exportFilename(...) + printHtmlDocument() — PDF via window.print()
   store.ts                          Zustand + localStorage (key aion-greenit-day13), useHydrated()
 components/
   route1/   CaseBrief · Material · MaterialDiagrams · PartOne · TriageBlock · TriageRow ·

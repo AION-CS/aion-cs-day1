@@ -15,71 +15,12 @@ import { MAP, MID_X, MID_Y, quadrantRect, slotPosition } from "./mapLayout";
 import type { Route2State } from "./useRoute2";
 
 /**
- * Route 2's export: a JSON for grading and a print-ready board memo — not a
- * worksheet dump. The memo reads top-down the way a board would: the
- * recommendation and its defence, the guiding decisions behind it, what it
- * costs, who owns it, and what cannot wait.
+ * Route 2's export: one print-ready board memo, opened in a new tab and sent
+ * straight to the browser's print dialog — "Save as PDF" is the export (see
+ * lib/downloadFile.ts `printHtmlDocument`). No JSON. The memo reads top-down
+ * the way a board would: the recommendation and its defence, the guiding
+ * decisions behind it, what it costs, who owns it, and what cannot wait.
  */
-
-export function buildMemoJson(r2: Route2State, filename: string): string {
-  const payload = {
-    meta: {
-      day: CASE.day,
-      route: 2,
-      levels: EXPORT.filenameLevels,
-      task: EXPORT.filenameTask,
-      schemaVersion: EXPORT.schemaVersion,
-      filename,
-      name: r2.name,
-      case: SYNERVIA.company,
-      role: SYNERVIA.role,
-      exportedAt: new Date().toISOString(),
-    },
-    prioritisation: {
-      lane: r2.lane,
-      laneLabel: r2.chosenLane?.label ?? null,
-      assessment: ASSESSMENT_DIMENSIONS.map((d) => {
-        const row = r2.ratingRows.find((r) => r.dim.key === d.key)!;
-        return { key: d.key, label: d.label, rating: row.rating, argument: row.note };
-      }),
-      justification: r2.justification,
-      followUp: r2.followUp,
-      risks: r2.risks.filter(Boolean),
-    },
-    rankedDecisions: {
-      order: r2.ranking,
-      labels: r2.ranking.map((id) => decisionById(id).label),
-      justificationOfFirst: r2.rankWhy,
-      diagnosticAnswer: r2.rankCheck,
-    },
-    tradeOffMap: r2.mapStates.map((s) => ({
-      id: s.measure.id,
-      measure: s.measure.label,
-      momentumCostAnswer: s.q1,
-      momentumCostCorrect: s.q1Correct,
-      structuralImpactAnswer: s.q2,
-      structuralImpactCorrect: s.q2Correct,
-      quadrant: s.placed,
-      expectedQuadrant: s.measure.quadrant,
-      retries: s.retries,
-      strategicBetJustification: s.placed === "bet" ? s.bet : null,
-    })),
-    raci: {
-      grid: RACI_ROWS.map((row) => ({
-        row: row.id,
-        decisionObject: row.label,
-        assignments: Object.fromEntries(TASK_RACI_ROLES.map((role) => [role.id, r2.raciValue(row.id, role.id) || null])),
-      })),
-      validation: {
-        structuralIssues: r2.raciStructuralIssues.map((v) => ({ row: v.rowId, kind: v.kind })),
-        authorityQuestions: r2.raciAuthorityWarnings.map((v) => ({ row: v.rowId, kind: v.kind })),
-        valid: r2.raciStructuralIssues.length === 0 && RACI_ROWS.every((row) => r2.raciTouched(row.id)),
-      },
-    },
-    decisionNow: Object.fromEntries(DECIDE_NOW_FIELDS.map((f) => [f.key, r2.decideNow[f.key] ?? ""])),
-  };
-  return JSON.stringify(payload, null, 2);
-}
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 

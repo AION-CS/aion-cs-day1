@@ -100,10 +100,10 @@ export const TASK = {
     "Five exercises, in the order a memo is actually built: what to fund and why, what else should be decided, what it costs to decide it, who owns it afterwards, and what cannot wait for the next round of data. None gates another. The memo assembles on the right as you work.",
 } as const;
 
+/** A print-ready HTML board memo sent straight to the browser's print dialog — "Save as PDF" is the export, no JSON. */
 export const EXPORT = {
   filenameLevels: [3],
   filenameTask: 1,
-  schemaVersion: "day13.route2.v1",
   docHeading: "Synervia Board Memo",
-  buttonLabel: "Export the Board Memo",
+  buttonLabel: "Export as PDF",
 } as const;
