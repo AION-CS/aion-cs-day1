@@ -382,12 +382,71 @@ const REBOUND_STAGES = [
   { label: "Usage doubles", x: 500, y: 182, saving: 8 },
 ] as const;
 
-const TRADEOFFS = [
-  { id: "convenience", label: "Convenience", x: 10, text: "A task that used to require effort now happens with one click — and gets done far more often than before." },
-  { id: "speed", label: "Speed", x: 140, text: "A faster report or process gets run more frequently simply because waiting is no longer the cost it was." },
-  { id: "automation", label: "Automation", x: 270, text: "A scheduled job runs on a fixed cadence instead of on someone's judgement about whether it's actually needed." },
-  { id: "transparency", label: "Transparency", x: 400, text: "A visible dashboard invites more queries and more dashboards than the one report it replaced." },
-] as const;
+const TRADEOFFS: {
+  id: string;
+  label: string;
+  x: number;
+  costUnit: string;
+  costUnitPlural: string;
+  steps: ChainStep[];
+  punchline: string;
+}[] = [
+  {
+    id: "convenience",
+    label: "Convenience",
+    x: 10,
+    costUnit: "run this morning",
+    costUnitPlural: "runs this morning",
+    steps: [
+      { label: "9:02 — report run, just to check", cost: 1 },
+      { label: "9:15 — report run again", cost: 1 },
+      { label: "9:40 — report run again", cost: 1 },
+      { label: "10:20 — report run again", cost: 1 },
+    ],
+    punchline: "4 runs before lunch — the same report that used to be planned a day ahead. The click didn't get cheaper for the planet; it got cheaper for you.",
+  },
+  {
+    id: "speed",
+    label: "Speed",
+    x: 140,
+    costUnit: "query in an hour",
+    costUnitPlural: "queries in an hour",
+    steps: [
+      { label: "Query fired — 9:02am", cost: 1 },
+      { label: "Query fired — 9:14am", cost: 1 },
+      { label: "Query fired — 9:31am", cost: 1 },
+      { label: "Query fired — 9:47am", cost: 1 },
+      { label: "Query fired — 10:03am", cost: 1 },
+    ],
+    punchline: "5 queries in one hour — waiting used to be the thing that rationed how often anyone asked.",
+  },
+  {
+    id: "automation",
+    label: "Automation",
+    x: 270,
+    costUnit: "identical run",
+    costUnitPlural: "identical runs",
+    steps: [
+      { label: "Mon 2am — scheduled run, data unchanged", cost: 1 },
+      { label: "Tue 2am — scheduled run, still unchanged", cost: 1 },
+      { label: "Wed 2am — scheduled run, still unchanged", cost: 1 },
+    ],
+    punchline: "3 nights of identical output — a person would have skipped this after the first one. The schedule doesn't know that.",
+  },
+  {
+    id: "transparency",
+    label: "Transparency",
+    x: 400,
+    costUnit: "dashboard",
+    costUnitPlural: "dashboards",
+    steps: [
+      { label: "Dashboard 1 — built to replace the report", cost: 1 },
+      { label: "Dashboard 2 — built for a related question", cost: 1 },
+      { label: "Dashboard 3 — built because dashboard 1 was slow", cost: 1 },
+    ],
+    punchline: "3 dashboards where 1 report used to answer the question — visibility invited more visibility, and none of them were ever retired.",
+  },
+];
 
 export function ReboundCurve() {
   const [stage, setStage] = useState(0);
@@ -463,8 +522,13 @@ export function ReboundCurve() {
           <text x="260" y="160" textAnchor="middle" className="fill-ink" style={{ fontSize: 11 }}>where the bill lands</text>
         </svg>
 
-        <div key={activeTradeoff.id} className="reveal-in mt-2 rounded-lg border border-accent/25 bg-accentSoft px-3 py-2 text-caption text-ink">
-          {activeTradeoff.text}
+        <div key={activeTradeoff.id} className="reveal-in mt-2 rounded-lg border border-accent/25 bg-accentSoft p-3">
+          <ChainStory
+            costUnit={activeTradeoff.costUnit}
+            costUnitPlural={activeTradeoff.costUnitPlural}
+            steps={activeTradeoff.steps}
+            ending={{ kind: "punchline", text: activeTradeoff.punchline }}
+          />
         </div>
       </div>
     </div>
