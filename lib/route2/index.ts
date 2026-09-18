@@ -1,13 +1,12 @@
 /**
- * Route 2 — the Synervia Board Memo. Curriculum level 3, Module 9.
- *
- * Same shape as Route 1 (CLAUDE.md #12): the case once, the whole material
- * block, then the task, then one export. Route 1's engagement was an
- * analyst's; this one is a CIO/transformation advisor's, and the question has
- * moved from "which signals matter" to "which line of measures the
- * organisation funds, under trade-offs, incomplete information, and who is
- * allowed to decide".
+ * Route 2 — Levels 2 and 3 merged into one continuous route, one task in two
+ * parts (CLAUDE.md §12/§13 pattern, "Format 2"). Route 1 taught participants
+ * to diagnose; this route teaches the next two moves — prioritise under
+ * limited budget, then propose under incomplete data — each grounded in
+ * exactly one lean material section.
  */
+
+import type { MaterialSectionId } from "./sections";
 
 export * from "./sections";
 export * from "./material";
@@ -21,68 +20,42 @@ export const LEARNER_NAME_KEY = "learner:name";
 export const R2 = {
   name: LEARNER_NAME_KEY,
 
-  // -- Exercise 1: prioritise & defend ---------------------------------------
-  prioritiseLane: "r2:prioritise:lane",
-  rating: (dimKey: string) => `r2:prioritise:rating:${dimKey}`,
-  ratingNote: (dimKey: string) => `r2:prioritise:note:${dimKey}`,
-  justification: "r2:prioritise:justify",
-  followUp: "r2:prioritise:followup",
-  risk: (n: 1 | 2) => `r2:prioritise:risk:${n}`,
+  // -- Part 1: prioritise -----------------------------------------------------
+  /** "1" | "2" | "3" | "" (unranked) per criterion × measure-line. */
+  rank: (criterionId: string, lineId: string) => `r2:p1:rank:${criterionId}:${lineId}`,
+  /** Stringified count of "Check my thinking" presses on this criterion. */
+  rankChecks: (criterionId: string) => `r2:p1:checks:${criterionId}`,
+  priority: "r2:p1:priority",
+  priorityJustify: "r2:p1:justify",
 
-  // -- Exercise 2: rank the guiding decisions --------------------------------
-  ranking: "r2:ranking",
-  rankWhy: "r2:rank:why",
-  rankCheck: "r2:rank:check",
-
-  // -- Exercise 3: the trade-off map ------------------------------------------
-  q1: (measureId: string) => `r2:q1:${measureId}`,
-  q2: (measureId: string) => `r2:q2:${measureId}`,
-  bet: (measureId: string) => `r2:bet:${measureId}`,
-  retries: (measureId: string) => `r2:retry:${measureId}`,
-  openMeasure: "r2:open",
-
-  // -- Exercise 4: RACI --------------------------------------------------------
-  raci: (rowId: string, roleId: string) => `r2:raci:${rowId}:${roleId}`,
-
-  // -- Exercise 5: the decision that cannot wait ------------------------------
-  decideNow: (key: string) => `r2:now:${key}`,
+  // -- Part 2: propose ----------------------------------------------------------
+  relevance: "r2:p2:relevance",
+  firstMove: "r2:p2:firstmove",
+  /** "owns" | "consulted" | "" per ownership node. */
+  ownership: (nodeId: string) => `r2:p2:own:${nodeId}`,
+  decideName: "r2:p2:decide:name",
+  decideReversible: "r2:p2:decide:reversible",
+  decideMoreData: "r2:p2:decide:moredata",
 } as const;
 
-export const R2_KEY_PREFIXES = [
-  "r2:prioritise:",
-  "r2:ranking",
-  "r2:rank:",
-  "r2:q1:",
-  "r2:q2:",
-  "r2:bet:",
-  "r2:retry:",
-  "r2:open",
-  "r2:raci:",
-  "r2:now:",
-];
+/** Prefixes resetSection() must sweep to clear every compound key this route writes. */
+export const R2_KEY_PREFIXES = ["r2:p1:", "r2:p2:"];
 
 export const PAGE_INTRO = {
   tag: "ROUTE 2 — MANAGEMENT DECISION",
-  title: "The Synervia Board Memo",
-  body: "Route 1 diagnosed seven signals from one company's digitalisation programme. This route is the level above: which line of measures the organisation funds, under trade-offs and incomplete information, and who is allowed to decide. Read how EcoFlow Administration GmbH solved exactly this — a complete worked example, including the option it deliberately did not take — then lead at Synervia Process Group, a company that appears nowhere else in this course.",
+  title: "From Diagnosis to a Funded Proposal",
+  body: "Route 1 diagnosed why Mercury Office Systems' Green IT measures were stalling. This route makes the next two moves: given limited budget, which line of measures gets funded first — and once you've chosen, how do you turn that choice into a short, decision-ready proposal under data that is still incomplete? Two lean sections teach exactly what the task needs, then one task in two parts: Prioritise, then Propose.",
 } as const;
 
 /** Stated once, above the task. */
-export const SYNERVIA = {
-  company: "Synervia Process Group",
-  role: "Head of digital strategy / CIO / transformation advisor",
+export const ENGAGEMENT = {
+  company: "Valora Digital Operations",
+  role: "IT-governance lead",
   heading: "The mandate",
   brief:
-    "Synervia Process Group is under high transformation pressure across several business areas, with departments, IT, sustainability, finance and management holding differing interests in how fast and how far digitalisation should go. Transparency on the indirect environmental impacts of past initiatives is incomplete. Budget is restricted even as leadership wants visible modernisation successes to report. There is a standing risk that digitalisation gets sold internally as an automatic sustainability win. Requirements for manageability, traceability and governance are growing faster than the organisation's capacity to meet them.",
-  conditions: [
-    "High transformation pressure across several business areas at once.",
-    "Differing interests between departments, IT, sustainability, finance and management.",
-    "Incomplete transparency on the indirect environmental impacts of past initiatives.",
-    "Budget restrictions alongside a desire for visible modernisation successes.",
-    "A standing risk that digitalisation is sold internally as an automatic sustainability win.",
-    "Growing requirements for manageability, traceability and governance.",
-  ],
-  mandate: "Produce a decision-ready board memo.",
+    "As IT-governance lead of Valora Digital Operations, you have budget for exactly one line of Green IT measures to fund first. The data to prove any option's exact impact is incomplete, and the choice has to be defensible to a board that will ask why the others waited.",
+  mandate: "Score, choose, then turn your choice into a proposal management can act on.",
+  deliverable: "You leave with one document: a Valora Digital Operations Priority Proposal — your scored choice from Part 1 and your proposal from Part 2.",
 } as const;
 
 export const NAME_FIELD = {
@@ -91,19 +64,12 @@ export const NAME_FIELD = {
   placeholder: "e.g. Jane Muller",
 } as const;
 
-export const TASK = {
-  id: "task",
-  tag: "THE TASK",
-  title: "Synervia Board Memo",
-  minutes: 90,
-  framing:
-    "Five exercises, in the order a memo is actually built: what to fund and why, what else should be decided, what it costs to decide it, who owns it afterwards, and what cannot wait for the next round of data. None gates another. The memo assembles on the right as you work.",
-} as const;
-
-/** A print-ready HTML board memo sent straight to the browser's print dialog — "Save as PDF" is the export, no JSON. */
+/** One export for the whole route, both parts, following the established one-route-one-export convention (see README for why this departs from the brief's two-export suggestion). */
 export const EXPORT = {
-  filenameLevels: [3],
+  filenameLevels: [2, 3],
   filenameTask: 1,
-  docHeading: "Synervia Board Memo",
+  docHeading: "Valora Digital Operations Priority Proposal",
   buttonLabel: "Export as PDF",
 } as const;
+
+export const BRIEF_REFS: MaterialSectionId[] = ["criteria", "ownership"];

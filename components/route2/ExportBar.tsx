@@ -8,15 +8,14 @@ import { exportFilename, printHtmlDocument } from "@/lib/downloadFile";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
 import { MissingList } from "@/components/ui/MissingList";
 import { ChevronDown } from "@/components/icons/LineIcons";
-import { EXPORT, MAP_MEASURES, RANK_SLOTS } from "@/lib/route2";
+import { CRITERIA, EXPORT } from "@/lib/route2";
 import { useRoute2, domId } from "./useRoute2";
-import { buildMemoHtml } from "./exportDocuments";
+import { buildProposalHtml } from "./exportDocuments";
 
 /**
- * Sticky export bar. Never disabled (CLAUDE.md #3): an incomplete click opens
- * the itemized missing list and jumps to the first gap, opening a collapsed
- * measure card on the way if that is where the gap is. The export itself is
- * PDF only, via the browser's print dialog — no JSON download.
+ * Never disabled (CLAUDE.md §3): an incomplete click opens the itemized
+ * missing list and jumps to the first gap, wherever it is across either
+ * part. PDF only, via the browser's print dialog — no JSON download.
  */
 export function ExportBar() {
   const r2 = useRoute2();
@@ -34,7 +33,7 @@ export function ExportBar() {
       return;
     }
     const filename = exportFilename(r2.name, EXPORT.filenameLevels, EXPORT.filenameTask);
-    printHtmlDocument(filename, buildMemoHtml(r2));
+    printHtmlDocument(filename, buildProposalHtml(r2));
     markRouteExported(toggleCheck, 2);
     setShowMissing(false);
   };
@@ -56,16 +55,10 @@ export function ExportBar() {
           className="flex flex-wrap items-center gap-x-1.5 text-caption text-ash hover:text-ink"
         >
           <span>
-            <span className="tabular-nums font-semibold text-ink">{r2.lane ? 1 : 0}</span> / 1 prioritised
+            <span className="tabular-nums font-semibold text-ink">{r2.rankedCriteriaCount}</span> / {CRITERIA.length} criteria ranked
           </span>
           <span>·</span>
-          <span>
-            <span className="tabular-nums font-semibold text-ink">{r2.ranking.length}</span> / {RANK_SLOTS} decisions
-          </span>
-          <span>·</span>
-          <span>
-            <span className="tabular-nums font-semibold text-ink">{r2.placedCount}</span> / {MAP_MEASURES.length} mapped
-          </span>
+          <span>Part 2 {r2.partTwoComplete ? "complete" : "in progress"}</span>
           {r2.missing.length > 0 && (
             <>
               <span>

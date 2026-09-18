@@ -2,258 +2,161 @@
 
 import { useProgress, useHydrated } from "@/lib/store";
 import type { MissingItem } from "@/components/ui/MissingList";
-import { validate, type RaciCell, type RowViolation } from "@/components/ui/RaciGrid";
 import {
-  ASSESSMENT_DIMENSIONS,
-  CAPACITY_ROWS,
-  DECIDE_NOW_FIELDS,
-  GUIDING_DECISIONS,
-  MAP_MEASURES,
-  MEASURE_LANES,
+  CRITERIA,
+  MEASURE_LINES,
+  OWNERSHIP_NODES,
   R2,
-  RACI_EXERCISE,
-  RACI_ROWS,
-  RANK_SLOTS,
-  TASK_RACI_ROLES,
-  decisionById,
-  quadrantFor,
-  type LaneId,
-  type MapMeasure,
-  type QuadrantId,
+  RANK_SCORE,
+  type CriterionId,
+  type MeasureLineId,
+  type OwnershipNodeId,
+  type OwnershipRole,
+  type ReversibilityAnswer,
 } from "@/lib/route2";
-import type { RatingLevel } from "@/lib/route2/material";
 
 /** DOM ids the missing-item list scrolls to and flashes. */
 export const domId = {
   name: "r2-name",
   task: "task",
 
-  prioritise: "r2-prioritise",
-  lane: "r2-prioritise-lane",
-  grid: "r2-prioritise-grid",
-  rating: (key: string) => `r2-prioritise-rating-${key}`,
-  justify: "r2-prioritise-justify",
-  followUp: "r2-prioritise-followup",
-  risk: (n: 1 | 2) => `r2-prioritise-risk-${n}`,
+  part1: "r2-p1",
+  criterion: (id: CriterionId) => `r2-p1-criterion-${id}`,
+  priority: "r2-p1-priority",
+  priorityJustify: "r2-p1-justify",
 
-  rank: "r2-rank",
-  rankSlots: "r2-rank-slots",
-  rankWhy: "r2-rank-why",
-  rankCheck: "r2-rank-check",
-
-  map: "r2-map",
-  mapMeasure: (id: string) => `r2-map-${id}`,
-  q1: (id: string) => `r2-map-${id}-q1`,
-  q2: (id: string) => `r2-map-${id}-q2`,
-  bet: (id: string) => `r2-map-${id}-bet`,
-
-  raci: "r2-raci",
-  raciRow: (rowId: string) => `r2-raci-row-${rowId}`,
-
-  decide: "r2-decide",
-  decideField: (key: string) => `r2-decide-${key}`,
+  part2: "r2-p2",
+  relevance: "r2-p2-relevance",
+  firstMove: "r2-p2-firstmove",
+  ownership: "r2-p2-ownership",
+  decide: "r2-p2-decide",
 
   export: "r2-export",
 };
 
-export type Answer = "yes" | "no";
+export type RankSlot = "1" | "2" | "3";
+const isSlot = (v: string | undefined): v is RankSlot => v === "1" || v === "2" || v === "3";
 
-export type RatingRow = {
-  dim: (typeof ASSESSMENT_DIMENSIONS)[number];
-  rating: RatingLevel | null;
-  note: string;
+export type CriterionState = {
+  criterion: (typeof CRITERIA)[number];
+  slotOf: Record<MeasureLineId, RankSlot | null>;
+  lineInSlot: Record<RankSlot, MeasureLineId | null>;
+  complete: boolean;
+  topPick: MeasureLineId | null;
+  checks: number;
 };
-
-export type MapMeasureState = {
-  measure: MapMeasure;
-  q1: Answer | null;
-  q2: Answer | null;
-  q1Correct: boolean | null;
-  q2Correct: boolean | null;
-  placed: QuadrantId | null;
-  slotIndex: number;
-  slotCount: number;
-  retries: number;
-  bet: string;
-};
-
-const asAnswer = (v: string | undefined): Answer | null => (v === "yes" || v === "no" ? v : null);
-const asRating = (v: string | undefined): RatingLevel | null =>
-  v === "low" || v === "mid" || v === "high" ? v : null;
 
 /**
- * Joins the shared progress store to Route 2's content: five exercises, one
- * derived `missing` list, one definition of done.
- *
- * Nothing here is graded live. Exercise 1 is argument-graded (mentor key
- * only), the map position is a consequence of two answers, the RACI check
- * reports structure only, and the ranking test asks about the learner's own
- * first choice rather than scoring the order.
+ * Joins the shared progress store to Route 2's content: one task, two parts,
+ * one `missing` list, one definition of done (CLAUDE.md §12). Part 1's
+ * per-criterion check never names a "correct" ranking — there isn't one —
+ * only a clue about what the current top pick may be under-weighting.
  */
 export function useRoute2() {
   const hydrated = useHydrated();
   const notes = useProgress((s) => s.notes);
   const choices = useProgress((s) => s.choices);
-  const choose = useProgress((s) => s.choose);
 
   const name = notes[R2.name] ?? "";
 
-  // -- Exercise 1 — prioritise & defend ---------------------------------------
-  const rawLane = choices[R2.prioritiseLane];
-  const lane: LaneId | null =
-    rawLane === "accelerate" || rawLane === "assess" || rawLane === "consolidate" ? rawLane : null;
-  const chosenLane = lane ? MEASURE_LANES.find((l) => l.id === lane) ?? null : null;
+  // -- Part 1 -----------------------------------------------------------------
+  const criteria: CriterionState[] = CRITERIA.map((criterion) => {
+    const slotOf = Object.fromEntries(
+      MEASURE_LINES.map((m) => [m.id, isSlot(choices[R2.rank(criterion.id, m.id)]) ? (choices[R2.rank(criterion.id, m.id)] as RankSlot) : null]),
+    ) as Record<MeasureLineId, RankSlot | null>;
 
-  const ratingRows: RatingRow[] = ASSESSMENT_DIMENSIONS.map((dim) => ({
-    dim,
-    rating: asRating(choices[R2.rating(dim.key)]),
-    note: (notes[R2.ratingNote(dim.key)] ?? "").trim(),
-  }));
-  const ratingCompleteCount = ratingRows.filter((r) => r.rating && r.note).length;
+    const lineInSlot = { "1": null, "2": null, "3": null } as Record<RankSlot, MeasureLineId | null>;
+    for (const m of MEASURE_LINES) {
+      const slot = slotOf[m.id];
+      if (slot && !lineInSlot[slot]) lineInSlot[slot] = m.id;
+    }
 
-  const justification = (notes[R2.justification] ?? "").trim();
-  const followUp = (notes[R2.followUp] ?? "").trim();
-  const risks: [string, string] = [(notes[R2.risk(1)] ?? "").trim(), (notes[R2.risk(2)] ?? "").trim()];
+    const complete = MEASURE_LINES.every((m) => slotOf[m.id] !== null);
+    const topPick = lineInSlot["1"];
+    const checks = Number(notes[R2.rankChecks(criterion.id)] ?? "0") || 0;
 
-  const prioritiseComplete =
-    !!lane && ratingCompleteCount === ASSESSMENT_DIMENSIONS.length && !!justification && !!followUp && !!risks[0] && !!risks[1];
-
-  // -- Exercise 2 — ranking -------------------------------------------------
-  const ranking = (notes[R2.ranking] ?? "")
-    .split("|")
-    .filter((id) => GUIDING_DECISIONS.some((d) => d.id === id))
-    .slice(0, RANK_SLOTS);
-  const rankWhy = (notes[R2.rankWhy] ?? "").trim();
-  const rankCheck = choices[R2.rankCheck] || null;
-
-  // -- Exercise 3 — the trade-off map ---------------------------------------
-  const base = MAP_MEASURES.map((measure) => {
-    const q1 = asAnswer(choices[R2.q1(measure.id)]);
-    const q2 = asAnswer(choices[R2.q2(measure.id)]);
-    return {
-      measure,
-      q1,
-      q2,
-      q1Correct: q1 === null ? null : (q1 === "yes") === measure.momentumHigh,
-      q2Correct: q2 === null ? null : (q2 === "yes") === measure.structuralHigh,
-      placed: q1 && q2 ? quadrantFor(q1 === "yes", q2 === "yes") : null,
-      retries: Number(notes[R2.retries(measure.id)] ?? "0") || 0,
-      bet: (notes[R2.bet(measure.id)] ?? "").trim(),
-    };
+    return { criterion, slotOf, lineInSlot, complete, topPick, checks };
   });
 
-  const mapStates: MapMeasureState[] = base.map((s) => {
-    const sharing = base.filter((o) => o.placed !== null && o.placed === s.placed);
-    return {
-      ...s,
-      slotIndex: s.placed ? sharing.findIndex((o) => o.measure.id === s.measure.id) : 0,
-      slotCount: s.placed ? sharing.length : 0,
-    };
-  });
+  const criterionById2 = (id: CriterionId) => criteria.find((c) => c.criterion.id === id)!;
+  const allCriteriaComplete = criteria.every((c) => c.complete);
+  const rankedCriteriaCount = criteria.filter((c) => c.complete).length;
 
-  const placedCount = mapStates.filter((s) => s.placed).length;
-  const openMeasureId = choices[R2.openMeasure] || null;
+  const lineTotal = (lineId: MeasureLineId): number =>
+    criteria.reduce((sum, c) => {
+      const slot = c.slotOf[lineId];
+      return sum + (slot ? RANK_SCORE[slot] : 0);
+    }, 0);
 
-  // -- Exercise 4 — RACI ----------------------------------------------------
-  const raciValue = (rowId: string, roleId: string): RaciCell => {
-    const v = choices[R2.raci(rowId, roleId)];
-    return v === "R" || v === "A" || v === "C" || v === "I" ? v : "";
+  const rawPriority = choices[R2.priority];
+  const priority: MeasureLineId | null =
+    rawPriority === "a" || rawPriority === "b" || rawPriority === "c" ? rawPriority : null;
+  const priorityJustify = (notes[R2.priorityJustify] ?? "").trim();
+
+  const partOneComplete = allCriteriaComplete && !!priority && !!priorityJustify;
+
+  // -- Part 2 -------------------------------------------------------------------
+  const relevance = (notes[R2.relevance] ?? "").trim();
+  const firstMove = (notes[R2.firstMove] ?? "").trim();
+
+  const ownershipRole = (id: OwnershipNodeId): OwnershipRole | null => {
+    const v = choices[R2.ownership(id)];
+    return v === "owns" || v === "consulted" ? v : null;
   };
-  const raciViolations: RowViolation[] = validate(RACI_ROWS, TASK_RACI_ROLES, raciValue, CAPACITY_ROWS, RACI_EXERCISE.violations);
-  const raciTouched = (rowId: string) => TASK_RACI_ROLES.some((role) => raciValue(rowId, role.id) !== "");
-  const accountableFor = (rowId: string) => TASK_RACI_ROLES.filter((role) => raciValue(rowId, role.id) === "A");
-  const raciStructuralIssues = raciViolations.filter((v) => v.kind !== "authority");
-  const raciAuthorityWarnings = raciViolations.filter((v) => v.kind === "authority");
+  const ownsCount = OWNERSHIP_NODES.filter((n) => ownershipRole(n.id) === "owns").length;
+  const touchedCount = OWNERSHIP_NODES.filter((n) => ownershipRole(n.id) !== null).length;
 
-  // -- Exercise 5 — the decision that cannot wait ---------------------------
-  const decideNow = Object.fromEntries(
-    DECIDE_NOW_FIELDS.map((f) => [f.key, (notes[R2.decideNow(f.key)] ?? "").trim()]),
-  ) as Record<string, string>;
+  const decideName = (notes[R2.decideName] ?? "").trim();
+  const rawReversible = choices[R2.decideReversible];
+  const decideReversible: ReversibilityAnswer | null = rawReversible === "yes" || rawReversible === "no" ? rawReversible : null;
+  const rawMoreData = choices[R2.decideMoreData];
+  const decideMoreData: ReversibilityAnswer | null = rawMoreData === "yes" || rawMoreData === "no" ? rawMoreData : null;
 
-  // -- Missing list — one entry per concretely missing thing, in page order --
-  const openMeasure = (id: string) => () => choose(R2.openMeasure, id);
+  const partTwoComplete = !!relevance && !!firstMove && ownsCount >= 1 && !!decideName && !!decideReversible && !!decideMoreData;
+
+  // -- Missing list ---------------------------------------------------------
   const missing: MissingItem[] = [];
-
   if (!name.trim()) missing.push({ id: domId.name, label: "Your name — needed to label the export" });
 
-  if (!lane) {
-    missing.push({ id: domId.lane, label: "Prioritise — choose one line of measures" });
-  }
-  for (const r of ratingRows) {
-    if (!r.rating || !r.note) {
-      missing.push({
-        id: domId.rating(r.dim.key),
-        label: !r.rating ? `Assessment rating for ${r.dim.label}` : `Assessment argument for ${r.dim.label}`,
-      });
+  for (const c of criteria) {
+    if (!c.complete) {
+      const rankedCount = MEASURE_LINES.filter((m) => c.slotOf[m.id] !== null).length;
+      missing.push({ id: domId.criterion(c.criterion.id), label: `Part 1: ${c.criterion.label} — ${rankedCount} of 3 measure-lines ranked` });
     }
   }
-  if (!justification) missing.push({ id: domId.justify, label: "Defence of your prioritised choice" });
-  if (!followUp) missing.push({ id: domId.followUp, label: "Follow-up decisions your choice creates" });
-  if (!risks[0]) missing.push({ id: domId.risk(1), label: "First risk of an attractive-but-weak choice" });
-  if (!risks[1]) missing.push({ id: domId.risk(2), label: "Second risk of an attractive-but-weak choice" });
+  if (allCriteriaComplete && !priority) missing.push({ id: domId.priority, label: "Part 1: choose your priority — A, B or C" });
+  if (priority && !priorityJustify) missing.push({ id: domId.priorityJustify, label: "Part 1: justification for your chosen priority" });
 
-  if (ranking.length < RANK_SLOTS) {
-    missing.push({ id: domId.rankSlots, label: `Guiding decisions — ${ranking.length} of ${RANK_SLOTS} positions filled` });
-  }
-  if (!rankWhy) {
-    missing.push({
-      id: domId.rankWhy,
-      label: ranking[0] ? `Justification for your #1 — ${decisionById(ranking[0]).label}` : "Justification for your #1 guiding decision",
-    });
-  }
-
-  for (const s of mapStates) {
-    if (!s.q1) missing.push({ id: domId.q1(s.measure.id), label: `Momentum-cost question for ${s.measure.label}`, before: openMeasure(s.measure.id) });
-    if (!s.q2) missing.push({ id: domId.q2(s.measure.id), label: `Structural-impact question for ${s.measure.label}`, before: openMeasure(s.measure.id) });
-    if (s.placed === "bet" && !s.bet) {
-      missing.push({ id: domId.bet(s.measure.id), label: `Strategic-bet line for ${s.measure.label.split(" — ")[0]}`, before: openMeasure(s.measure.id) });
-    }
-  }
-
-  for (const row of RACI_ROWS) {
-    if (!raciTouched(row.id)) {
-      missing.push({ id: domId.raciRow(row.id), label: `RACI — ${row.label}: not assigned yet` });
-      continue;
-    }
-    for (const v of raciStructuralIssues.filter((x) => x.rowId === row.id)) {
-      const what = v.kind === "manyA" ? "more than one Accountable" : v.kind === "noA" ? "no Accountable" : "no Responsible";
-      missing.push({ id: domId.raciRow(row.id), label: `RACI — ${row.label}: ${what}` });
-    }
-  }
-
-  for (const f of DECIDE_NOW_FIELDS) {
-    if (!decideNow[f.key]) missing.push({ id: domId.decideField(f.key), label: `Decision now — ${f.label.toLowerCase()}` });
+  if (!relevance) missing.push({ id: domId.relevance, label: "Part 2: why this is relevant now" });
+  if (!firstMove) missing.push({ id: domId.firstMove, label: "Part 2: first move" });
+  if (ownsCount < 1) missing.push({ id: domId.ownership, label: "Part 2: Ownership — at least one function must be marked Owns" });
+  if (!decideName) missing.push({ id: domId.decide, label: "Part 2: name the one decision to make now" });
+  if (decideName && (!decideReversible || !decideMoreData)) {
+    missing.push({ id: domId.decide, label: "Part 2: answer both reversibility-test questions for your decision" });
   }
 
   return {
     hydrated,
     name,
 
-    lane,
-    chosenLane,
-    ratingRows,
-    ratingCompleteCount,
-    justification,
-    followUp,
-    risks,
-    prioritiseComplete,
+    criteria,
+    criterionById: criterionById2,
+    allCriteriaComplete,
+    rankedCriteriaCount,
+    lineTotal,
+    priority,
+    priorityJustify,
+    partOneComplete,
 
-    ranking,
-    rankWhy,
-    rankCheck,
-
-    mapStates,
-    placedCount,
-    openMeasureId,
-
-    raciValue,
-    raciViolations,
-    raciStructuralIssues,
-    raciAuthorityWarnings,
-    raciTouched,
-    accountableFor,
-
-    decideNow,
+    relevance,
+    firstMove,
+    ownershipRole,
+    ownsCount,
+    touchedCount,
+    decideName,
+    decideReversible,
+    decideMoreData,
+    partTwoComplete,
 
     missing,
     allComplete: missing.length === 0,

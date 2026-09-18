@@ -1,12 +1,11 @@
 /**
  * Day 14 route registry.
  *
- * Module 10, Route 1 only so far: Level 1 ("Implementing Sustainability
- * Economically and in Line with Regulation") as a single material-then-task
- * engagement at Mercury Office Systems. Level 2 (prioritisation, Part Two of
- * Route 1) and Route 2 / Level 3 (the management decision) are separate
- * prompts, not yet built — `levels`/`available` below say so honestly rather
- * than pretending the day is finished (CLAUDE.md §6, §12).
+ * Module 10: Route 1 covers Level 1 ("Implementing Sustainability
+ * Economically and in Line with Regulation") at Mercury Office Systems.
+ * Route 2 merges Levels 2 and 3 into one route, one task in two parts
+ * (Prioritise → Propose) at Valora Digital Operations, per CLAUDE.md §13's
+ * "Format 2" pattern for a route too lean to split into two full routes.
  */
 
 export const CASE = {
@@ -86,11 +85,12 @@ export const ROUTES: Route[] = [
     tag: "Route 2 — Management Decision",
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
-    cardBlurb: "Level 3 for Module 10 has not been written yet — Route 1's Level 1 diagnosis ships first.",
-    deliverable: "Not yet available",
-    levels: [3],
-    minutes: 0,
-    available: false,
+    cardBlurb:
+      "The four criteria that decide which measure-line gets funded first, and the two questions that turn a priority into an actionable proposal under incomplete data — then Valora Digital Operations: score three measure-lines, choose one, and propose it.",
+    deliverable: "Valora Digital Operations Priority Proposal",
+    levels: [2, 3],
+    minutes: 65,
+    available: true,
   },
 ];
 

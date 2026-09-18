@@ -1,36 +1,26 @@
 /**
- * Route 2's material sections: four, A–D, all taught before the task, plus a
- * fifth read-only anchor for the EcoFlow worked example — rendered after D,
- * before the task, but not counted among the "four sections" the mini-nav
- * shows (it is a worked example to read, not graded material).
- *
- * Same shape as Route 1 (CLAUDE.md #12 / CURRICULUM-GUIDE.md §2): ids, labels
- * and anchors live above the content so the mini-nav, the MaterialRefs chips
- * on every exercise, and the material itself can never disagree.
+ * Route 2's material: two lean sections only, each existing solely because a
+ * Task field needs it directly (this route's brief is "simple, not long, but
+ * interactive" — no section survives here that the task doesn't use, and the
+ * reverse: nothing the task needs is missing from these two sections).
  */
 
-export type MaterialSectionId = "board" | "prioritise" | "governance" | "uncertainty" | "worked";
+export type MaterialSectionId = "criteria" | "ownership";
 
-export const SECTION_ORDER: MaterialSectionId[] = ["board", "prioritise", "governance", "uncertainty"];
+export const SECTION_ORDER: MaterialSectionId[] = ["criteria", "ownership"];
 
 export function materialAnchorId(id: MaterialSectionId): string {
   return `r2-material-${id}`;
 }
 
 export const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  board: "A · Why this reaches a board",
-  prioritise: "B · Prioritising under trade-offs",
-  governance: "C · Decision architecture: RACI",
-  uncertainty: "D · Deciding under uncertainty",
-  worked: "EcoFlow worked example",
+  criteria: "S1 · The four prioritisation criteria",
+  ownership: "S2 · Deciding & assigning ownership with incomplete data",
 };
 
 export const MATERIAL_NAV: Record<MaterialSectionId, { code: string; label: string }> = {
-  board: { code: "A", label: "Why this reaches a board at all" },
-  prioritise: { code: "B", label: "Prioritising digitalisation measures under trade-offs" },
-  governance: { code: "C", label: "Decision architecture: RACI and governance" },
-  uncertainty: { code: "D", label: "Holding a decision together under incomplete information" },
-  worked: { code: "—", label: "Worked example: EcoFlow Administration GmbH" },
+  criteria: { code: "S1", label: "The four prioritisation criteria" },
+  ownership: { code: "S2", label: "Deciding & assigning ownership with incomplete data" },
 };
 
 export function materialRefs(ids: MaterialSectionId[]) {

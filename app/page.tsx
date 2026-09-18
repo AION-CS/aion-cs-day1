@@ -27,7 +27,9 @@ export default function DayLanding() {
           design behind it, or when regulation is treated as paperwork imposed on IT rather than a management
           framework. Route 1&apos;s Level 1 teaches that vocabulary, then puts you inside Mercury Office Systems to
           classify seven indications of stalled implementation across six areas, a root cause and a timeframe. Route
-          2 — the management decision that follows — has not been written yet.
+          2 makes the next two moves: given limited budget, score three measure-lines and choose which one gets
+          funded first, then turn that choice into a short, decision-ready proposal — ownership named, one decision
+          made now despite incomplete data.
         </p>
       </div>
 

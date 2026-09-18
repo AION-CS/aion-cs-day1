@@ -1,38 +1,63 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
+import { PAGE_INTRO } from "@/lib/route2";
 import { LeafMark } from "@/components/chrome/Icons";
+import { RouteGate } from "@/components/chrome/RouteGate";
+import { CaseBrief } from "@/components/route2/CaseBrief";
+import { Material } from "@/components/route2/Material";
+import { Task } from "@/components/route2/Task";
+import { ExportBar } from "@/components/route2/ExportBar";
+import { MentorTools } from "@/components/route2/MentorTools";
 
 const ROUTE = ROUTES[1];
 
 export const metadata: Metadata = {
   title: `AION Green IT — Day 14 · ${ROUTE.tag}`,
-  description: "Level 3 for Module 10 — the management decision — has not been written yet.",
+  description:
+    "The four prioritisation criteria and deciding & assigning ownership with incomplete data — then Valora Digital Operations: score three measure-lines, choose one, and propose it.",
 };
 
 /**
- * Route 2 / Level 3 for Module 10 has not been authored yet (a separate,
- * later prompt). This stub keeps the URL reachable — CLAUDE.md §6 never
- * gates a route, it only says honestly when a route's content isn't built —
- * rather than 404ing or silently reusing Day 13's EcoFlow/Synervia content
- * under a Day 14 banner.
+ * Route 2 — Levels 2 and 3 merged into one route, one task in two parts
+ * (CLAUDE.md §12/§13). Same page shape as Route 1: the case once, the whole
+ * (lean) material block, then the task, then one export. Reachable with
+ * Route 1 untouched — RouteGate renders a soft suggestion, never a wall.
  */
 export default function Route2Page() {
   return (
-    <div className="space-y-6 py-12">
-      <div className="max-w-prose">
-        <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
-          <LeafMark className="h-4 w-4" /> {ROUTE.tag}
-        </p>
-        <h1 className="text-display text-ink">Not built yet</h1>
-        <p className="mt-4 text-body text-ash">
-          Level 3 for Module 10 — the management decision that follows Route 1's diagnosis — hasn&apos;t been written.
-          Route 1&apos;s Level 1 material and Task 1 (the Mercury Office Systems diagnosis board) are ready now.
-        </p>
-        <Link href="/route-1-diagnose-and-decide" className="btn-accent mt-5 inline-flex">
-          Go to Route 1
-        </Link>
-      </div>
+    <div className="space-y-16 py-12">
+      <MentorTools />
+
+      <RouteGate routeN={2}>
+        <div className="max-w-prose">
+          <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
+            <LeafMark className="h-4 w-4" /> {PAGE_INTRO.tag}
+          </p>
+          <h1 className="text-display text-ink">{PAGE_INTRO.title}</h1>
+          <p className="mt-4 text-body text-ash">{PAGE_INTRO.body}</p>
+        </div>
+
+        <div className="mt-16 space-y-16">
+          <CaseBrief />
+
+          <hr className="border-line" />
+
+          <Material />
+
+          <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
+            <p className="text-body font-semibold text-ink">
+              That is the whole teaching block. Now score, choose, and propose.
+            </p>
+            <a href="#task" className="btn-accent mt-3 inline-flex">
+              Start Part 1 — Prioritise
+            </a>
+          </div>
+
+          <Task />
+
+          <ExportBar />
+        </div>
+      </RouteGate>
     </div>
   );
 }

@@ -97,7 +97,8 @@ export function MaterialBlock({
 
       <IndustryCallout label={section.callout.label} text={section.callout.text} />
 
-      {/* Sources */}
+      {/* Sources — omitted entirely for a lean section with nothing to cite */}
+      {section.references.length > 0 && (
       <div className="border-t border-line pt-3">
         <p className="text-micro font-semibold uppercase tracking-wide text-ash">Sources</p>
         <ul className="mt-1.5 space-y-1">
@@ -120,6 +121,7 @@ export function MaterialBlock({
           ))}
         </ul>
       </div>
+      )}
 
       {footer}
     </Reveal>
