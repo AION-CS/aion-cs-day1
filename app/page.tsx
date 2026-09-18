@@ -22,14 +22,14 @@ export default function DayLanding() {
         </p>
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
-          Module 10. Green IT measures rarely fail on technical grounds — they fail when the economic case is never
-          proven, when only one ROI lens is applied, when a technically correct measure ships with no behavioural
-          design behind it, or when regulation is treated as paperwork imposed on IT rather than a management
-          framework. Route 1&apos;s Level 1 teaches that vocabulary, then puts you inside Mercury Office Systems to
-          classify seven indications of stalled implementation across six areas, a root cause and a timeframe. Route
-          2 makes the next two moves: given limited budget, score three measure-lines and choose which one gets
-          funded first, then turn that choice into a short, decision-ready proposal — ownership named, one decision
-          made now despite incomplete data.
+          Module 11. New technology is not automatically sustainable technology. AI can cut energy and add compute at
+          the same time; a circular model can be exactly the right direction and still be hard to run; and an
+          initiative can be genuinely exciting while reducing nothing at all. Route 1 is deliberately short on reading
+          and long on doing: five micro-cards give you the vocabulary and the decision rules — novelty versus
+          innovation, AI&apos;s two-sided balance, circular versus linear, the seven assessment lenses, attractive
+          versus viable — and then you apply them to FutureGrid Technologies&apos; six planned initiatives, telling a
+          genuine sustainability opportunity from something that is only technologically attractive. Route 2, the
+          management decision, is built in a later session.
         </p>
       </div>
 

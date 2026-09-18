@@ -1,45 +1,50 @@
 /**
- * Route 1's material sections: one continuous block of four, S1–S4, all of it
- * taught before Task 1 begins (~60 minutes — see lib/route1/material.ts for
- * why this day restores Day 11's fuller material budget instead of Day 13's
- * inverted, lighter one: Task 1 here draws on six distinct diagnostic areas
- * plus two extra tagging dimensions, which needs the full teaching block).
+ * Route 1's material: five micro-cards, C1–C5, all of it read before Task 1.
+ *
+ * Day 15 deliberately runs a lighter material budget than Day 14's four
+ * 15-minute sections — "read less, do more" (10–12 minutes of reading, then a
+ * 15-minute task). The teaching is not thinner, it is denser: each card is
+ * 3–5 sentences plus one live diagram, and everything Task 1 asks for is
+ * introduced in one of the five.
  *
  * The ids, labels and anchor ids live above the content so the mini-nav, the
  * MaterialRefs chips on the task, and the material itself can never disagree
- * about what a section is called.
+ * about what a card is called.
  */
 
-export type MaterialSectionId = "businessCase" | "threeLens" | "behaviourChange" | "regulation";
+export type MaterialSectionId = "novelty" | "aiLoad" | "circular" | "lenses" | "viability";
 
 export const SECTION_ORDER: MaterialSectionId[] = [
-  "businessCase",
-  "threeLens",
-  "behaviourChange",
-  "regulation",
+  "novelty",
+  "aiLoad",
+  "circular",
+  "lenses",
+  "viability",
 ];
 
 /** DOM anchor a MaterialRefs chip or the mini-nav scrolls to. */
 export function materialAnchorId(id: MaterialSectionId): string {
-  return `r1-material-${id}`;
+  return `r1-card-${id}`;
 }
 
 export const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  businessCase: "S1 · The Green IT business case",
-  threeLens: "S2 · ROI is not only a financial number",
-  behaviourChange: "S3 · Why technical solutions fail without behavioural change",
-  regulation: "S4 · Regulation as a management framework",
+  novelty: "C1 · Novelty is not innovation",
+  aiLoad: "C2 · AI: promise and burden",
+  circular: "C3 · Circular vs linear IT",
+  lenses: "C4 · The 7 assessment lenses",
+  viability: "C5 · Attractive vs viable",
 };
 
 /** Short label for the sticky mini-nav dots. */
 export const MATERIAL_NAV: Record<MaterialSectionId, { code: string; label: string }> = {
-  businessCase: { code: "S1", label: "The Green IT business case" },
-  threeLens: { code: "S2", label: "ROI is not only a financial number" },
-  behaviourChange: { code: "S3", label: "Technical solutions fail without behavioural change" },
-  regulation: { code: "S4", label: "Regulation as a management framework" },
+  novelty: { code: "C1", label: "Novelty is not innovation" },
+  aiLoad: { code: "C2", label: "AI: promise and burden" },
+  circular: { code: "C3", label: "Circular vs linear IT" },
+  lenses: { code: "C4", label: "The 7 assessment lenses" },
+  viability: { code: "C5", label: "Attractive vs viable" },
 };
 
-/** Chips for a task step: which material sections it draws on. */
+/** Chips for a task step: which material cards it draws on. */
 export function materialRefs(ids: MaterialSectionId[]) {
   return ids.map((id) => ({ anchorId: materialAnchorId(id), label: MATERIAL_LABELS[id] }));
 }

@@ -16,9 +16,9 @@ import { buildEngagementHtml } from "./exportDocuments";
  * The route's one sticky export bar.
  *
  * Never disabled (CLAUDE.md #3): clicking while incomplete opens the itemized
- * missing list and jumps to the first gap — which may be several screens up
- * in the triage table, the escalation picker, or a deep-dive card. The export
- * itself is PDF only, via the browser's print dialog — no JSON download.
+ * missing list and jumps to the first gap — which may be several screens up,
+ * in an initiative still sitting undiagnosed or in one already resolved into a
+ * zone. The export itself is PDF only, via the browser's print dialog.
  */
 export function ExportBar() {
   const r1 = useRoute1();
@@ -58,11 +58,11 @@ export function ExportBar() {
           className="flex flex-wrap items-center gap-x-1.5 text-caption text-ash hover:text-ink"
         >
           <span>
-            <span className="tabular-nums font-semibold text-ink">{r1.placedCount}</span> / {r1.totalChips} classified
+            <span className="tabular-nums font-semibold text-ink">{r1.diagnosedCount}</span> / {r1.totalCards} diagnosed
           </span>
           <span className="text-ash">·</span>
           <span>
-            <span className="tabular-nums font-semibold text-ink">{r1.completeCount}</span> / {r1.totalChips} fully tagged
+            <span className="tabular-nums font-semibold text-ink">{r1.completeCount}</span> / {r1.totalCards} written up
           </span>
           {r1.missing.length > 0 && (
             <>

@@ -4,22 +4,23 @@ import { PAGE_INTRO } from "@/lib/route1";
 import { LeafMark } from "@/components/chrome/Icons";
 import { CaseBrief } from "@/components/route1/CaseBrief";
 import { Material } from "@/components/route1/Material";
-import { PartOne } from "@/components/route1/PartOne";
+import { Task } from "@/components/route1/Task";
 import { ExportBar } from "@/components/route1/ExportBar";
 import { MentorTools } from "@/components/route1/MentorTools";
 
 const ROUTE = ROUTES[0];
 
 export const metadata: Metadata = {
-  title: `AION Green IT — Day 14 · ${ROUTE.tag}`,
+  title: `AION Green IT — Day 15 · ${ROUTE.tag}`,
   description:
-    "The Green IT business case, why ROI needs three lenses, why technical solutions fail without behavioural change, and regulation as a management framework — then Mercury Office Systems: classify seven indications of stalled implementation by area, root cause and timeframe.",
+    "Why novelty is not innovation, AI as both efficiency promise and resource burden, circular versus linear IT, the seven assessment lenses and the attractive-versus-viable distinction — then FutureGrid Technologies: diagnose six innovation initiatives as opportunity, risk or mixed.",
 };
 
 /**
- * Route 1, Level 1 only so far: the case once, the full material block, one
+ * Route 1, Level 1 only so far: the case once, five material micro-cards, one
  * task on a single scroll, then one export bar covering everything above it.
- * Level 2 (prioritisation) is a separate, later addition to this same page.
+ * Level 2 (prioritisation) is a separate, later addition to this same page,
+ * between the task and the export bar (CLAUDE.md §12).
  */
 export default function Route1Page() {
   return (
@@ -42,14 +43,15 @@ export default function Route1Page() {
 
       <div className="rounded-2xl border border-accent/30 bg-accentSoft p-6 text-center">
         <p className="text-body font-semibold text-ink">
-          That is the whole teaching block. Now go and read why a sensible set of measures is stalling.
+          That is the whole teaching block. Now use it — six initiatives, and the question of which are genuinely
+          sustainable.
         </p>
         <a href="#task" className="btn-accent mt-3 inline-flex">
-          Start the Mercury Office Systems diagnosis
+          Start the FutureGrid diagnosis
         </a>
       </div>
 
-      <PartOne />
+      <Task />
 
       <ExportBar />
     </div>

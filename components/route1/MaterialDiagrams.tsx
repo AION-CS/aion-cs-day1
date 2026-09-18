@@ -1,306 +1,508 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import clsx from "clsx";
+import { useProgress, useHydrated } from "@/lib/store";
 import { Slider } from "@/components/ui/Slider";
 import { Icon } from "@/components/icons/LineIcons";
-import type { IconKey } from "@/lib/routes";
+import { LENSES, R1 } from "@/lib/route1";
 
 /**
- * The four S1–S4 diagrams. Every one is a live widget, not a static
- * illustration — CLAUDE.md's real-time-dashboard pattern applied to a
- * business case, a ranking, an adoption gap, and a regulatory map in turn.
- * Inline SVG and CSS transitions only, no charting or animation library.
+ * The five C1–C5 diagrams. Every one is a live widget with exactly one
+ * micro-interaction — inline SVG plus CSS transitions, no charting or
+ * animation library (CLAUDE.md §9). Sentences stay in HTML beside each SVG
+ * rather than inside it, so they do not shrink with the viewBox at 380px.
  */
 
 // ---------------------------------------------------------------------------
-// S1 — Cost–benefit balance + ROI / payback calculator
+// C1 — Novelty vs impact: one fork, two outcomes
 // ---------------------------------------------------------------------------
 
-type CostItem = { id: string; label: string };
-const COST_ITEMS: CostItem[] = [
-  { id: "investment", label: "Investment costs" },
-  { id: "operating", label: "Operating costs" },
-  { id: "conversion", label: "Conversion / migration costs" },
-  { id: "training", label: "Training effort" },
-  { id: "monitoring", label: "Monitoring & management costs" },
-];
+type Path = "novelty" | "impact";
 
-type BenefitItem = { id: string; label: string };
-const BENEFIT_ITEMS: BenefitItem[] = [
-  { id: "energy", label: "Energy savings" },
-  { id: "operating", label: "Lower operating costs" },
-  { id: "service", label: "Longer service life" },
-  { id: "disposal", label: "Lower disposal costs" },
-  { id: "risk", label: "Risk reduction" },
-  { id: "reputation", label: "Reputational gains" },
-  { id: "compliance", label: "Better compliance capability" },
-];
+const PATH_COPY: Record<Path, { end: string; verdict: string }> = {
+  novelty: {
+    end: "Net effect: flat, or worse than before.",
+    verdict:
+      "The efficiency gain made the thing cheaper and easier, so more of it got used. That is the rebound effect — the saving was spent, not banked.",
+  },
+  impact: {
+    end: "Net effect: a real reduction.",
+    verdict:
+      "The saving was designed around the behaviour it would cause, so it survives contact with how people actually use the technology.",
+  },
+};
 
-export function CostBenefitScale() {
-  const [costsOn, setCostsOn] = useState<string[]>(["investment", "operating"]);
-  const [benefitsOn, setBenefitsOn] = useState<string[]>(["energy"]);
-  const [investment, setInvestment] = useState<string>("18000");
-  const [annualSavings, setAnnualSavings] = useState<string>("6000");
-  const [lifespan, setLifespan] = useState<string>("5");
-
-  const toggle = (list: string[], set: (v: string[]) => void, id: string) =>
-    set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
-
-  const tilt = useMemo(() => {
-    const raw = (benefitsOn.length - costsOn.length) * 4.5;
-    return Math.max(-22, Math.min(22, raw));
-  }, [costsOn.length, benefitsOn.length]);
-
-  const inv = Number(investment) || 0;
-  const sav = Number(annualSavings) || 0;
-  const yrs = Number(lifespan) || 0;
-  const roiPct = inv > 0 ? ((sav * yrs - inv) / inv) * 100 : null;
-  const payback = sav > 0 ? inv / sav : null;
-
-  return (
-    <div className="space-y-5">
-      {/* The scale */}
-      <div className="flex flex-col items-center py-2">
-        <svg viewBox="0 0 320 140" className="h-32 w-full max-w-sm" role="img" aria-label="Cost–benefit balance">
-          <line x1="160" y1="20" x2="160" y2="118" stroke="currentColor" className="text-ash" strokeWidth="4" strokeLinecap="round" />
-          <polygon points="140,118 180,118 160,132" className="fill-ash" />
-          <g style={{ transform: `rotate(${tilt}deg)`, transformOrigin: "160px 24px", transition: "transform 0.35s ease" }}>
-            <line x1="40" y1="24" x2="280" y2="24" stroke="currentColor" className="text-ink" strokeWidth="4" strokeLinecap="round" />
-            <line x1="40" y1="24" x2="40" y2="52" stroke="currentColor" className="text-danger" strokeWidth="2" />
-            <line x1="280" y1="24" x2="280" y2="52" stroke="currentColor" className="text-accent" strokeWidth="2" />
-            <circle cx="40" cy="58" r="16" className="fill-danger/15" stroke="currentColor" strokeWidth="2" style={{ color: "#B23B3B" }} />
-            <text x="40" y="62" textAnchor="middle" className="fill-danger text-[10px] font-semibold">
-              {costsOn.length}
-            </text>
-            <circle cx="280" cy="58" r="16" className="fill-accentSoft" stroke="currentColor" strokeWidth="2" style={{ color: "#0E7A5A" }} />
-            <text x="280" y="62" textAnchor="middle" className="fill-accent text-[10px] font-semibold">
-              {benefitsOn.length}
-            </text>
-          </g>
-        </svg>
-        <p className="text-micro text-ash">Left pan: cost types checked · Right pan: benefit types checked</p>
-      </div>
-
-      {/* Toggleable chips */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <p className="text-micro font-semibold uppercase tracking-wide text-ash">Costs</p>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {COST_ITEMS.map((c) => {
-              const on = costsOn.includes(c.id);
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => toggle(costsOn, setCostsOn, c.id)}
-                  aria-pressed={on}
-                  className={clsx(
-                    "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-                    on ? "border-danger/50 bg-danger/10 text-danger" : "border-line text-ash hover:border-ash",
-                  )}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <div>
-          <p className="text-micro font-semibold uppercase tracking-wide text-ash">Benefits</p>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {BENEFIT_ITEMS.map((b) => {
-              const on = benefitsOn.includes(b.id);
-              return (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => toggle(benefitsOn, setBenefitsOn, b.id)}
-                  aria-pressed={on}
-                  className={clsx(
-                    "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-                    on ? "border-accent bg-accentSoft text-accent" : "border-line text-ash hover:border-ash",
-                  )}
-                >
-                  {b.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ROI calculator */}
-      <div className="rounded-xl border border-line bg-canvas p-4">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          ROI / payback calculator — a learning tool, nothing here is submitted
-        </p>
-        <div className="mt-2 grid gap-3 sm:grid-cols-3">
-          <NumberField
-            id="cbs-investment"
-            label="Total investment (€)"
-            instruction="Every investment cost type above — not just the purchase price."
-            value={investment}
-            onChange={setInvestment}
-          />
-          <NumberField
-            id="cbs-savings"
-            label="Estimated annual savings (€)"
-            instruction="Include energy, maintenance, and disposal savings — not only the electricity line item."
-            value={annualSavings}
-            onChange={setAnnualSavings}
-          />
-          <NumberField
-            id="cbs-lifespan"
-            label="Assumed lifespan (years)"
-            instruction="Default 5 — edit if the measure's asset life differs."
-            value={lifespan}
-            onChange={setLifespan}
-          />
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <Readout label="ROI over lifespan" value={roiPct === null ? "—" : `${roiPct.toFixed(0)}%`} />
-          <Readout label="Payback period" value={payback === null ? "—" : `${payback.toFixed(1)} years`} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function NumberField({
-  id,
-  label,
-  instruction,
-  value,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  instruction: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} className="block text-caption font-semibold text-ink">
-        {label}
-      </label>
-      <p className="mt-0.5 text-micro text-ash">{instruction}</p>
-      <input
-        id={id}
-        type="number"
-        inputMode="decimal"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-lg border border-line bg-paper px-2.5 py-1.5 text-caption text-ink"
-      />
-    </div>
-  );
-}
-
-function Readout({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-line bg-paper px-3 py-2">
-      <p className="text-micro text-ash">{label}</p>
-      <p className="text-readout tabular-nums text-ink">{value}</p>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// S2 — Three-lens toggle
-// ---------------------------------------------------------------------------
-
-type Lens = "financial" | "strategic" | "risk";
-const LENSES: { id: Lens; label: string; barClass: string }[] = [
-  { id: "financial", label: "Financial", barClass: "bg-ink" },
-  { id: "strategic", label: "Strategic", barClass: "bg-accent" },
-  { id: "risk", label: "Risk", barClass: "bg-warn" },
-];
-
-type Score = "High" | "Medium" | "Low";
-const SCORE_FILL: Record<Score, number> = { High: 88, Medium: 55, Low: 24 };
-const SCORE_VALUE: Record<Score, number> = { High: 3, Medium: 2, Low: 1 };
-
-type Measure = { id: string; label: string; scores: Record<Lens, Score> };
-const MEASURES: Measure[] = [
-  { id: "lifecycle", label: "Extend laptop lifecycle from 3 to 5 years", scores: { financial: "High", strategic: "Medium", risk: "Medium" } },
-  { id: "shutdown", label: "Deploy automated shutdown policy", scores: { financial: "Medium", strategic: "Low", risk: "Low" } },
-  { id: "csrd", label: "Build CSRD-ready energy reporting", scores: { financial: "Low", strategic: "High", risk: "High" } },
-  { id: "procurement", label: "Adopt TCO-Certified procurement standard", scores: { financial: "Low", strategic: "High", risk: "Medium" } },
-];
-
-export function ThreeLensToggle() {
-  const [active, setActive] = useState<Lens[]>(["financial"]);
-
-  const toggleLens = (id: Lens) =>
-    setActive((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
-
-  const ranked = useMemo(() => {
-    const withScore = MEASURES.map((m) => {
-      const lenses = active.length ? active : (["financial"] as Lens[]);
-      const total = lenses.reduce((sum, l) => sum + SCORE_VALUE[m.scores[l]], 0);
-      return { measure: m, total };
-    });
-    return withScore.sort((a, b) => b.total - a.total);
-  }, [active]);
+export function NoveltyVsImpactFork() {
+  const [path, setPath] = useState<Path>("novelty");
+  const copy = PATH_COPY[path];
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {LENSES.map((l) => {
-          const on = active.includes(l.id);
-          return (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => toggleLens(l.id)}
-              aria-pressed={on}
-              className={clsx(
-                "rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors duration-150",
-                on ? "border-accent bg-accentSoft text-accent" : "border-line text-ash hover:border-ash",
-              )}
-            >
-              {l.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="space-y-2.5">
-        {ranked.map(({ measure }, i) => (
-          <div key={measure.id} className="rounded-xl border border-line bg-canvas p-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-micro font-semibold text-paper">
-                {i + 1}
-              </span>
-              <p className="text-caption font-semibold text-ink">{measure.label}</p>
-            </div>
-            <div className="mt-2 space-y-1.5">
-              {(active.length ? active : (["financial"] as Lens[])).map((l) => {
-                const lens = LENSES.find((x) => x.id === l)!;
-                const score = measure.scores[l];
-                return (
-                  <div key={l} className="flex items-center gap-2">
-                    <span className="w-16 shrink-0 text-micro text-ash">{lens.label}</span>
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-line">
-                      <div
-                        className={clsx("h-full rounded-full transition-all duration-300", lens.barClass)}
-                        style={{ width: `${SCORE_FILL[score]}%` }}
-                      />
-                    </div>
-                    <span className="w-14 shrink-0 text-right text-micro text-ash">{score}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        {(["novelty", "impact"] as Path[]).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setPath(p)}
+            aria-pressed={path === p}
+            className={clsx(
+              "rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors duration-150",
+              path === p ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+            )}
+          >
+            {p === "novelty" ? "Novelty-driven" : "Impact-driven"}
+          </button>
         ))}
       </div>
 
-      {active.length === 3 && (
-        <p className="reveal-in rounded-lg border border-accent/25 bg-accentSoft px-3 py-2 text-caption text-ink">
-          Notice how the ranking changes depending on which lens you apply — this is why a single-lens ROI argument is fragile.
+      {/* Width is capped so the in-SVG labels do not scale up past body text. */}
+      <svg
+        viewBox="0 0 360 180"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-lg"
+        role="img"
+        aria-label={`A new technology forking into a novelty-driven path and an impact-driven path. ${copy.end}`}
+      >
+        {/* Source node */}
+        <rect x="8" y="70" width="98" height="40" rx="10" className="fill-paper stroke-ink" strokeWidth="1.5" />
+        <text x="57" y="87" textAnchor="middle" className="fill-ink text-[12px] font-semibold">
+          New
+        </text>
+        <text x="57" y="101" textAnchor="middle" className="fill-ink text-[12px] font-semibold">
+          technology
+        </text>
+
+        {/* Upper branch — novelty */}
+        <g className={path === "novelty" ? "opacity-100" : "opacity-25"} style={{ transition: "opacity .3s ease" }}>
+          <path
+            d="M110 90 L170 45 L330 45"
+            fill="none"
+            stroke="currentColor"
+            className="text-danger"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <rect x="172" y="30" width="84" height="26" rx="8" className="fill-danger/10 stroke-danger" strokeWidth="1.2" />
+          <text x="214" y="48" textAnchor="middle" className="fill-danger text-[11px] font-semibold">
+            more usage
+          </text>
+          <circle cx="330" cy="45" r="7" className="fill-danger/15 stroke-danger" strokeWidth="1.5" />
+        </g>
+
+        {/* Lower branch — impact */}
+        <g className={path === "impact" ? "opacity-100" : "opacity-25"} style={{ transition: "opacity .3s ease" }}>
+          <path
+            d="M110 90 L170 135 L330 135"
+            fill="none"
+            stroke="currentColor"
+            className="text-accent"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <rect x="172" y="122" width="84" height="26" rx="8" className="fill-accentSoft stroke-accent" strokeWidth="1.2" />
+          <text x="214" y="140" textAnchor="middle" className="fill-accent text-[11px] font-semibold">
+            same usage
+          </text>
+          <circle cx="330" cy="135" r="7" className="fill-accentSoft stroke-accent" strokeWidth="1.5" />
+        </g>
+
+        {/* Branch labels */}
+        <text x="116" y="22" className="fill-ash text-[11px] font-semibold uppercase tracking-wide">
+          novelty-driven
+        </text>
+        <text x="116" y="172" className="fill-ash text-[11px] font-semibold uppercase tracking-wide">
+          impact-driven
+        </text>
+
+        {/* The travelling dot — restarted by keying on the selected path */}
+        <circle
+          key={path}
+          cx="110"
+          cy="90"
+          r="5"
+          className={clsx(
+            path === "novelty" ? "fill-danger anim-travel-up" : "fill-accent anim-travel-down",
+          )}
+        />
+      </svg>
+
+      <div
+        className={clsx(
+          "rounded-xl border p-3",
+          path === "novelty" ? "border-danger/30 bg-danger/5" : "border-accent/30 bg-accentSoft",
+        )}
+      >
+        <p className={clsx("text-caption font-semibold", path === "novelty" ? "text-danger" : "text-accent")}>
+          {copy.end}
+        </p>
+        <p className="mt-1 text-caption text-ink">{copy.verdict}</p>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C2 — AI's two-sided balance
+// ---------------------------------------------------------------------------
+
+const BENEFIT_ITEMS = ["Load optimisation", "Energy management", "Predictive maintenance", "Decision support"];
+const COST_ITEMS = ["Training energy", "Continuous inference", "Data pipeline", "Infrastructure"];
+
+const WORKLOAD_LABELS: Record<number, string> = {
+  1: "Light",
+  2: "Moderate",
+  3: "Heavy",
+  4: "Very heavy",
+  5: "Continuous, at scale",
+};
+
+const WORKLOAD_VERDICT: Record<number, string> = {
+  1: "The benefit clearly outweighs what the application consumes — this is the case AI is worth making.",
+  2: "Benefit still leads, but the load is now large enough that it has to be named in the proposal.",
+  3: "Roughly balanced. Neither side wins on assertion — only a measured net figure decides this one.",
+  4: "The load is starting to outweigh what the application delivers. Ask what the benefit target actually is.",
+  5: "Continuous inference at scale dominates. Without a measured, material benefit this is consumption with a story attached.",
+};
+
+export function AiBalanceScale() {
+  const [workload, setWorkload] = useState(2);
+  // Capped at 14° so the lower pan never swings through the ground line.
+  const tilt = Math.max(-14, Math.min(14, (workload - 2) * 7));
+
+  return (
+    <div className="space-y-4">
+      <svg
+        viewBox="0 0 320 150"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-sm"
+        role="img"
+        aria-label={`A balance weighing AI benefit against resource cost. Workload ${WORKLOAD_LABELS[workload]}.`}
+      >
+        {/* Stand: a fulcrum rising to the pivot, on a ground line */}
+        <polygon points="140,128 180,128 160,46" className="fill-mist stroke-ash" strokeWidth="1.2" />
+        <line x1="112" y1="128" x2="208" y2="128" stroke="currentColor" className="text-ash" strokeWidth="2.5" strokeLinecap="round" />
+        <g style={{ transform: `rotate(${tilt}deg)`, transformOrigin: "160px 44px", transition: "transform .35s ease" }}>
+          <line x1="50" y1="44" x2="270" y2="44" stroke="currentColor" className="text-ink" strokeWidth="4" strokeLinecap="round" />
+          <line x1="50" y1="44" x2="50" y2="70" stroke="currentColor" className="text-accent" strokeWidth="1.5" />
+          <line x1="270" y1="44" x2="270" y2="70" stroke="currentColor" className="text-danger" strokeWidth="1.5" />
+          <rect x="10" y="70" width="80" height="28" rx="8" className="fill-accentSoft stroke-accent" strokeWidth="1.5" />
+          <text x="50" y="89" textAnchor="middle" className="fill-accent text-[12px] font-semibold">
+            Benefit
+          </text>
+          <rect x="222" y="70" width="96" height="28" rx="8" className="fill-danger/10 stroke-danger" strokeWidth="1.5" />
+          <text x="270" y="89" textAnchor="middle" className="fill-danger text-[12px] font-semibold">
+            Resource cost
+          </text>
+        </g>
+      </svg>
+
+      <Slider
+        id="c2-workload"
+        label="How heavy is the AI workload?"
+        instruction="Drag to weigh a light, occasional model against one running inference continuously at scale."
+        value={workload}
+        onChange={setWorkload}
+        min={1}
+        max={5}
+        lowLabel="Light"
+        highLabel="Continuous, at scale"
+        valueLabels={WORKLOAD_LABELS}
+      />
+
+      <div className="rounded-xl border border-line bg-paper p-3">
+        <p className="text-caption text-ink">{WORKLOAD_VERDICT[workload]}</p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl border border-accent/30 bg-accentSoft/50 p-3">
+          <p className="text-micro font-semibold uppercase tracking-wide text-accent">On the benefit side</p>
+          <ul className="mt-1.5 space-y-0.5">
+            {BENEFIT_ITEMS.map((b) => (
+              <li key={b} className="text-caption text-ink">
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-3">
+          <p className="text-micro font-semibold uppercase tracking-wide text-danger">On the resource side</p>
+          <ul className="mt-1.5 space-y-0.5">
+            {COST_ITEMS.map((c) => (
+              <li key={c} className="text-caption text-ink">
+                {c}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <p className="text-micro text-ash">
+        Scale check — data-centre electricity: about 460 TWh in 2022, potentially approaching 1,000 TWh by 2026 (IEA).
+      </p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C3 — Linear chain vs the R-ladder
+// ---------------------------------------------------------------------------
+
+type Rung = { id: string; label: string; example: string };
+
+const R_LADDER: Rung[] = [
+  { id: "refuse", label: "Refuse / rethink", example: "Do we need the device at all, or can the need be met another way?" },
+  { id: "reduce", label: "Reduce", example: "Fewer devices, less capacity, a lower specification for the same job." },
+  { id: "reuse", label: "Reuse", example: "The same device used again by someone else, unchanged." },
+  { id: "repair", label: "Repair", example: "Fix the fault and keep the device in service rather than replacing it." },
+  { id: "refurbish", label: "Refurbish", example: "Restore a used device to as-new condition for resale or redeployment." },
+  { id: "remanufacture", label: "Remanufacture", example: "Rebuild from recovered components back to original specification." },
+  { id: "recycle", label: "Recycle", example: "Recover the materials once nothing else is possible — the last resort, not the goal." },
+];
+
+export function CircularVsLinear() {
+  const [openId, setOpenId] = useState<string>("reuse");
+  const open = R_LADDER.find((r) => r.id === openId)!;
+  const rank = R_LADDER.findIndex((r) => r.id === openId) + 1;
+
+  return (
+    <div className="space-y-4">
+      <svg
+        viewBox="0 0 360 170"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-xl"
+        role="img"
+        aria-label="A linear buy-use-dispose chain beside a circular loop that returns devices to use."
+      >
+        {/* Linear model */}
+        <text x="4" y="14" className="fill-ash text-[11px] font-semibold uppercase tracking-wide">
+          Linear
+        </text>
+        {["Buy", "Use", "Dispose"].map((label, i) => (
+          <g key={label}>
+            <rect
+              x={4 + i * 64}
+              y={24}
+              width="54"
+              height="28"
+              rx="7"
+              className={i === 2 ? "fill-danger/10 stroke-danger" : "fill-paper stroke-line"}
+              strokeWidth="1.4"
+            />
+            <text
+              x={31 + i * 64}
+              y={43}
+              textAnchor="middle"
+              className={clsx("text-[12px] font-semibold", i === 2 ? "fill-danger" : "fill-ink")}
+            >
+              {label}
+            </text>
+          </g>
+        ))}
+        <path d="M58 38 H64 M122 38 H128" stroke="currentColor" className="text-ash" strokeWidth="1.4" />
+        <path d="M186 38 h18" stroke="currentColor" className="text-danger" strokeWidth="1.4" strokeDasharray="3 3" />
+        <text x="208" y="43" className="fill-danger text-[12px] font-semibold">
+          waste
+        </text>
+
+        {/* Divider */}
+        <line x1="4" y1="66" x2="356" y2="66" stroke="currentColor" className="text-line" strokeWidth="1" />
+
+        {/* Circular model */}
+        <text x="4" y="84" className="fill-accent text-[11px] font-semibold uppercase tracking-wide">
+          Circular — the R-ladder
+        </text>
+        <g>
+          <circle cx="66" cy="126" r="32" fill="none" stroke="currentColor" className="text-accent" strokeWidth="2" />
+          <path d="M66 94 l-7 -7 M66 94 l7 -7" stroke="currentColor" className="text-accent" strokeWidth="2" strokeLinecap="round" />
+          <text x="66" y="124" textAnchor="middle" className="fill-accent text-[13px] font-semibold">
+            R{rank}
+          </text>
+          <text x="66" y="139" textAnchor="middle" className="fill-ash text-[12px]">
+            of 7
+          </text>
+        </g>
+
+        {/* Ladder rungs — rung 1 highest leverage, rung 7 last resort. The
+            selected rung is named in HTML below, not here, so a long label
+            like "Remanufacture" can never run past the viewBox. */}
+        {R_LADDER.map((r, i) => {
+          const y = 94 + i * 11;
+          const on = r.id === openId;
+          return (
+            <rect
+              key={r.id}
+              x={116}
+              y={y}
+              width={on ? 236 : 210 - i * 12}
+              height="8"
+              rx="4"
+              className={on ? "fill-accent" : "fill-line"}
+              style={{ transition: "width .25s ease, fill .25s ease" }}
+            />
+          );
+        })}
+      </svg>
+
+      <div>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
+          Tap a rung — rung 1 is the highest leverage, rung 7 the last resort
+        </p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {R_LADDER.map((r, i) => {
+            const on = r.id === openId;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setOpenId(r.id)}
+                aria-pressed={on}
+                className={clsx(
+                  "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
+                  on ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+                )}
+              >
+                {i + 1}. {r.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3" key={openId}>
+        <p className="text-caption text-ink">
+          <span className="font-semibold text-accent">{open.label} — </span>
+          {open.example}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C4 — The seven lenses, as a wheel that fills in as each is opened
+// ---------------------------------------------------------------------------
+
+const WHEEL = { cx: 90, cy: 90, rOuter: 74, rInner: 42, gapDeg: 3 };
+
+/** One donut segment, computed rather than hand-drawn so seven stay even. */
+function segmentPath(index: number, total: number): string {
+  const { cx, cy, rOuter, rInner, gapDeg } = WHEEL;
+  const step = 360 / total;
+  const start = index * step - 90 + gapDeg / 2;
+  const end = (index + 1) * step - 90 - gapDeg / 2;
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const p = (r: number, d: number) => `${cx + r * Math.cos(rad(d))} ${cy + r * Math.sin(rad(d))}`;
+  const large = end - start > 180 ? 1 : 0;
+  return [
+    `M ${p(rOuter, start)}`,
+    `A ${rOuter} ${rOuter} 0 ${large} 1 ${p(rOuter, end)}`,
+    `L ${p(rInner, end)}`,
+    `A ${rInner} ${rInner} 0 ${large} 0 ${p(rInner, start)}`,
+    "Z",
+  ].join(" ");
+}
+
+export function LensWheel() {
+  const hydrated = useHydrated();
+  const seen = useProgress((s) => s.seen);
+  const markSeen = useProgress((s) => s.markSeen);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const seenIds = hydrated ? (seen[R1.lensesSeen] ?? []) : [];
+  const open = LENSES.find((l) => l.id === openId) ?? null;
+
+  const select = (id: string) => {
+    setOpenId((cur) => (cur === id ? null : id));
+    markSeen(R1.lensesSeen, id);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid items-center gap-4 sm:grid-cols-[180px_minmax(0,1fr)]">
+        <svg
+          viewBox="0 0 180 180"
+          preserveAspectRatio="xMidYMid meet"
+          className="mx-auto h-auto w-40 sm:w-full"
+          role="img"
+          aria-label={`Seven assessment lenses; ${seenIds.length} of 7 opened.`}
+        >
+          {LENSES.map((lens, i) => {
+            const isSeen = seenIds.includes(lens.id);
+            const isOpen = openId === lens.id;
+            return (
+              <path
+                key={lens.id}
+                d={segmentPath(i, LENSES.length)}
+                className={clsx(
+                  "cursor-pointer",
+                  isOpen ? "fill-accent" : isSeen ? "fill-accentSoft stroke-accent" : "fill-mist stroke-line",
+                )}
+                strokeWidth="1.2"
+                style={{ transition: "fill .25s ease" }}
+                onClick={() => select(lens.id)}
+              />
+            );
+          })}
+          <text x="90" y="86" textAnchor="middle" className="fill-ink text-[15px] font-semibold">
+            {seenIds.length}/7
+          </text>
+          <text x="90" y="101" textAnchor="middle" className="fill-ash text-[9px] uppercase tracking-wide">
+            lenses opened
+          </text>
+        </svg>
+
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-2">
+          {LENSES.map((lens) => {
+            const isSeen = seenIds.includes(lens.id);
+            const isOpen = openId === lens.id;
+            return (
+              <button
+                key={lens.id}
+                type="button"
+                onClick={() => select(lens.id)}
+                aria-pressed={isOpen}
+                className={clsx(
+                  "flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left transition-colors duration-150",
+                  isOpen
+                    ? "border-accent bg-accent text-paper"
+                    : isSeen
+                      ? "border-accent/40 bg-accentSoft text-accent"
+                      : "border-line bg-paper text-ash hover:border-ash",
+                )}
+              >
+                <Icon name={lens.icon} className="h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 truncate text-micro font-semibold">{lens.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {open ? (
+        <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
+          <p className="text-caption text-ink">
+            <span className="font-semibold text-accent">{open.name} — </span>
+            {open.definition}
+          </p>
+        </div>
+      ) : (
+        <p className="rounded-xl border border-dashed border-line bg-paper p-3 text-caption text-ash">
+          Tap a lens to read what it covers.
+        </p>
+      )}
+
+      {hydrated && seenIds.length < LENSES.length && (
+        <p className="text-micro text-ash">
+          Suggested: open all seven once before starting the task — you have {seenIds.length} of 7. You can start
+          regardless.
+        </p>
+      )}
+      {hydrated && seenIds.length === LENSES.length && (
+        <p className="reveal-in text-micro font-semibold text-accent">
+          All seven opened — you have the vocabulary the task uses.
         </p>
       )}
     </div>
@@ -308,180 +510,110 @@ export function ThreeLensToggle() {
 }
 
 // ---------------------------------------------------------------------------
-// S3 — Adoption simulator
+// C5 — Attractive now vs viable long-term
 // ---------------------------------------------------------------------------
 
-const THEORETICAL_KWH = 40;
-
-const ADOPTION_PRESETS = [
-  { id: "none", label: "No rules", value: 15 },
-  { id: "comms", label: "Rules + communication", value: 55 },
-  { id: "full", label: "Rules + communication + leadership + ease-of-use", value: 90 },
+const CLAIM_CARDS = [
+  { id: "ai", front: "“It is AI-powered.”", back: "What does it consume to deliver that, and what does it measurably reduce?" },
+  { id: "everyone", front: "“Everyone in the sector is doing it.”", back: "Who has measured a net effect, and under what conditions did it hold?" },
+  { id: "report", front: "“It will look excellent in the annual report.”", back: "What survives after the reporting cycle ends and attention moves on?" },
+  { id: "quarter", front: "“We could start next quarter.”", back: "Could we still be running it in three years — do we have the people and the process?" },
 ];
 
-export function AdoptionSimulator() {
-  const [adoption, setAdoption] = useState(15);
-  const realised = (THEORETICAL_KWH * adoption) / 100;
+export function AttractiveVsViable() {
+  const [flipped, setFlipped] = useState<string[]>([]);
+  const toggle = (id: string) =>
+    setFlipped((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
 
   return (
     <div className="space-y-4">
-      <p className="text-caption text-ash">
-        Illustrative measure: an automated shutdown policy rated to save{" "}
-        <span className="font-semibold text-ink">{THEORETICAL_KWH} kWh per device per year</span> if followed 100% of the
-        time.
-      </p>
+      <svg
+        viewBox="0 0 340 150"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-xl"
+        role="img"
+        aria-label="A spiking, falling line labelled attractive now beside a slowly rising, rooted line labelled viable long-term."
+      >
+        {/* Attractive now — a spike that collapses */}
+        <rect x="4" y="8" width="156" height="134" rx="12" className="fill-paper stroke-line" strokeWidth="1.4" />
+        <text x="82" y="28" textAnchor="middle" className="fill-danger text-[12px] font-semibold uppercase tracking-wide">
+          Attractive now
+        </text>
+        <path
+          d="M20 116 L44 104 L62 52 L76 98 L96 34 L114 106 L144 118"
+          fill="none"
+          stroke="currentColor"
+          className="text-danger"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <line x1="20" y1="126" x2="144" y2="126" stroke="currentColor" className="text-line" strokeWidth="1.2" />
+        <text x="82" y="138" textAnchor="middle" className="fill-ash text-[11px]">
+          bright, spiky, short-lived
+        </text>
 
-      <Slider
-        id="s3-adoption"
-        label="Adoption rate"
-        instruction="Drag, or use one of the scenario buttons below."
-        value={adoption}
-        onChange={setAdoption}
-        min={0}
-        max={100}
-        lowLabel="0%"
-        highLabel="100%"
-      />
+        {/* The pivot between them */}
+        <g className="anim-seesaw">
+          <line x1="168" y1="64" x2="176" y2="64" stroke="currentColor" className="text-ash" strokeWidth="2" strokeLinecap="round" />
+          <polygon points="164,72 180,72 172,82" className="fill-ash" />
+        </g>
 
-      <div className="flex flex-wrap gap-1.5">
-        {ADOPTION_PRESETS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => setAdoption(p.value)}
-            className={clsx(
-              "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-              adoption === p.value ? "border-accent bg-accentSoft text-accent" : "border-line text-ash hover:border-ash",
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+        {/* Viable long-term — steady rise, with roots */}
+        <rect x="180" y="8" width="156" height="134" rx="12" className="fill-paper stroke-accent/40" strokeWidth="1.4" />
+        <text x="258" y="28" textAnchor="middle" className="fill-accent text-[12px] font-semibold uppercase tracking-wide">
+          Viable long-term
+        </text>
+        <path
+          d="M196 102 C 224 98, 244 82, 262 68 S 300 44, 320 38"
+          fill="none"
+          stroke="currentColor"
+          className="text-accent"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <line x1="196" y1="110" x2="320" y2="110" stroke="currentColor" className="text-line" strokeWidth="1.2" />
+        <path
+          d="M214 110 v8 M214 118 l-7 7 M214 118 l7 7 M258 110 v10 M258 120 l-8 7 M258 120 l8 7 M302 110 v8 M302 118 l-7 7 M302 118 l7 7"
+          fill="none"
+          stroke="currentColor"
+          className="text-accent/50"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+        <text x="258" y="138" textAnchor="middle" className="fill-ash text-[11px]">
+          steady, rooted, still there
+        </text>
+      </svg>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-xl border border-line bg-canvas p-3">
-          <p className="text-micro font-semibold uppercase tracking-wide text-ash">Theoretical savings</p>
-          <p className="mt-1 text-readout tabular-nums text-ink">{THEORETICAL_KWH} kWh / device / yr</p>
-          <div className="mt-2 h-3 overflow-hidden rounded-full bg-line">
-            <div className="h-full w-full rounded-full bg-ash/50" />
-          </div>
-        </div>
-        <div className="rounded-xl border border-accent/40 bg-accentSoft/40 p-3">
-          <p className="text-micro font-semibold uppercase tracking-wide text-accent">Realised savings</p>
-          <p className="mt-1 text-readout tabular-nums text-ink">{realised.toFixed(1)} kWh / device / yr</p>
-          <div className="mt-2 h-3 overflow-hidden rounded-full bg-line">
-            <div
-              className="h-full rounded-full bg-accent transition-all duration-300"
-              style={{ width: `${adoption}%` }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// S4 — Regulatory driver map
-// ---------------------------------------------------------------------------
-
-type Domain = {
-  id: string;
-  label: string;
-  icon: IconKey;
-  requirement: string;
-  reactive: string;
-  strategic: string;
-};
-
-const DOMAINS: Domain[] = [
-  {
-    id: "transparency",
-    label: "Transparency & Reporting",
-    icon: "database",
-    requirement:
-      "CSRD and ESRS E1 require reporting energy use, emissions and the measures taken to reduce them — including IT's Scope 2 and Scope 3 contribution.",
-    reactive: "We have to report energy figures because CSRD requires it.",
-    strategic: "Our energy-reporting pipeline is also the evidence base for every future business case's savings claim — one measurement process, two uses.",
-  },
-  {
-    id: "procurement",
-    label: "Procurement",
-    icon: "supplier",
-    requirement:
-      "Public and enterprise tenders increasingly require ecolabels and efficiency ratings (TCO Certified, EU Ecolabel) as a condition of bidding, not a preference.",
-    reactive: "We have to buy certified hardware because this tender demands it.",
-    strategic: "A standing certified-procurement standard keeps us eligible for every future tender automatically, instead of proving compliance from scratch each time one arrives.",
-  },
-  {
-    id: "disposal",
-    label: "Disposal & Circularity",
-    icon: "recycleLoop",
-    requirement:
-      "The WEEE Directive sets binding collection and recycling obligations; the ESPR adds repairability, durability and digital-product-passport traceability requirements.",
-    reactive: "We have to document disposal because WEEE requires it.",
-    strategic: "Our disposal documentation is also our evidence of circular-economy performance for tenders and CSRD reporting — one process, two uses.",
-  },
-  {
-    id: "energy",
-    label: "Energy Efficiency Obligations",
-    icon: "gauge",
-    requirement: "Germany's Energy Efficiency Act (EnEfG) obliges larger organisations to run an energy or environmental management system and report on it.",
-    reactive: "We have to run an energy management system because EnEfG requires it.",
-    strategic: "The same management system gives IT a standing, board-visible case for every future efficiency investment, not just a compliance record nobody reads.",
-  },
-];
-
-export function RegulatoryDriverMap() {
-  const [openId, setOpenId] = useState<string | null>(DOMAINS[0].id);
-  const open = DOMAINS.find((d) => d.id === openId) ?? null;
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-2.5 sm:grid-cols-2">
-        {DOMAINS.map((d) => {
-          const on = openId === d.id;
-          return (
-            <button
-              key={d.id}
-              type="button"
-              onClick={() => setOpenId((cur) => (cur === d.id ? null : d.id))}
-              aria-pressed={on}
-              className={clsx(
-                "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors duration-150",
-                on ? "border-accent bg-accentSoft" : "border-line bg-canvas hover:border-ash",
-              )}
-            >
-              <span
-                className={clsx(
-                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                  on ? "bg-accent text-paper" : "bg-paper text-accent",
-                )}
+      <div>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
+          Tap a claim to turn it into the question that tests it
+        </p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          {CLAIM_CARDS.map((c) => {
+            const isFlipped = flipped.includes(c.id);
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => toggle(c.id)}
+                aria-pressed={isFlipped}
+                className="flip-card h-24 text-left"
               >
-                <Icon name={d.icon} className="h-4 w-4" />
-              </span>
-              <span className={clsx("text-caption font-semibold", on ? "text-accent" : "text-ink")}>{d.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {open && (
-        <div className="reveal-in rounded-xl border border-line bg-paper p-4">
-          <p className="text-caption text-ink">{open.requirement}</p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-line bg-canvas p-3">
-              <p className="text-micro font-semibold uppercase tracking-wide text-ash">Reactive framing</p>
-              <p className="mt-1 text-caption italic text-ink">&ldquo;{open.reactive}&rdquo;</p>
-            </div>
-            <div className="rounded-lg border border-accent/30 bg-accentSoft p-3">
-              <p className="text-micro font-semibold uppercase tracking-wide text-accent">Strategic framing</p>
-              <p className="mt-1 text-caption italic text-ink">&ldquo;{open.strategic}&rdquo;</p>
-            </div>
-          </div>
+                <div className={clsx("flip-card-inner h-full w-full", isFlipped && "is-flipped")}>
+                  <div className="flip-card-face flex h-full w-full items-center rounded-xl border border-line bg-paper p-3">
+                    <p className="text-caption font-semibold italic text-ink">{c.front}</p>
+                  </div>
+                  <div className="flip-card-face flip-card-face-back flex h-full w-full items-center rounded-xl border border-accent/40 bg-accentSoft p-3">
+                    <p className="text-caption text-ink">{c.back}</p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }

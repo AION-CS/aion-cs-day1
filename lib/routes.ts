@@ -1,20 +1,19 @@
 /**
- * Day 14 route registry.
+ * Day 15 route registry.
  *
- * Module 10: Route 1 covers Level 1 ("Implementing Sustainability
- * Economically and in Line with Regulation") at Mercury Office Systems.
- * Route 2 merges Levels 2 and 3 into one route, one task in two parts
- * (Prioritise → Propose) at Valora Digital Operations, per CLAUDE.md §13's
- * "Format 2" pattern for a route too lean to split into two full routes.
+ * Module 11: Route 1 carries Level 1 (this build) and later Level 2, both set
+ * at FutureGrid Technologies — short micro-card material, then one diagnosis
+ * task. Route 2 (Level 3, the management decision) is a separate, later
+ * prompt and is marked unavailable until it is written.
  */
 
 export const CASE = {
   company: "AION Green IT",
   /** Curriculum day number. The export filename reads it (CURRICULUM-GUIDE.md §7). */
-  day: 14,
-  module: "Day 14",
-  moduleNumber: 10,
-  moduleTitle: "Implementing Sustainability Economically and in Line with Regulation",
+  day: 15,
+  module: "Day 15",
+  moduleNumber: 11,
+  moduleTitle: "Innovations for the Sustainable IT of Tomorrow",
 } as const;
 
 /** Icon keys resolved by components/icons/LineIcons.tsx. */
@@ -40,18 +39,20 @@ export type IconKey =
   | "antenna"
   | "sensor"
   // Day 13: the six-area diagnostic framework's User Behaviour tile.
-  | "person";
+  | "person"
+  // Day 15: AI compute as its own assessment lens.
+  | "chip";
 
 export type Route = {
   n: 1 | 2;
   slug: string;
   href: string;
-  tag: string; // "Route 1 — Diagnose & Decide"
+  tag: string; // "Route 1 — Assess & Decide"
   title: string; // page H1
   cardTitle: string; // landing card title
   cardBlurb: string; // landing card one-liner
   deliverable: string; // what the route produces
-  /** Curriculum levels this route covers. Route 1 spans two; Route 2 spans one. */
+  /** Curriculum levels this route covers. Route 1 spans two once L2 lands; Route 2 spans one. */
   levels: number[];
   /** Roughly how long the whole route takes, material and task together. */
   minutes: number;
@@ -66,16 +67,16 @@ export type Route = {
 export const ROUTES: Route[] = [
   {
     n: 1,
-    slug: "route-1-diagnose-and-decide",
-    href: "/route-1-diagnose-and-decide",
-    tag: "Route 1 — Diagnose & Decide",
-    title: "Route 1 — Diagnose & Decide",
-    cardTitle: "Diagnose & Decide",
+    slug: "route-1-assess-and-decide",
+    href: "/route-1-assess-and-decide",
+    tag: "Route 1 — Assess & Decide",
+    title: "Route 1 — Assess & Decide",
+    cardTitle: "Assess & Decide",
     cardBlurb:
-      "The Green IT business case and why it decides whether measures survive, why ROI is not only a financial number, why technical solutions fail without behavioural change, and regulation as a management framework rather than a compliance burden — then Mercury Office Systems: classify seven indications of stalled implementation by area, root cause and timeframe.",
-    deliverable: "Mercury Office Systems Diagnosis Report",
+      "Why novelty is not innovation, why AI is both an efficiency promise and a resource burden, what circular IT keeps in the loop that linear IT throws away, the seven lenses every sustainable-innovation decision is read through, and how to tell attractive from viable — then FutureGrid Technologies: diagnose six innovation initiatives as opportunity, risk, or mixed.",
+    deliverable: "FutureGrid Technologies Innovation Diagnosis",
     levels: [1],
-    minutes: 75,
+    minutes: 27,
     available: true,
   },
   {
@@ -86,11 +87,11 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "The four criteria that decide which measure-line gets funded first, and the two questions that turn a priority into an actionable proposal under incomplete data — then Valora Digital Operations: score three measure-lines, choose one, and propose it.",
-    deliverable: "Valora Digital Operations Priority Proposal",
-    levels: [2, 3],
-    minutes: 65,
-    available: true,
+      "Level 3 — the management decision on FutureGrid's innovation portfolio. Written in a later session; this card will open once it is built.",
+    deliverable: "FutureGrid Technologies Innovation Decision",
+    levels: [3],
+    minutes: 45,
+    available: false,
   },
 ];
 

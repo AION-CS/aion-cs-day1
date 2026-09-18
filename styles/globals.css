@@ -420,6 +420,75 @@
   }
 }
 
+/* --- Day 15 ---------------------------------------------------------------
+ * C1's travelling dot takes the same journey down whichever branch of the
+ * novelty/impact fork is selected, so the two read as alternatives rather than
+ * as a sequence. The translations are in user units and match the 360x180
+ * viewBox and elbow coordinates in components/route1/MaterialDiagrams.tsx —
+ * change one and the other has to move with it.
+ */
+@keyframes travelUp {
+  0% {
+    transform: translate(0px, 0px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  35% {
+    transform: translate(60px, -45px);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(210px, -45px);
+    opacity: 0;
+  }
+}
+.anim-travel-up {
+  animation: travelUp 2.6s ease-in-out infinite;
+}
+
+@keyframes travelDown {
+  0% {
+    transform: translate(0px, 0px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  35% {
+    transform: translate(60px, 45px);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(210px, 45px);
+    opacity: 0;
+  }
+}
+.anim-travel-down {
+  animation: travelDown 2.6s ease-in-out infinite;
+}
+
+/* C5: the balance between attractive-now and viable-long-term never settles. */
+@keyframes seesaw {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+.anim-seesaw {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: seesaw 5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

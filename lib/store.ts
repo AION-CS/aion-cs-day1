@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export const STORAGE_KEY = "aion-greenit-day14";
+export const STORAGE_KEY = "aion-greenit-day15";
 
 /**
  * Deliberately generic so the next module reuses it unchanged:

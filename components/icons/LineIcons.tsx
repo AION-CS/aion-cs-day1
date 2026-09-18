@@ -225,6 +225,19 @@ function Person({ className }: P) {
   );
 }
 
+// --- Day 15: AI compute as its own assessment lens -------------------------
+
+/** A processor die with pins — the compute an AI use case actually consumes. */
+function Chip({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="7" y="7" width="10" height="10" rx="1.6" />
+      <rect x="10.2" y="10.2" width="3.6" height="3.6" rx="0.6" />
+      <path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3" />
+    </svg>
+  );
+}
+
 const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   coins: Coins,
   factory: Factory,
@@ -245,6 +258,7 @@ const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   antenna: Antenna,
   sensor: Sensor,
   person: Person,
+  chip: Chip,
 };
 
 export function Icon({ name, className }: { name: IconKey; className?: string }) {

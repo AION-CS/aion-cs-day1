@@ -8,9 +8,10 @@ import { useRoute1, domId } from "./useRoute1";
 /**
  * The case and the learner's name, stated once for the whole route.
  *
- * The task runs on this one engagement, so it is never re-introduced
- * mid-page (CLAUDE.md #12). The name is collected here and is what the
- * export filename is built from.
+ * The task runs on this one engagement, so it is never re-introduced mid-page
+ * (CLAUDE.md #12) — the task section restates only the initial situation as
+ * chips, not the company. The name is collected here and is what the export
+ * filename is built from.
  */
 export function CaseBrief() {
   return (

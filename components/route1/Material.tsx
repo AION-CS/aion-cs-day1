@@ -1,21 +1,33 @@
 "use client";
 
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { MaterialBlock } from "@/components/ui/MaterialBlock";
+import { MicroCard } from "@/components/ui/MicroCard";
 import { MiniNav } from "@/components/ui/MiniNav";
-import { MATERIAL, MATERIAL_NAV, SECTION_ORDER, materialAnchorId } from "@/lib/route1";
-import { AdoptionSimulator, CostBenefitScale, RegulatoryDriverMap, ThreeLensToggle } from "./MaterialDiagrams";
+import {
+  MATERIAL,
+  MATERIAL_INTRO,
+  MATERIAL_NAV,
+  SECTION_ORDER,
+  materialAnchorId,
+} from "@/lib/route1";
+import {
+  AiBalanceScale,
+  AttractiveVsViable,
+  CircularVsLinear,
+  LensWheel,
+  NoveltyVsImpactFork,
+} from "./MaterialDiagrams";
 
 export const MATERIAL_TRACK_ID = "r1-material";
 
 /**
- * The whole teaching block: four sections, S1–S4, read before any
- * interaction. ~60 minutes, per the build spec's time budget — this is
- * deliberately the fuller Day 11-style ratio, not Day 13's inverted one,
- * because Task 1 draws on six areas plus two extra tagging dimensions.
+ * The whole teaching block: five micro-cards, C1–C5, about ten minutes of
+ * reading. Deliberately the light end of the material budget — Day 15 puts
+ * the learning inside the task, so each card is a few sentences, one live
+ * diagram, and the rule the task will ask for.
  */
 export function Material() {
-  const [s1, s2, s3, s4] = MATERIAL;
+  const [c1, c2, c3, c4, c5] = MATERIAL;
 
   const navItems = SECTION_ORDER.map((id) => ({
     id,
@@ -25,30 +37,30 @@ export function Material() {
   }));
 
   return (
-    <div id={MATERIAL_TRACK_ID} className="space-y-14">
+    <div id={MATERIAL_TRACK_ID} className="space-y-8">
       <MiniNav items={navItems} trackId={MATERIAL_TRACK_ID} />
 
-      <SectionHeading
-        kicker="Material · four sections · about 60 minutes"
-        title="Why sensible Green IT measures stall"
-        intro="Why economic assessment decides whether a measure survives a budget conversation; why ROI needs three lenses, not one; why a technically correct measure still fails without behavioural design behind it; and why regulation works better as a management framework than as a burden imposed on IT. All of it before you touch the case — Task 1 assumes every section below."
-      />
+      <SectionHeading kicker={MATERIAL_INTRO.kicker} title={MATERIAL_INTRO.title} intro={MATERIAL_INTRO.intro} />
 
-      <MaterialBlock section={s1} anchorId={materialAnchorId("businessCase")}>
-        <CostBenefitScale />
-      </MaterialBlock>
+      <MicroCard card={c1} anchorId={materialAnchorId("novelty")}>
+        <NoveltyVsImpactFork />
+      </MicroCard>
 
-      <MaterialBlock section={s2} anchorId={materialAnchorId("threeLens")}>
-        <ThreeLensToggle />
-      </MaterialBlock>
+      <MicroCard card={c2} anchorId={materialAnchorId("aiLoad")}>
+        <AiBalanceScale />
+      </MicroCard>
 
-      <MaterialBlock section={s3} anchorId={materialAnchorId("behaviourChange")}>
-        <AdoptionSimulator />
-      </MaterialBlock>
+      <MicroCard card={c3} anchorId={materialAnchorId("circular")}>
+        <CircularVsLinear />
+      </MicroCard>
 
-      <MaterialBlock section={s4} anchorId={materialAnchorId("regulation")}>
-        <RegulatoryDriverMap />
-      </MaterialBlock>
+      <MicroCard card={c4} anchorId={materialAnchorId("lenses")}>
+        <LensWheel />
+      </MicroCard>
+
+      <MicroCard card={c5} anchorId={materialAnchorId("viability")}>
+        <AttractiveVsViable />
+      </MicroCard>
     </div>
   );
 }

@@ -32,3 +32,31 @@ export type MaterialSection<Id extends string = string> = {
   /** Roughly how long a facilitator should spend here. */
   minutes: number;
 };
+
+/**
+ * The lighter material unit: one compact card, 3–5 sentences, one live diagram
+ * and one micro-interaction. Used where a day's design puts the learning inside
+ * the task rather than in a long facilitator-led reading block — the teaching
+ * is not thinner, it is denser.
+ *
+ * `reasoning` carries the same weight it does on a full section: it is the rule
+ * set the task's MaterialRefs chips point back at, and it is what makes the
+ * card operational rather than merely informative.
+ */
+export type MicroCard<Id extends string = string> = {
+  id: Id;
+  /** "C1" — the label the mini-nav and the reference chips use. */
+  code: string;
+  n: number;
+  icon: IconKey;
+  title: string;
+  /** One line under the title, before the diagram. */
+  standfirst: string;
+  /** The whole written teaching for this card — 3 to 5 tight sentences. */
+  sentences: string[];
+  /** "How to decide when this comes up in the task" — 1–2 operational rules. */
+  reasoning: string[];
+  /** Small source tags under the card, never long paragraphs. */
+  sources: { label: string; detail?: string; url?: string }[];
+  minutes: number;
+};

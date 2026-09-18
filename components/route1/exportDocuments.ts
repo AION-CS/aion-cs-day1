@@ -1,12 +1,12 @@
-import { AREAS, ENGAGEMENT, EXPORT, rootCauseLabel, timeframeLabel } from "@/lib/route1";
+import { ENGAGEMENT, EXPORT, ZONES, answerLabel, lensLabel } from "@/lib/route1";
 import { CASE } from "@/lib/routes";
 import type { Route1State } from "./useRoute1";
 
 /**
- * The route's single export so far: one print-ready HTML report, sent
- * straight to the browser's print dialog — "Save as PDF" is the export (see
- * lib/downloadFile.ts `printHtmlDocument`). No JSON. Grouped by area so the
- * export reads as a structured diagnosis document, not a log of drags.
+ * The route's single export: one print-ready HTML report sent straight to the
+ * browser's print dialog — "Save as PDF" is the export (see lib/downloadFile.ts
+ * `printHtmlDocument`). No JSON, no PDF library. Grouped by zone so the
+ * document reads as a verdict on the portfolio rather than a list of answers.
  */
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -18,30 +18,33 @@ export function buildEngagementHtml(r1: Route1State): string {
     year: "numeric",
   });
 
-  const areaSections = AREAS.map((area) => {
-    const chips = r1.byArea(area.id);
-    const rows = chips
+  const zoneSections = ZONES.map((zone) => {
+    const cards = r1.byZone(zone.id);
+    const rows = cards
       .map(
         (c) => `<tr>
-      <td><strong>${c.evidence.n}. ${esc(c.evidence.short)}</strong><div class="muted">&ldquo;${esc(c.evidence.text)}&rdquo;</div></td>
-      <td class="nowrap">${esc(rootCauseLabel(c.rootCause))}</td>
-      <td class="nowrap">${esc(timeframeLabel(c.timeframe))}</td>
+      <td><strong>${c.initiative.n}. ${esc(c.initiative.short)}</strong><div class="muted">${esc(
+        c.initiative.title,
+      )}</div></td>
+      <td class="nowrap">${esc(answerLabel(c.load))}</td>
+      <td class="nowrap">${esc(answerLabel(c.structure))}</td>
+      <td class="nowrap">${esc(lensLabel(c.lens))}</td>
     </tr>${
-      c.approach
-        ? `<tr class="why"><td colspan="3"><span class="muted">Improvement — </span>&ldquo;${esc(c.approach)}&rdquo;</td></tr>`
+      c.rationale
+        ? `<tr class="why"><td colspan="4"><span class="muted">Rationale — </span>&ldquo;${esc(c.rationale)}&rdquo;</td></tr>`
         : ""
     }`,
       )
       .join("");
 
-    return `<h2>${esc(area.name)} — ${chips.length}</h2>
+    return `<h2>${esc(zone.name)} — ${cards.length}</h2>
   ${
-    chips.length
+    cards.length
       ? `<table>
-    <thead><tr><th>Evidence</th><th>Root cause</th><th>Timeframe</th></tr></thead>
+    <thead><tr><th>Initiative</th><th>Load</th><th>Structure</th><th>Lens</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`
-      : `<p class="muted">Nothing classified here.</p>`
+      : `<p class="muted">Nothing resolved into this zone.</p>`
   }`;
   }).join("\n");
 
@@ -73,6 +76,7 @@ export function buildEngagementHtml(r1: Route1State): string {
   .nowrap { white-space: nowrap; }
   .summary { margin-top: 10px; padding: 14px 16px; border-radius: 10px; background: #EEF1F3; }
   .summary strong { display: block; font-size: 16px; }
+  .closing { margin-top: 10px; padding: 14px 16px; border-radius: 10px; border: 1px solid #E2E5E9; font-style: italic; }
   footer { margin-top: 32px; border-top: 1px solid #E2E5E9; padding-top: 14px;
            color: #5E6670; font-size: 11px; }
   @media (max-width: 560px) {
@@ -95,16 +99,19 @@ export function buildEngagementHtml(r1: Route1State): string {
     ENGAGEMENT.company,
   )} · Role: ${esc(ENGAGEMENT.role)}</p>
 
-  ${areaSections}
+  ${zoneSections}
+
+  <h2>Attractive now, structurally weak</h2>
+  <div class="closing">&ldquo;${esc(r1.closing)}&rdquo;</div>
 
   <h2>Split</h2>
   <div class="summary">
-    <strong>${r1.completeCount} of ${r1.totalChips} indications fully classified — area, root cause, timeframe and improvement approach.</strong>
-    <span class="muted">${r1.placedCount} of ${r1.totalChips} indications assigned to an area.</span>
+    <strong>${r1.completeCount} of ${r1.totalCards} initiatives fully written up — verdict, lens and rationale.</strong>
+    <span class="muted">${r1.diagnosedCount} of ${r1.totalCards} diagnosed on both questions.</span>
   </div>
 
   <footer>
-    AION Green IT — Day ${CASE.day}, Route 1 (Diagnose &amp; Decide), Level 1.
+    AION Green IT — Day ${CASE.day}, Route 1 (Assess &amp; Decide), Level 1.
     ${esc(ENGAGEMENT.company)} is a fictional case for training use. Prepared by the learner named above.
   </footer>
 </div>
