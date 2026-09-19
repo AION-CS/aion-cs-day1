@@ -7,19 +7,19 @@ export default function Home() {
       <header className="space-y-2">
         <p className="smallcaps text-accent">{COURSE.module}</p>
         <h1 className="text-display">{COURSE.site}</h1>
-        <p className="max-w-prose text-body text-ash">{COURSE.title}. Study on your own, work two documents from a real-looking case file, and export them.</p>
+        <p className="max-w-prose text-body text-ash">{COURSE.title}. Three routes, one per level: study on your own, work a document from a real-looking case file, and export it.</p>
       </header>
 
       <section aria-labelledby="routes-h" className="space-y-3">
         <h2 id="routes-h" className="sr-only">
           Routes
         </h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           {ROUTES.map((r) => (
             <Link key={r.n} href={r.href} className="card group block space-y-3 p-5 transition-shadow hover:shadow-md">
-              <div className="flex items-baseline justify-between gap-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                 <span className="smallcaps text-accent">Route {r.n}</span>
-                <span className="text-micro font-semibold uppercase text-ash">{r.levels}</span>
+                <span className="text-micro font-semibold uppercase text-ash">{r.level}</span>
               </div>
               <h3 className="text-h2">{r.title}</h3>
               <p className="text-caption text-ash">{r.blurb}</p>

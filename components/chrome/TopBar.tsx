@@ -32,7 +32,7 @@ export function TopBar() {
                     )}
                   >
                     <span className="tnum">{r.n}</span>
-                    <span className="hidden sm:inline">{r.short}</span>
+                    <span className="hidden md:inline">{r.short}</span>
                   </Link>
                 </li>
               );

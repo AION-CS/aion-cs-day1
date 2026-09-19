@@ -10,6 +10,6 @@ export function usePersisted(): Persisted {
   const ui = useStore((s) => s.ui);
   const l1 = useStore((s) => s.l1);
   const l2 = useStore((s) => s.l2);
-  const route2 = useStore((s) => s.route2);
-  return useMemo(() => ({ participant, ui, l1, l2, route2 }), [participant, ui, l1, l2, route2]);
+  const route3 = useStore((s) => s.route3);
+  return useMemo(() => ({ participant, ui, l1, l2, route3 }), [participant, ui, l1, l2, route3]);
 }

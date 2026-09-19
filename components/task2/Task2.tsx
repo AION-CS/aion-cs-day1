@@ -23,6 +23,7 @@ import { TcoStack } from "@/components/ui/TcoStack";
 import { calculationBody } from "@/lib/exportDoc";
 import { citedFigures, flagsForFigures } from "@/lib/checks";
 import { scrollToAndFlash } from "@/lib/flash";
+import { useJumpTo } from "@/lib/useJumpTo";
 import { IDS, l2Missing } from "@/lib/missing";
 import { formatEuro, parseAmount } from "@/lib/parseAmount";
 import { exportName } from "@/lib/slug";
@@ -33,6 +34,7 @@ import type { Recommendation } from "@/store/useStore";
 const categoryLabel = (c: string | null) => (c ? BIN_LABEL[c as keyof typeof BIN_LABEL] : "—");
 
 function Premise() {
+  const jump = useJumpTo();
   const v = useStore((s) => s.l1.verdict);
   const filed = v.filedAt !== null;
   const cites = [v.cite1, v.cite2].filter(Boolean);
@@ -51,10 +53,10 @@ function Premise() {
           No verdict filed in Task 1 yet.{" "}
           <button
             type="button"
-            onClick={() => scrollToAndFlash(IDS.fileNote)}
+            onClick={() => jump(IDS.fileNote, "/route-1/")}
             className="font-semibold underline decoration-dotted underline-offset-2 hover:text-accentHi"
           >
-            Go to the Task 1 verdict
+            Go to the Task 1 verdict in Route 1
           </button>{" "}
           — this is a suggestion, not a gate. You can work through Task 2 first.
         </p>
@@ -149,6 +151,7 @@ function SoftLocked({
 }
 
 export function Task2() {
+  const jump = useJumpTo();
   const snapshot = usePersisted();
   const { l1, l2 } = snapshot;
   const setLayer = useStore((s) => s.setLayer);
@@ -206,7 +209,7 @@ export function Task2() {
       <section id="block-2-1" className="card space-y-3 p-4 md:p-5" aria-labelledby="b21-h">
         <h3 id="b21-h">Block 2.1 · Read the tables</h3>
         <p className="text-caption text-ash">
-          <span className="smallcaps mr-1 text-accent">FIND IT</span>· Route 1 → Task 2 → “Offer sheet”, “Cost lines”, “Risk
+          <span className="smallcaps mr-1 text-accent">FIND IT</span>· Route 2 → Task 2 → “Offer sheet”, “Cost lines”, “Risk
           table”. Nothing is asked here; you use these three tables in Blocks 2.3 to 2.5.
         </p>
         <MaterialRefs refs={["B4"]} />
@@ -240,7 +243,7 @@ export function Task2() {
           <Pill kind="EXPLORATORY" />
         </header>
         <p className="text-caption text-ash">
-          <span className="smallcaps mr-1 text-accent">FIND IT</span>· Route 1 → Task 2 → “Cost explorer” → tick the layers one
+          <span className="smallcaps mr-1 text-accent">FIND IT</span>· Route 2 → Task 2 → “Cost explorer” → tick the layers one
           at a time. Not graded and not exported; the picture is the feedback.
         </p>
         <MaterialRefs refs={["B4", "B5"]} />
@@ -258,7 +261,7 @@ export function Task2() {
                 onChange={setCare}
                 title="Care after go-live (Offer B add-on)"
                 tooltip="Unlocks after you file your Task 1 verdict."
-                onLockedClick={() => scrollToAndFlash(IDS.fileNote)}
+                onLockedClick={() => jump(IDS.fileNote, "/route-1/")}
               >
                 {filed && l2.careOn && (
                   <div className="fade-in mt-2 space-y-2 text-caption">
@@ -294,7 +297,7 @@ export function Task2() {
         id="block-2-3"
         title="Block 2.3 · Figures"
         kind="OBJECTIVE"
-        findIt="Route 1 → Task 2 → “Offer sheet” and “Cost lines”. Answer in the fields below."
+        findIt="Route 2 → Task 2 → “Offer sheet” and “Cost lines”. Answer in the fields below."
       >
         <MaterialRefs refs={["B4"]} />
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
@@ -357,7 +360,7 @@ export function Task2() {
         id="block-2-4"
         title="Block 2.4 · Motive read"
         kind="OBJECTIVE"
-        findIt="Route 1 → Task 2 → “Buying committee map” → read the four statements."
+        findIt="Route 2 → Task 2 → “Buying committee map” → read the four statements."
       >
         <MaterialRefs refs={["B2", "B3"]} />
         <div className="grid gap-3 md:grid-cols-2">
@@ -403,7 +406,7 @@ export function Task2() {
         id="block-2-5"
         title="Block 2.5 · Your choice"
         kind="JUDGED"
-        findIt="Route 1 → Task 2 → “Cost explorer” and your Block 2.3 figures. Answer below."
+        findIt="Route 2 → Task 2 → “Cost explorer” and your Block 2.3 figures. Answer below."
         analyse={false}
       >
         <MaterialRefs refs={["B1", "B4", "B6"]} />
@@ -504,7 +507,7 @@ export function Task2() {
         id="block-2-6"
         title="Block 2.6 · One question the data cannot answer"
         kind="OBJECTIVE"
-        findIt="Route 1 → Task 2 → “Offer sheet”, “Cost lines”, “Risk table” and “Cost explorer”. Answer below."
+        findIt="Route 2 → Task 2 → “Offer sheet”, “Cost lines”, “Risk table” and “Cost explorer”. Answer below."
         analyse={false}
       >
         <MaterialRefs refs={["B5"]} />

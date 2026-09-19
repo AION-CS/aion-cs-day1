@@ -18,9 +18,14 @@ export function taskBlocks(p: Persisted): Record<TaskBlockId, boolean> {
   };
 }
 
-/** Dossier progress: cards marked read + task blocks completed. */
-export function dossierProgress(p: Persisted): { done: number; total: number } {
-  const cards = MATERIALS.filter((m) => p.ui.sectionsRead[m.id]).length;
-  const blocks = Object.values(taskBlocks(p)).filter(Boolean).length;
-  return { done: cards + blocks, total: MATERIALS.length + 6 };
+const BLOCKS_OF: Record<1 | 2, TaskBlockId[]> = { 1: ["b11", "b12"], 2: ["b23", "b24", "b25", "b26"] };
+
+/** Dossier progress for one route: its cards marked read + its task blocks completed. */
+export function dossierProgress(p: Persisted, route: 1 | 2): { done: number; total: number } {
+  const block = route === 1 ? "A" : "B";
+  const cards = MATERIALS.filter((m) => m.block === block);
+  const read = cards.filter((m) => p.ui.sectionsRead[m.id]).length;
+  const tb = taskBlocks(p);
+  const done = BLOCKS_OF[route].filter((b) => tb[b]).length;
+  return { done: read + done, total: cards.length + BLOCKS_OF[route].length };
 }

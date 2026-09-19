@@ -101,7 +101,7 @@ export function calculationBody(p: Persisted): string {
   const rec = l2.recommendation ? RECOMMENDATION_LABEL[l2.recommendation] : "—";
 
   return `
-${header("Calculation Note — the Kessler re-tender", "Day 1 · Route 1 · Level 2 · Task 2", p)}
+${header("Calculation Note — the Kessler re-tender", "Day 1 · Route 2 · Level 2 · Task 2", p)}
 <h2>1. Premise</h2>
 ${premise}
 <h2>2. Figures</h2>

@@ -5,7 +5,7 @@ import type { FigureId } from "@/data/offers";
 import { parseAmount } from "@/lib/parseAmount";
 
 /**
- * Selectors for later use. Route 2 (Level 3 · Decision Memo) quotes these back
+ * Selectors for later use. Route 3 (Level 3 · Decision Memo) quotes these back
  * to the participant, so they are plain functions of the store — no React.
  */
 

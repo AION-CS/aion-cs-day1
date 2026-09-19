@@ -3,29 +3,31 @@
 import { useState } from "react";
 import { useStore } from "@/store/useStore";
 
-/** Clears Route 1 state only — the participant strip stays. Inline two-step confirm. */
-export function ResetRoute() {
-  const reset = useStore((s) => s.resetRoute1);
+/** Clears one route's state only — the participant strip and the other route stay. Inline two-step confirm. */
+export function ResetRoute({ route }: { route: 1 | 2 }) {
+  const reset = useStore((s) => s.resetRoute);
   const [ask, setAsk] = useState(false);
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4 print:hidden">
       {!ask ? (
         <button type="button" onClick={() => setAsk(true)} className="btn-ghost btn-sm">
-          Reset Route 1
+          Reset Route {route}
         </button>
       ) : (
         <>
-          <p className="text-caption text-ink">Clear every Route 1 answer, mark and check count? Your number and name stay.</p>
+          <p className="text-caption text-ink">
+            Clear every Route {route} answer, mark and check count? Your number, name and the other routes stay.
+          </p>
           <button
             type="button"
             onClick={() => {
-              reset();
+              reset(route);
               setAsk(false);
               window.scrollTo({ top: 0 });
             }}
             className="btn-primary btn-sm"
           >
-            Yes, reset Route 1
+            Yes, reset Route {route}
           </button>
           <button type="button" onClick={() => setAsk(false)} className="btn-ghost btn-sm">
             Cancel

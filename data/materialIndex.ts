@@ -26,13 +26,15 @@ export const MATERIALS: MaterialMeta[] = [
 export const MATERIAL_BY_ID = Object.fromEntries(MATERIALS.map((m) => [m.id, m])) as Record<MaterialId, MaterialMeta>;
 export const materialAnchorId = (id: MaterialId) => `mat-${id}`;
 
-/** Section anchors on the Route 1 page, in reading order. */
-export const SECTIONS = [
-  { id: "materi-a", label: "Materi A", sub: "Level 1 · Knowledge", minutes: 60 },
-  { id: "task-1", label: "Task 1", sub: "Diagnostic Note", minutes: 15 },
-  { id: "materi-b", label: "Materi B", sub: "Level 2 · Application", minutes: 60 },
-  { id: "task-2", label: "Task 2", sub: "Calculation Note", minutes: 15 },
-] as const;
-
-/** Task blocks that count toward the Dossier progress ring. */
-export const TASK_BLOCKS = ["b11", "b12", "b23", "b24", "b25", "b26"] as const;
+/** Section anchors per route page, in reading order. */
+export type RailSection = { id: string; label: string; sub: string; minutes: number };
+export const SECTIONS: Record<1 | 2, RailSection[]> = {
+  1: [
+    { id: "materi-a", label: "Materi A", sub: "Level 1 · Knowledge", minutes: 60 },
+    { id: "task-1", label: "Task 1", sub: "Diagnostic Note", minutes: 15 },
+  ],
+  2: [
+    { id: "materi-b", label: "Materi B", sub: "Level 2 · Application", minutes: 60 },
+    { id: "task-2", label: "Task 2", sub: "Calculation Note", minutes: 15 },
+  ],
+};

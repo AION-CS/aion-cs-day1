@@ -35,10 +35,11 @@ function Ring({ done, total }: { done: number; total: number }) {
 }
 
 /** Sticky section rail with hash anchors, minutes per section and the Dossier progress ring. */
-export function SectionRail() {
+export function SectionRail({ route }: { route: 1 | 2 }) {
   const hydrated = useHydrated();
-  const progress = dossierProgress(usePersisted());
-  const [active, setActive] = useState<string>(SECTIONS[0].id);
+  const progress = dossierProgress(usePersisted(), route);
+  const sections = SECTIONS[route];
+  const [active, setActive] = useState<string>(sections[0].id);
   const { done, total } = hydrated ? progress : { done: 0, total: progress.total };
 
   useEffect(() => {
@@ -46,8 +47,8 @@ export function SectionRail() {
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        let cur: string = SECTIONS[0].id;
-        for (const s of SECTIONS) {
+        let cur: string = sections[0].id;
+        for (const s of sections) {
           const el = document.getElementById(s.id);
           if (el && el.getBoundingClientRect().top <= 140) cur = s.id;
         }
@@ -60,16 +61,16 @@ export function SectionRail() {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [sections]);
 
   return (
     <nav
-      aria-label="Route 1 sections"
+      aria-label={`Route ${route} sections`}
       className="sticky top-12 z-30 -mx-4 border-b border-line bg-canvas/95 px-4 backdrop-blur md:-mx-6 md:px-6 print:hidden"
     >
       <div className="flex items-center gap-2 py-1.5">
         <ol className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
-          {SECTIONS.map((s) => (
+          {sections.map((s) => (
             <li key={s.id} className="min-w-0 flex-1">
               <a
                 href={`#${s.id}`}

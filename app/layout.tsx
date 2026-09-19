@@ -5,6 +5,7 @@ import { TopBar } from "@/components/chrome/TopBar";
 import { Footer } from "@/components/chrome/Footer";
 import { ParticipantStrip } from "@/components/chrome/ParticipantStrip";
 import { StoreHydrator } from "@/components/chrome/StoreHydrator";
+import { MentorBar } from "@/components/chrome/MentorBar";
 
 export const metadata: Metadata = {
   title: `${COURSE.site} — ${COURSE.title}`,
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="flex min-h-screen flex-col">
         <StoreHydrator />
+        <MentorBar />
         <TopBar />
         <main className="mx-auto w-full max-w-[1100px] flex-1 px-4 pb-8 md:px-6">
           <ParticipantStrip />

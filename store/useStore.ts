@@ -61,11 +61,11 @@ export type L2State = {
 
 export type Persisted = {
   participant: { no: string; name: string };
-  ui: { bannerDismissed: boolean; sectionsRead: Record<string, boolean> };
+  ui: { bannerDismissed: Record<string, boolean>; sectionsRead: Record<string, boolean> };
   l1: L1State;
   l2: L2State;
-  /** Empty stub — Route 2 (Level 3) is built in the next release. */
-  route2: Record<string, never>;
+  /** Empty stub — Route 3 (Level 3, management decision) is built in the next release. */
+  route3: Record<string, never>;
 };
 
 type Session = {
@@ -78,7 +78,7 @@ type Session = {
 
 type Actions = {
   setParticipant: (patch: Partial<Persisted["participant"]>) => void;
-  dismissBanner: () => void;
+  dismissBanner: (routeKey: string) => void;
   toggleRead: (cardId: string, value?: boolean) => void;
 
   placeRecord: (id: RecordId, bin: Bin | null) => void;
@@ -104,7 +104,7 @@ type Actions = {
   setFocusedFigure: (id: FigureId | null) => void;
   setMentorUnlocked: (v: boolean) => void;
   mentorFill: () => void;
-  resetRoute1: () => void;
+  resetRoute: (route: 1 | 2 | null) => void;
 };
 
 const emptyPlacements = (): Placements =>
@@ -138,10 +138,10 @@ const emptyL2 = (): L2State => ({
 
 const emptyPersisted = (): Persisted => ({
   participant: { no: "", name: "" },
-  ui: { bannerDismissed: false, sectionsRead: {} },
+  ui: { bannerDismissed: {}, sectionsRead: {} },
   l1: emptyL1(),
   l2: emptyL2(),
-  route2: {},
+  route3: {},
 });
 
 /** Flags survive only while the thing they flag is unchanged. */
@@ -159,7 +159,8 @@ export const useStore = create<Persisted & Session & Actions>()(
       focusedFigure: null,
 
       setParticipant: (patch) => set((s) => ({ participant: { ...s.participant, ...patch } })),
-      dismissBanner: () => set((s) => ({ ui: { ...s.ui, bannerDismissed: true } })),
+      dismissBanner: (routeKey) =>
+        set((s) => ({ ui: { ...s.ui, bannerDismissed: { ...s.ui.bannerDismissed, [routeKey]: true } } })),
       toggleRead: (cardId, value) =>
         set((s) => ({
           ui: {
@@ -257,6 +258,8 @@ export const useStore = create<Persisted & Session & Actions>()(
       setFocusedFigure: (id) => set({ focusedFigure: id }),
       setMentorUnlocked: (v) => set({ mentorUnlocked: v }),
 
+      // Mentor autofill: every answer in Routes 1 and 2, plus a participant number and
+      // name if they are empty, so the note can be exported straight away.
       mentorFill: () =>
         set((s) => {
           const l1 = emptyL1();
@@ -272,17 +275,30 @@ export const useStore = create<Persisted & Session & Actions>()(
           l2.q6Submitted = true;
           l2.q6Overclaim = isOverclaim(KEY_L2.q6);
           l2.explorerLayers = { onboarding: true, incident: true, ale: true };
-          return { l1, l2, resetCount: s.resetCount + 1 };
+          const participant = {
+            no: s.participant.no.trim() ? s.participant.no : "99",
+            name: s.participant.name.trim() ? s.participant.name : "Mentor Check",
+          };
+          return { participant, l1, l2, resetCount: s.resetCount + 1 };
         }),
 
-      // Route 1 state only — the participant strip stays.
-      resetRoute1: () =>
-        set((s) => ({
-          l1: emptyL1(),
-          l2: emptyL2(),
-          ui: { ...s.ui, bannerDismissed: false, sectionsRead: {} },
-          resetCount: s.resetCount + 1,
-        })),
+      // One route's state only (Route 1 = Materi A + Task 1, Route 2 = Materi B + Task 2).
+      // The participant strip stays. `null` clears both routes.
+      resetRoute: (route) =>
+        set((s) => {
+          const keep = (k: string) =>
+            route === null ? false : route === 1 ? !k.startsWith("A") : !k.startsWith("B");
+          const sectionsRead = Object.fromEntries(Object.entries(s.ui.sectionsRead).filter(([k]) => keep(k)));
+          const bannerDismissed = { ...s.ui.bannerDismissed };
+          if (route === null) for (const k of Object.keys(bannerDismissed)) delete bannerDismissed[k];
+          else delete bannerDismissed[`r${route}`];
+          return {
+            l1: route === 2 ? s.l1 : emptyL1(),
+            l2: route === 1 ? s.l2 : emptyL2(),
+            ui: { bannerDismissed, sectionsRead },
+            resetCount: s.resetCount + 1,
+          };
+        }),
     }),
     {
       name: STORAGE_KEY,
@@ -295,7 +311,7 @@ export const useStore = create<Persisted & Session & Actions>()(
         ui: s.ui,
         l1: s.l1,
         l2: s.l2,
-        route2: s.route2,
+        route3: s.route3,
       }),
       migrate: (persisted) => persisted as Persisted,
       // A stored blob from an older shape must never leave a field undefined.
@@ -305,7 +321,14 @@ export const useStore = create<Persisted & Session & Actions>()(
         return {
           ...current,
           participant: { ...base.participant, ...p.participant },
-          ui: { ...base.ui, ...p.ui },
+          ui: {
+            sectionsRead: { ...base.ui.sectionsRead, ...p.ui?.sectionsRead },
+            // An older blob stored a single boolean here; anything that is not a map is dropped.
+            bannerDismissed:
+              p.ui && typeof p.ui.bannerDismissed === "object" && p.ui.bannerDismissed !== null
+                ? { ...p.ui.bannerDismissed }
+                : {},
+          },
           l1: {
             ...base.l1,
             ...p.l1,
@@ -319,7 +342,7 @@ export const useStore = create<Persisted & Session & Actions>()(
             fillins: { ...base.l2.fillins, ...p.l2?.fillins },
             motives: { ...base.l2.motives, ...p.l2?.motives },
           },
-          route2: {},
+          route3: {},
         };
       },
     },
