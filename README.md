@@ -1,210 +1,174 @@
-# AION Green IT — Day 15
+# AION Green IT — Day 16
 
-**Module 11: Innovations for the Sustainable IT of Tomorrow** (sustainable innovation, artificial
-intelligence and the circular economy) — the interactive working companion for Day 15.
+**Module 12: Capturing & Visualising Sustainability Targets** (Green IT KPIs, continuous
+optimisation, transparent reporting and IT-specific carbon monitoring) — the interactive working
+companion for Day 16.
 
-**Built: Route 1 (Levels 1–2) and Route 2 (Level 3) — both routes complete.**
+**Built: Route 1 (Levels 1–2) and Route 2 (Level 3) — both routes complete, depth-upgraded to the Day 14
+standard** (`../DEPTH-UPGRADE-PROMPT.md`).
 
-This day is bootstrapped from Day 14's codebase: its store shape, export mechanism, mentor tools
-and UI primitives are reused as-is. Three things changed deliberately.
+This day is bootstrapped from Day 15's codebase: its store shape, export mechanism, mentor tools and
+UI primitives are reused as-is. What changed is the content, the depth of the material and the tasks'
+feedback, and one structural deviation.
 
-**Material: "read less, do more."** Day 14 ran a ~60-minute facilitator-led block per route. Day 15
-runs short micro-cards instead — Route 1's nine (C1–C9, ~22 min total) and Route 2's four (D1–D4,
-~15 min) — each one 3–5 sentences, one live diagram, one micro-interaction, and the decision rule a
-task will ask for. The teaching is not thinner, it is denser, and the learning happens inside the
-tasks. `components/ui/MicroCard.tsx` is the renderer (`MicroCard` type in `lib/materialSection.ts`,
-alongside the existing `MaterialSection` a fuller day still uses).
-
-**Task 1: decision-first, not drag-first.** Nothing is dragged into a verdict. For each initiative
-the learner answers two diagnostic questions, and the *combination* of those two answers resolves
-the card into one of three zones. Because the zone is computed from the learner's own reasoning it
-is never a free pick, so showing it immediately reveals nothing they did not just decide. Undo/redo
-therefore covers the *answers* — undoing a diagnosis moves the card back out of its zone, which is
-the same "remove a wrong placement and retry" guarantee CLAUDE.md §5 exists for.
-
-**Task 3's canvas connects rather than lists.** Six fixed blocks; the learner draws connections
-between them (native HTML5 drag, plus tap-to-select as the fallback) rather than filling in six
-separate fields. An orphaned block surfaces a live, non-gated hint immediately, and also blocks
-export via the missing list — the same "disconnected initiative" failure mode the material warns
-about, made visible as you build.
-
-**Export-naming note.** Route 1's Level 2 build prompt names two separate exports
-(`…-l1task1`, `…-l2task1`). The established codebase convention — CLAUDE.md §12 ("one export bar,
-one deliverable, one missing list spanning the whole task") and Day 14 Route 1's own precedent for
-a merged L1+L2 route — is **one export per route**, so Route 1 now exports a single PDF covering
-both parts as `1-{name}-day15-l1l2task1`, not two files. Flagged here per that prompt's own
-instruction to surface the discrepancy rather than pick silently. Route 2 has no such conflict: one
-level, one task, one export (`l3task1`), exactly as specified.
+**Route 1 keeps two exports, on purpose.** CLAUDE.md §12 asks for one merged export per route. This
+day's build brief names two separate deliverables for Route 1 — one per material-then-task pair — so
+Route 1 is two short pairs, each with its own export, rather than one continuous block. Route 2 has
+one level, one task, one export. Flagged here rather than picked silently.
 
 ## Routes
 
 | Route | Levels | Case | Material | Task | Export |
 |---|---|---|---|---|---|
-| `/route-1-assess-and-decide` | 1–2 | FutureGrid Technologies | C1–C9 micro-cards, ~22 min | Part 1 Diagnose (6 initiatives → zone, lens, rationale) → handover → Part 2 Decide (assess 3 lines on 7 dimensions, radar, priority pick + justification), ~30 min total | `1-{name}-day15-l1l2task1` PDF |
-| `/route-2-management-decision` | 3 | NovaCircular Technologies | D1–D4 micro-cards + CircularMind worked example, ~15 min | Connect 6 blocks into a decision architecture, then the 7-element management proposal, ~20 min | `1-{name}-day15-l3task1` PDF |
+| `/route-1-kpis-and-monitoring` | 1–2 | Clarity Digital Services | M1–M4 (~10 min) then M5–M7 (~8 min) | Task 1 Diagnose (~15 min), Task 2 Decide (~15 min) | `1-{name}-day16-l1task1` and `1-{name}-day16-l2task2` PDFs |
+| `/route-2-management-decision` | 3 | Verdeon Digital Governance Group | D1–D4 (~11 min) | Five-stage management proposal (~20 min) | `1-{name}-day16-l3task1` PDF |
 
-## The shape of Route 1
+Route minutes on the landing page are material plus task: Route 1 ≈ 48, Route 2 ≈ 31. Read more depth is
+optional and not counted.
 
-```
-case brief + learner name (stated once)
-      ↓
-MATERIAL — nine micro-cards, C1–C9, ~22 min, all teaching before either part
-      ↓
-TASK — one continuous scroll:
-  Part 1 — Diagnose: six initiatives → two questions each → the card resolves into a zone
-           → assign a lens → write a one-line rationale → one closing free-text question
-      ↓
-  HANDOVER — an inline panel drawing the learner's own Part 1 zone tally as a small bar
-      ↓
-  Part 2 — Decide: assess lines A/B/C on the 7 dimensions (radar, overlaid + toggleable)
-           → pick one priority → justify (≥2 dimensions referenced) → 3 follow-ups → 2 risks
-      ↓
-ONE EXPORT
-```
-
-## The shape of Route 2
+## How a material card works now
 
 ```
-case brief + learner name (stated once)
-      ↓
-MATERIAL — four micro-cards, D1–D4, ~15 min, ending in a read-only CircularMind worked example
-      ↓
-TASK — one continuous scroll, one task in two stages:
-  Stage 1 — connect the six decision-architecture blocks (native drag + tap-to-select, undo/redo)
-      ↓
-  Stage 2 — the guided proposal: 7 elements, a first-measure selector, a horizon classifier
-      ↓
-ONE EXPORT
+kicker · title · one-line standfirst
+LIVE DIAGRAM      — numbers, a reason per value, "Why this result", "What just changed", a baseline
+DEFINITION        — 2–4 plain sentences (always visible; terms are tappable glossary buttons)
+[ Read more ]     — decision rules ("How to decide when this comes up in the task"), deeper
+                    sub-sections, option guides, sources with real links
 ```
 
-## Route 1's material — nine micro-cards
+- `components/ui/MicroCard.tsx` renders it; `components/ui/ReadMore.tsx` is the native, closed-by-default
+  disclosure. A task's **MaterialRefs chip** scrolls to a card *and opens its Read more* (the decision
+  rules live there) via the `aion:open-material` event.
+- `lib/glossary.ts` + `components/ui/Glossed.tsx` — every abbreviation and standard (KPI, CO₂e, PUE,
+  ISO/IEC 30134, GHG Protocol, Scope 1/2/3, ISO 14064, ISO 50001, PDCA, CSRD, ESRS, EU Energy Efficiency
+  Directive) opens a panel with the full name, a plain meaning and **Source ↗** links. `TermChips` does
+  the same where text sits inside a button.
+- **Link check (2026-09-19):** every URL was opened by script and answered HTTP 200. `iso.org` answers
+  403 to scripts, so ISO standards carry **no link**, only a note. **Re-check before teaching:** the CSRD
+  scope is being revised by the EU "Omnibus" package (said so in the glossary text).
+- Practice cases in the diagrams are deliberately **not** the task's cases, so nothing hands over an answer.
+- Every interactive is derived from state (no literal copies of numbers), keyboard-operable, uses
+  `aria-live="polite"` on the regions that change, and respects `prefers-reduced-motion`.
+- Shared diagram parts: `components/ui/DiagramKit.tsx` (`Chip`, `WhyResult`, `WhatChanged`).
 
-| Card | Teaches | Live diagram + interaction |
+## Route 1 — material and interactives
+
+| Card | Definition (visible) | Interactive |
 |---|---|---|
-| C1 | Novelty is not innovation; the rebound effect / Jevons paradox | A fork with a travelling dot; toggle novelty-driven vs impact-driven |
-| C2 | AI as efficiency promise *and* resource burden; IEA data-centre figures | A balance that tilts under a "how heavy is the AI workload?" slider |
-| C3 | Circular vs linear IT; the R-ladder; Global E-waste Monitor figures | Linear chain beside a loop; tap any of the 7 rungs for an example |
-| C4 | The seven assessment *lenses* — Task 1's vocabulary | A wheel that fills in as each lens chip is opened (soft nudge at <7) |
-| C5 | Attractive now vs viable long-term; organisational maturity; **the verdict rule** | Spiky vs rooted curves; claim cards that flip into the question testing them |
-| C6 | Deciding under uncertainty — a defensible logic beats waiting for certainty | A fork (reuses C1's rig): wait-for-data stalls in fog vs decide-with-logic keeps moving |
-| C7 | The seven assessment *dimensions* — Task 2's radar vocabulary (deliberately distinct from C4's lenses) | A live radar toggling weak/strong demo profiles; tap a dimension for its definition |
-| C8 | Enabler vs point-solution leverage | A hub-and-spoke that "unlocks" downstream decisions on toggle |
-| C9 | Attractive-but-weak: symbolic politics, misinvestment, rebound | A trophy that flips to reveal the three failure modes |
+| M1 | Collected vs managed; three links: target, owner, decision | Pick a practice figure, wire/unwire each link: 3-segment gauge, "Target 0 + Owner 1 + Decision 0 = 1 of 3", reason per link, missing-link first fix |
+| M2 | Activity, outcome, management layers | One subject worded at all three layers; what each answers, what decisions it can drive, what climbing a layer adds |
+| M3 | The six areas | Chips with *look for*, example, *often confused with* + tell-apart question; four practice sentences (not in Task 1) with a reason per tap |
+| M4 | Six gates = sound number (relevant, understandable, comparable, robust) + wired (actionable, owned); short-term vs structural fixes | Filter four practice metrics; fix a failing gate: gate count, sound n/4 + wired m/2, why-result, short-term vs structural tally |
+| M5 | PDCA routine | Cadence, named owner, skip a step: reviews/year, average wait (52 ÷ n ÷ 2), decisions the loop can change |
+| M6 | Three pulls; steer / monitor / park | Score a practice metric 1–3 per pull: barycentric point, ghost of the baseline, verdict rule, reasons |
+| M7 | Three lines A/B/C, seven criteria (in Read more), attractive-but-weak trap | Five conditions × three lines of **neutral facts**; dashboard with/without a review (illustrative numbers) |
 
-Figures rendered exactly as cited: data-centre electricity ~460 TWh (2022) → potentially ~1,000 TWh
-by 2026 (IEA, *Electricity 2024*); e-waste 62 Mt generated in 2022 with 22.3% formally collected
-and recycled (Global E-waste Monitor 2024, UNITAR/ITU). Reference tags also cover the WEEE
-Directive (2012/19/EU), the EU ESPR (2024) and the Ellen MacArthur Foundation R-strategies.
+**Decision taken for the M4 / Stage B conflict:** M4 taught six gates but Stage B asked only about
+target + owner + decision, so a metric that failed on *comparable* (a PUE on different boundaries) had
+no basis in the question. Stage B now asks **"Is the number sound AND wired to management?"** — all six
+gates — with a key of the six gates under the question.
 
-## Route 1's task mechanics
+## Route 1 — task upgrades
 
-**Task 1, Q1 asked of every initiative:** does this mainly reduce net resource use, add compute/data
-load, or both? **Q2, whichever is most diagnostic:** circular or linear · impact-led or novelty-led
-· organisationally tested or untested. **The verdict rule (C5, `resolveZone`):** both signals
-pointing the right way → Sustainable opportunity; both wrong → Sustainability risk; any
-disagreement, including an honest "both, unclear" → Mixed. The intended split is two initiatives
-per zone; the sharpest pair is 1 and 6 — same technology, opposite verdict, because one was proposed
-on a measured saving and the other on visibility.
+- **Task 1:** every area shows *look for* and *tell apart from its neighbour* at the point of use; Stage B shows the six-gate key;
+  Stage B's answer pill is neutral (colour is reserved for a verdict); ✓ green / ✕ red verdicts with a
+  neutral clue, **cleared when the answer or placement changes**.
+- **Task 2:** each line lists **What it involves**; under each of the 21 ratings sits a **neutral fact**
+  (`LINE_FACTS`) — facts, not rankings. A key defines the seven criteria at the point of use. The verdict
+  uses `CheckVerdict`.
+- **The case is briefed once** (`ENGAGEMENT`, above Material 1). The task framing carries only the instruction.
 
-**Task 2** is decide-first too: Phase 1 answers all seven dimension questions per option (never a
-blind slider) to render each line's radar; Phase 2 asks for one priority pick, a justification
-referencing ≥2 dimensions, three follow-ups, and two attractive-but-weak risks. The check
-(`checkPriority`) never names which line is "right" — genuinely, by design, all three defend — it
-only tests two pick-agnostic things: does the justification cite real evidence, and has the
-standard objection to *whichever* line was picked been pre-empted. The mentor answer key names B as
-the textbook-defensible pick with a `teachingNote` for participants who reasonably choose A or C.
+## Route 2 — material and interactives
 
-**Checking** on both tasks is one action, never automatic, and reports an item-level verdict —
-never per-question — because Q2/the objection check is binary and naming it directly would be the
-answer (CLAUDE.md §4, §12). Clues sharpen from soft to sharp on the second and later checks of the
-same item. Full reasoning per option lives in the mentor answer keys.
+| Card | Definition (visible) | Interactive | Read more adds |
+|---|---|---|---|
+| D1 | Instrument vs documentation | Attach a decision / name an accountable person to a practice instrument: 0–2 links, documentation → information → instrument | Why documentation still matters (CSRD, EED) |
+| D2 | Three layers, each needs the one before | Four build orders: which layers have their footing, why, count | **The eight twelve-month decisions defined** (means / use when / watch out) and the read-only TerraMetrics worked example |
+| D3 | Five factors | Practice organisation presets + "move 5 points": pentagon from points, ghost baseline, leader and margin, live tensions, underweighted factors and what they put at risk | How the pairs pull |
+| D4 | Four roles and mandates | Give a practice responsibility to each role: mandate, asks, use when, watch out, consequence | **Each role** and **the four responsibilities defined** |
 
-## Route 2's material — four micro-cards + one worked example
+## Route 2 — task upgrades
 
-| Card | Teaches | Live diagram + interaction |
-|---|---|---|
-| D1 | Scattered initiatives vs one decision architecture | Nodes snapping from scattered to routed-through-one-hub on toggle |
-| D2 | The four assessment criteria — benefit, resource/load, strategic viability, controllability | A funnel; drop a demo initiative in and see which filter stops it |
-| D3 | Governance loop — propose → assess → approve/park → review; ISO 50001 / ISO 20400 | Click each stage of the loop for its role and question |
-| D4 | Time horizons — short / medium / structural | A slider across three bands, each with concrete examples |
+- **Stage A:** role cards show their mandate *and what they ask*; the CSRD / ESRS / EED terms open glossary panels.
+- **Stage B:** every option shows what it involves, with *use when · watch out* one tap away; no check (an open judgement).
+- **Stage C:** layer cards show what each *needs*; ✓/✕ verdict on the dependency order only.
+- **Stage D:** live sums ("15 + 15 + 25 + 20 + 25 = 100"), delta from an even split, why-result (leader and margin, ties named), tensions, underweighted factors and their risk, and a *what just changed* line.
+- **Stage E:** each role shows *use when*; each responsibility shows what it means; under every placement a **"What this adds up to"** consequence line; a live summary of who holds what; ✓/✕ verdicts cleared when a responsibility moves.
+- **The case is briefed once** (`ENGAGEMENT`); the task framing is one sentence naming the five stages.
 
-The material ends in a **read-only worked example** (CircularMind Digital Systems GmbH, dark
-banner, no inputs) — CURRICULUM-GUIDE.md §2's pattern of reasoning *from* one company and being
-assessed *on* another (NovaCircular).
+## Coverage table — task step → material that defines it
 
-## Route 2's task mechanic
+| Task step / option | Defined in | Where the rule lives | Interactive that rehearses it |
+|---|---|---|---|
+| T1-A six areas; second tag | M3 | visible definition + Read more rules | M3 chips and practice sentences |
+| T1-A improvement per area | M4 | short-term vs structural (visible) | M4 fix tally |
+| T1-B target, owner, decision | M1 | visible definition | M1 wired-check |
+| T1-B six gates, sound AND wired | M4 | visible definition + gate list in Read more | M4 gate filter |
+| T1-B "activity is not enough" | M2 | visible definition | M2 layer ladder |
+| T1-C short-term vs structural | M4 | visible definition | M4 fixes (short-term / structural) |
+| T2 Lines A, B, C | M7 | visible definition; *involves* on each line in the task | M7 condition matrix |
+| T2 seven criteria | M7 Read more (`CriteriaGuide`); M6 (informative value, controllability); M5 (steering, long-term) | Read more + key in the task | M6 triangle, M5 loop |
+| T2 conditions (budget, visible progress, incomplete data, simple reports, IT usability) | M7 | matrix of neutral facts | M7 condition matrix |
+| T2 attractive-but-weak risks | M7 | visible trap sentence | M7 dashboard ± review |
+| T2 review cycle, owner | M5 | visible definition | M5 loop |
+| R2-A four role lenses | D4 | visible definition + Read more role guide | D4 role lab |
+| R2-A reasons (CSRD/ESRS/EED) | D1 Read more + glossary | glossary panels | — |
+| R2-B eight guiding decisions | D2 Read more (`GuidingOptionsGuide`) | means / use when / watch out; also under each option | D2 staircase (rationale for staging) |
+| R2-C three layers + first move | D2 | visible definition | D2 build orders |
+| R2-D five factors | D3 | visible definition | D3 pentagon lab |
+| R2-E four responsibilities | D4 Read more (`ResponsibilitiesGuide`) | means; consequences under each placement | D4 role lab |
+| R2-E roles | D4 | visible mandates + Read more | D4 role lab |
 
-**Stage 1** — six fixed blocks (AI use, Innovation portfolio, Circular economy, Investment logic,
-Governance, Management review); the learner draws connections between them rather than filling in
-fields. **Stage 2** — the seven-element proposal: strategic relevance, three 12-month guiding
-decisions, decision logic (must reference D2's four criteria), central trade-offs, a first-measure
-selector (framework / AI / circular) plus its justification, roles & governance, and the
-decide-now call — alongside a fixed six-measure horizon classifier reinforcing D4.
+## Defensible answers (mentor keys)
 
-**"Check my proposal"** runs three fixed, factual checks in order — does element 3 name all four D2
-criteria (naming which one is missing, since that's checklist coverage, not a graded pick); has a
-structurally weak first-measure pick's standard objection been addressed; do the horizon
-classifications span more than one band — and never states the model recommendation itself. Unlike
-Task 2, this exercise *does* have a taught answer (framework first, per the CircularMind lesson),
-so the mentor answer key marks it accordingly with a `teachingNote` for real-world urgency
-counter-arguments.
+- **T1-A** signals: one expected area each; a defensible secondary is marked per signal. **T1-B** six metrics: each has one expected answer (all six gates). **T1-C** six moves: one expected lane each.
+- **T2** — genuinely open. The check never marks the pick: it tests only that the justification references ≥ 2 criteria and pre-empts the standard objection to the chosen line. Key names C as the textbook-defensible pick, with a `teachingNote` for A and B.
+- **R2-C** — the one place with a single defensible order (short → medium → structural). **R2-E** — each responsibility maps to one role by its D4 mandate (KPI ownership and review → CIO, data collection → Controlling, external sign-off → Head of Sustainability); a role holding nothing is not an error. **R2-A/B/D** open; g2 + g4 + g6 is the recommended combination, g1 is defensible from the sustainability lens.
 
 ## Shared components
 
-- `lib/materialSection.ts` — `MicroCard` (this day) and `MaterialSection` (fuller days).
-- `components/ui/MicroCard.tsx` — heading → diagram → sentences → decision rules → source tags.
-- `components/ui/MiniNav.tsx` — sticky card dots and the top progress bar.
-- `components/ui/LivePanel.tsx` — sticky deliverable column on desktop, expandable strip on mobile.
-- `components/ui/RadarChart.tsx` — Task 2's three-line overlaid, toggleable comparison radar.
-- `components/ui/MissingList.tsx` — `MissingItem.before` opens a closed container before scrolling.
-- `lib/usePlacementHistory.ts` — per-exercise undo/redo; each board/canvas/classifier owns its own
-  instance. Snapshots hold whatever "placement" means for that exercise — diagnostic answers,
-  dimension scores, canvas edges, or horizon-band assignments.
-- `components/ui/UndoRedoControls.tsx` + `lib/undoShortcuts.ts` — buttons and Ctrl/⌘+Z.
+- `components/ui/MicroCard.tsx`, `ReadMore.tsx`, `Glossed.tsx` (`GlossedText`, `TermPanel`, `TermChips`), `DiagramKit.tsx`, `CheckVerdict.tsx`.
+- `components/ui/MiniNav.tsx`, `LivePanel.tsx`, `RadarChart.tsx`, `MissingList.tsx` (`MissingItem.before`).
+- `lib/usePlacementHistory.ts` + `components/ui/UndoRedoControls.tsx` + `lib/undoShortcuts.ts` — per-exercise undo/redo.
 - `components/ui/AnswerKey.tsx` + `MentorFillButton` / `AnswerKeyButton` — mentor tools.
 - `components/chrome/RouteGate.tsx` — Route 2's soft, non-blocking "Route 1 first" banner.
 
 ## Standards implemented
 
-- **Itemized missing items**, every one a button that scrolls to and flashes the exact field —
-  including combined-count items where CLAUDE.md's own examples call for it ("Only 1 of 2 risks
-  written", "6 canvas blocks orphaned", "3 measures unclassified").
-- **Export button is never disabled.** From an incomplete state it opens the missing list and jumps
-  to the first gap; it does not export.
-- **Check on demand, clue not answer** — item-level verdict, tiered soft-then-sharp, never the
-  correct zone, priority line, canvas link, or model recommendation.
-- **Undo/redo** on every diagnostic answer, dimension score, canvas connection, and horizon
-  placement.
-- **No hard locks** — every route is reachable by URL; Route 2 shows only a soft order-suggestion
-  banner until Route 1 is exported.
-- **Mentor tools** — one auto-fill per route, per-exercise answer keys, shared passcode
-  `muchson123` in plaintext on purpose. The unlock flag is session-only, so a reload re-locks it.
+- **Itemized missing items**, every one a button that scrolls to and flashes the exact field.
+- **Export buttons are never disabled.** From an incomplete state they open the missing list and jump to the first gap.
+- **Check on demand, clue not answer** — ✓ green / ✕ red, soft clue first, sharper on later checks, never the answer. **Green means "verified", nothing else.** A verdict clears when the state it checked changes.
+- **Undo/redo** on every placement exercise. **No hard locks.**
+- **Mentor tools** — one auto-fill per route, per-exercise answer keys, passcode `muchson123` in plaintext on purpose. The unlock flag is session-only.
 - **Field instructions below the label**, never only in a placeholder.
-- **Material traceability** — every option a task offers is taught in a card above it, and
-  `MaterialRefs` chips on each field point back at the exact cards it draws on.
+- **Material traceability** — `MaterialRefs` chips on each task step point back at the cards it draws on (and open their Read more).
 
 ## Layout
 
 ```
 app/
   page.tsx                              two route cards, both available
-  route-1-assess-and-decide/            FutureGrid Technologies
-  route-2-management-decision/          NovaCircular Technologies
+  route-1-kpis-and-monitoring/          Clarity Digital Services
+  route-2-management-decision/          Verdeon Digital Governance Group
 lib/
-  routes.ts                             day identity + the two-entry registry
-  materialSection.ts                    MicroCard + MaterialSection types
-  route1/  index · sections (C1–C9) · material (nine cards) ·
-           task1 (zones, lenses, six initiatives, clues, answer keys) ·
-           task2 (dimensions, three lines, radar scoring, objection clue engine, answer key)
-  route2/  index · sections (D1–D4) · material (four cards + worked example) ·
-           task3 (blocks, connections, proposal elements, first-measure + horizon clues, answer key)
+  routes.ts                             day identity (CASE) + the two-entry registry
+  materialSection.ts                    MicroCard type (definition · reasoning · more · sources)
+  glossary.ts                           terms, meanings, verified source links
+  route1/  index · sections (M1–M7) · material · gates (six gates + practice metrics) ·
+           task1 (areas, ten signals, six metrics, six horizon items, clues, answer keys) ·
+           task2 (seven criteria, three lines + involves, LINE_FACTS, CONDITIONS, clue engine, answer key)
+  route2/  index · sections (D1–D4) · material ·
+           task (roles, reasons, guiding decisions, layers + dependencies, factors + tensions,
+                 readAllocation, responsibilities + consequences, answer key)
   downloadFile.ts                       exportFilename(...) + printHtmlDocument() — PDF via window.print()
-  store.ts                              Zustand + localStorage (key aion-greenit-day15), useHydrated()
+  store.ts                              Zustand + localStorage (key aion-greenit-day16), useHydrated()
 components/
-  route1/   CaseBrief · Material · MaterialDiagrams · Task · DiagnosisBoard · Handover · PartTwo ·
-            ReportPanel · ExportBar · MentorTools · useRoute1 · exportDocuments
-  route2/   CaseBrief · Material · MaterialDiagrams · Task · Canvas · ProposalBuilder ·
-            ReportPanel · ExportBar · MentorTools · useRoute2 · exportDocuments
+  route1/   CaseBrief · Material1 · Material2 · MaterialDiagrams (M1–M4) · MaterialDiagrams2 (M5–M7) ·
+            Task1 · Task2 · DiagnosisBoard · ClassifyTasks · ReportPanel1/2 · ExportBar1/2 ·
+            MentorTools · useRoute1 · exportDocuments
+  route2/   CaseBrief · Material · MaterialDiagrams · Task · StageFrame · StageGuiding ·
+            StageSequence · StageAllocate · StageGovernance · ReportPanel · ExportBar ·
+            MentorTools · useRoute2 · exportDocuments
   ui/       cross-day shared components
 ```
 
@@ -215,7 +179,7 @@ npm ci
 npm run dev
 ```
 
-The parent `../.claude/launch.json` has a `day15-dev` entry — `preview_start` reads the parent
+The parent `../.claude/launch.json` has a `day16-dev` entry — `preview_start` reads the parent
 config, not this folder's.
 
 ```bash

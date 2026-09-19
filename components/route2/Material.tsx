@@ -4,7 +4,16 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MicroCard } from "@/components/ui/MicroCard";
 import { MiniNav } from "@/components/ui/MiniNav";
 import { MATERIAL, MATERIAL_INTRO, MATERIAL_NAV, MATERIAL_ORDER, materialAnchorId } from "@/lib/route2";
-import { LeadershipInstrumentToggle, LayeredStaircase, TradeoffPentagon, RoleChips } from "./MaterialDiagrams";
+import {
+  GuidingOptionsGuide,
+  LayeredStaircase,
+  LeadershipInstrumentToggle,
+  ResponsibilitiesGuide,
+  RoleChips,
+  RoleGuide,
+  TerraMetricsExample,
+  TradeoffPentagon,
+} from "./MaterialDiagrams";
 
 export const MATERIAL_TRACK_ID = "r2-material";
 
@@ -29,7 +38,17 @@ export function Material() {
         <LeadershipInstrumentToggle />
       </MicroCard>
 
-      <MicroCard card={d2} anchorId={materialAnchorId("layeredModel")} total={MATERIAL.length}>
+      <MicroCard
+        card={d2}
+        anchorId={materialAnchorId("layeredModel")}
+        total={MATERIAL.length}
+        extra={
+          <>
+            <GuidingOptionsGuide />
+            <TerraMetricsExample />
+          </>
+        }
+      >
         <LayeredStaircase />
       </MicroCard>
 
@@ -37,7 +56,17 @@ export function Material() {
         <TradeoffPentagon />
       </MicroCard>
 
-      <MicroCard card={d4} anchorId={materialAnchorId("rolePriorities")} total={MATERIAL.length}>
+      <MicroCard
+        card={d4}
+        anchorId={materialAnchorId("rolePriorities")}
+        total={MATERIAL.length}
+        extra={
+          <>
+            <RoleGuide />
+            <ResponsibilitiesGuide />
+          </>
+        }
+      >
         <RoleChips />
       </MicroCard>
     </div>

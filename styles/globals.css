@@ -133,6 +133,11 @@
 .reveal-in {
   animation: revealIn 0.22s ease-out;
 }
+@media (prefers-reduced-motion: reduce) {
+  .reveal-in {
+    animation: none;
+  }
+}
 
 /* A signal card being dragged (native DnD ghost aside, we also dim the source). */
 .is-dragging {

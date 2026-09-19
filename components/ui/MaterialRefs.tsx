@@ -1,6 +1,7 @@
 "use client";
 
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
+import { OPEN_MATERIAL_EVENT } from "@/components/ui/ReadMore";
 import { BookOpen } from "@/components/icons/LineIcons";
 
 export type MaterialRef = { anchorId: string; label: string };
@@ -24,7 +25,11 @@ export function MaterialRefs({ refs, lead = "Based on" }: { refs: MaterialRef[];
         <button
           key={r.anchorId}
           type="button"
-          onClick={() => scrollToAndFlash(r.anchorId, "ref")}
+          onClick={() => {
+            // The decision rules sit behind the card's Read more — open it first, then scroll once the layout settles.
+            window.dispatchEvent(new CustomEvent(OPEN_MATERIAL_EVENT, { detail: r.anchorId }));
+            window.setTimeout(() => scrollToAndFlash(r.anchorId, "ref"), 60);
+          }}
           className="rounded-full border border-accent/35 bg-accentSoft px-2.5 py-0.5 text-micro font-medium text-accent transition-colors duration-150 hover:border-accent hover:text-accentHi"
         >
           {r.label}

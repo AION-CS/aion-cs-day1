@@ -8,8 +8,9 @@ import { undoRedoKeyHandler } from "@/lib/undoShortcuts";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
+import { CheckVerdict } from "@/components/ui/CheckVerdict";
 import { DragHandle } from "@/components/icons/LineIcons";
-import { CHECK_LABELS, HORIZON_ITEMS, HORIZON_LANES, QUALIFYING_QUESTION, R1, STAGE_B_METRICS, materialRefs, type Horizon } from "@/lib/route1";
+import { CHECK_LABELS, GATES, HORIZON_ITEMS, HORIZON_LANES, QUALIFYING_QUESTION, R1, STAGE_B_METRICS, materialRefs, type Horizon } from "@/lib/route1";
 import { checkHorizon, checkMetric, domId, useRoute1, type CheckResult, type HorizonState, type MetricState } from "./useRoute1";
 
 /**
@@ -26,6 +27,17 @@ export function EffectivenessSort() {
   return (
     <div id={domId.stageB} className="scroll-mt-24 space-y-4">
       <MaterialRefs refs={materialRefs(QUALIFYING_QUESTION.material)} />
+      <div className="rounded-xl border border-line bg-canvas p-3">
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Key — the six gates (a metric must clear all of them)</p>
+        <ul className="mt-1.5 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+          {GATES.map((g) => (
+            <li key={g.id} className="text-micro text-ash">
+              <span className="font-semibold text-ink">{g.name}</span>
+              <span className="ml-1 rounded-full border border-line px-1.5 py-px text-[10px] uppercase tracking-wide">{g.half === "sound" ? "sound number" : "wired"}</span> — {g.question}
+            </li>
+          ))}
+        </ul>
+      </div>
       <p className="text-micro text-ash">
         <span className="font-semibold tabular-nums text-ink">{r1.metricsAnswered}</span> of {r1.metricStates.length} answered ·{" "}
         <span className="font-semibold tabular-nums text-accent">{r1.effectiveCount}</span> effective ·{" "}
@@ -50,13 +62,15 @@ export function EffectivenessSort() {
 }
 
 function MetricCard({ state, onAnswer, onCheck }: { state: MetricState; onAnswer: (v: "yes" | "no") => void; onCheck: () => void }) {
-  const [result, setResult] = useState<CheckResult | null>(null);
+  // A verdict belongs to the answer it checked: it disappears when the answer changes.
+  const [checked, setChecked] = useState<{ answer: string; res: CheckResult } | null>(null);
+  const result = checked && checked.answer === state.answer ? checked.res : null;
   const answerKeyItem = STAGE_B_ANSWER_KEY(state);
 
   const runCheck = () => {
     if (!state.answer) return;
     onCheck();
-    setResult(checkMetric(state, state.checkCount + 1));
+    setChecked({ answer: state.answer, res: checkMetric(state, state.checkCount + 1) });
   };
 
   return (
@@ -69,8 +83,7 @@ function MetricCard({ state, onAnswer, onCheck }: { state: MetricState; onAnswer
         {state.verdict && (
           <span
             className={clsx(
-              "anim-pop shrink-0 rounded-full border px-2.5 py-1 text-micro font-semibold",
-              state.verdict === "effective" ? "border-accent/30 bg-accentSoft text-accent" : "border-line bg-mist text-ash",
+              "anim-pop shrink-0 rounded-full border border-line bg-mist px-2.5 py-1 text-micro font-semibold text-ink",
             )}
           >
             {state.verdict === "effective" ? "Effective for management" : "Merely informative"}
@@ -110,13 +123,7 @@ function MetricCard({ state, onAnswer, onCheck }: { state: MetricState; onAnswer
         </button>
         {state.checkCount > 0 && <span className="text-micro text-ash">checked {state.checkCount}×</span>}
       </div>
-      {result?.holds && <p className="reveal-in mt-1.5 text-caption font-semibold text-accent">{CHECK_LABELS.holds}</p>}
-      {result && !result.holds && (
-        <div className="reveal-in mt-1.5 space-y-1">
-          <p className="text-caption text-ink">{result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1}</p>
-          <p className="rounded-lg border border-accent/25 bg-accentSoft px-2.5 py-1.5 text-caption text-ink">{result.clue}</p>
-        </div>
-      )}
+      <CheckVerdict result={result} holdsLabel="This answer holds up." notYetLabel={result && !result.holds && result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1} />
 
       <AnswerKey block={answerKeyItem} />
     </div>
@@ -151,7 +158,8 @@ export function HorizonSort() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overLane, setOverLane] = useState<Horizon | "pool" | null>(null);
-  const [results, setResults] = useState<Record<string, CheckResult>>({});
+  // A verdict belongs to the lane it checked: it disappears when the item moves.
+  const [results, setResults] = useState<Record<string, { lane: Horizon | null; res: CheckResult }>>({});
 
   const currentMap = (): PlacementMap => Object.fromEntries(r1.horizonStates.map((h) => [h.id, h.lane]));
   const applyMap = (map: PlacementMap) => {
@@ -193,7 +201,7 @@ export function HorizonSort() {
   const runCheck = (item: HorizonState) => {
     const nextCount = item.checkCount + 1;
     setNote(R1.checkCountC(item.id), String(nextCount));
-    setResults((r) => ({ ...r, [item.id]: checkHorizon(item, nextCount) }));
+    setResults((r) => ({ ...r, [item.id]: { lane: item.lane, res: checkHorizon(item, nextCount) } }));
   };
 
   const unplaced = r1.horizonStates.filter((h) => !h.lane);
@@ -282,7 +290,8 @@ export function HorizonSort() {
               ) : (
                 <div className="space-y-2.5">
                   {items.map((h) => {
-                    const result = results[h.id];
+                    const stored = results[h.id];
+                    const result = stored && stored.lane === h.lane ? stored.res : null;
                     const answerKey = HORIZON_ITEMS.find((i) => i.id === h.id)!.answerKey;
                     return (
                       <div key={h.id} id={domId.horizonItem(h.id)} draggable onDragStart={(e) => startDrag(e, h.id)} onDragEnd={endDrag} className="scroll-mt-24 space-y-2 rounded-lg border border-line bg-paper p-2.5">
@@ -305,13 +314,7 @@ export function HorizonSort() {
                           </button>
                           {h.checkCount > 0 && <span className="text-micro text-ash">checked {h.checkCount}×</span>}
                         </div>
-                        {result?.holds && <p className="reveal-in text-micro font-semibold text-accent">{CHECK_LABELS.holds}</p>}
-                        {result && !result.holds && (
-                          <div className="reveal-in space-y-1">
-                            <p className="text-micro text-ink">{result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1}</p>
-                            <p className="rounded-lg border border-accent/25 bg-accentSoft px-2 py-1 text-micro text-ink">{result.clue}</p>
-                          </div>
-                        )}
+                        <CheckVerdict compact result={result} holdsLabel={CHECK_LABELS.holds} notYetLabel={result && !result.holds && result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1} />
                         <AnswerKey block={answerKey} />
                       </div>
                     );

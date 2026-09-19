@@ -7,6 +7,7 @@ import { createPlacementHistory, type PlacementMap } from "@/lib/usePlacementHis
 import { undoRedoKeyHandler } from "@/lib/undoShortcuts";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
+import { CheckVerdict } from "@/components/ui/CheckVerdict";
 import { DragHandle } from "@/components/icons/LineIcons";
 import { CHECK_LABELS, FIRST_MOVE_FIELD, LAYERS, R2, SEQUENCE_INSTRUCTION, SEQUENCE_POSITIONS, materialRefs, type LayerId, type SequencePosition } from "@/lib/route2";
 import { useRoute2, domId, positionSlotId, layerCardId } from "./useRoute2";
@@ -88,6 +89,7 @@ export function StageSequence() {
   return (
     <div id={domId.sequenceBoard} tabIndex={-1} onKeyDown={undoRedoKeyHandler(handleUndo, handleRedo)} className="scroll-mt-24 space-y-4">
       <p className="max-w-prose text-caption text-ash">{SEQUENCE_INSTRUCTION}</p>
+      <MaterialRefs refs={materialRefs(["layeredModel"])} />
       <div className="flex items-center justify-between gap-3">
         <p className="text-micro text-ash">
           <span className="font-semibold tabular-nums text-ink">{r2.sequencedCount}</span> of {LAYERS.length} sequenced
@@ -151,13 +153,7 @@ export function StageSequence() {
         {!r2.sequenceComplete && <span className="text-micro text-ash">Place all three stages first.</span>}
         {r2.checkCountSeq > 0 && <span className="text-micro text-ash">checked {r2.checkCountSeq}×</span>}
       </div>
-      {result?.holds && <p className="reveal-in text-caption font-semibold text-accent">{CHECK_LABELS.holds}</p>}
-      {result && !result.holds && (
-        <div className="reveal-in space-y-1">
-          <p className="text-caption text-ink">{result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1}</p>
-          <p className="rounded-lg border border-accent/25 bg-accentSoft px-2.5 py-1.5 text-caption text-ink">{result.clue}</p>
-        </div>
-      )}
+      <CheckVerdict result={result} holdsLabel={CHECK_LABELS.holds} notYetLabel={result && !result.holds && result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1} />
 
       <div id={domId.firstMove} className="scroll-mt-24">
         <label htmlFor="r2-first-move-field" className="block text-caption font-semibold text-ink">
@@ -219,6 +215,10 @@ function LayerCard({
         <DragHandle className="h-3.5 w-3.5" /> {layer.name}
       </div>
       <p className="mt-0.5 text-micro text-ink">{layer.description}</p>
+      <p className="mt-1 text-micro text-ash">
+        <span className="font-semibold text-ink">Needs: </span>
+        {layer.needs}
+      </p>
     </div>
   );
 }

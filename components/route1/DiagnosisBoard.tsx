@@ -8,8 +8,9 @@ import { undoRedoKeyHandler } from "@/lib/undoShortcuts";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
+import { CheckVerdict } from "@/components/ui/CheckVerdict";
 import { DragHandle, Icon } from "@/components/icons/LineIcons";
-import { AREAS, AREA_FIELD, APPROACH_FIELD, CHECK_LABELS, R1, materialRefs, type AreaId } from "@/lib/route1";
+import { AREAS, AREA_FIELD, APPROACH_FIELD, CHECK_LABELS, R1, areaById, materialRefs, type AreaId } from "@/lib/route1";
 import { checkSignalPlacement, domId, useRoute1, type CheckResult, type SignalState } from "./useRoute1";
 
 /**
@@ -168,6 +169,14 @@ export function DiagnosisBoard() {
                   <p className="text-caption font-semibold text-ink">{area.name}</p>
                 </div>
                 <p className="mt-0.5 text-micro text-ash">{area.note}</p>
+                <p className="mt-1 text-micro text-ash">
+                  <span className="font-semibold text-ink">Look for: </span>
+                  {area.lookFor}
+                </p>
+                <p className="mt-0.5 text-micro text-ash">
+                  <span className="font-semibold text-ink">Tell apart from {areaById(area.confusedWith).name}: </span>
+                  {area.ask}
+                </p>
               </div>
 
               {placed.length === 0 ? (
@@ -281,13 +290,15 @@ function PlacedCard({
   onDragEnd: () => void;
 }) {
   const setNote = useProgress((s) => s.setNote);
-  const [result, setResult] = useState<CheckResult | null>(null);
+  // A verdict belongs to the placement it checked: it disappears the moment the area changes.
+  const [checked, setChecked] = useState<{ area: AreaId | null; res: CheckResult } | null>(null);
+  const result = checked && checked.area === state.area ? checked.res : null;
 
   const runCheck = () => {
     if (!state.area) return;
     const nextCount = state.checkCount + 1;
     setNote(R1.checkCount(state.signal.id), String(nextCount));
-    setResult(checkSignalPlacement(state, nextCount));
+    setChecked({ area: state.area, res: checkSignalPlacement(state, nextCount) });
   };
 
   const otherAreas = AREAS.filter((a) => a.id !== state.area);
@@ -325,13 +336,7 @@ function PlacedCard({
           </button>
           {state.checkCount > 0 && <span className="text-micro text-ash">checked {state.checkCount}×</span>}
         </div>
-        {result?.holds && <p className="reveal-in text-caption font-semibold text-accent">{CHECK_LABELS.holds}</p>}
-        {result && !result.holds && (
-          <div className="reveal-in space-y-1">
-            <p className="text-caption text-ink">{result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1}</p>
-            <p className="rounded-lg border border-accent/25 bg-accentSoft px-2.5 py-1.5 text-caption text-ink">{result.clue}</p>
-          </div>
-        )}
+        <CheckVerdict result={result} holdsLabel={CHECK_LABELS.holds} notYetLabel={result && !result.holds && result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1} />
       </div>
 
       {/* Optional secondary tag */}

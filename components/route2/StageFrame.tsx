@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { useProgress } from "@/lib/store";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { Icon } from "@/components/icons/LineIcons";
+import { TermChips } from "@/components/ui/Glossed";
 import { R2, RELEVANCE_PICK_COUNT, RELEVANCE_REASONS, RELEVANCE_JUSTIFICATION_FIELD, ROLES, ROLE_LENS_FIELD, materialRefs } from "@/lib/route2";
 import { useRoute2, domId } from "./useRoute2";
 
@@ -44,6 +45,10 @@ export function StageFrame() {
                 <span>
                   <span className="block text-caption font-semibold text-ink">{role.name}</span>
                   <span className="block text-micro text-ash">{role.mandate}</span>
+                  <span className="mt-0.5 block text-micro text-ash">
+                    <span className="font-semibold text-ink">Asks: </span>
+                    {role.asks}
+                  </span>
                 </span>
               </button>
             );
@@ -85,6 +90,7 @@ export function StageFrame() {
             );
           })}
         </div>
+        <TermChips ids={["csrd", "esrs", "eed"]} lead="Terms in these reasons" />
       </div>
 
       <div id={domId.relevanceJustification} className="scroll-mt-24">

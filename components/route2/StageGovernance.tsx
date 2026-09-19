@@ -6,8 +6,10 @@ import { useProgress } from "@/lib/store";
 import { createPlacementHistory, type PlacementMap } from "@/lib/usePlacementHistory";
 import { undoRedoKeyHandler } from "@/lib/undoShortcuts";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
+import { CheckVerdict } from "@/components/ui/CheckVerdict";
+import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { DragHandle, Icon } from "@/components/icons/LineIcons";
-import { CHECK_LABELS, GOVERNANCE_INSTRUCTION, NOW_DECISION_FIELD, R2, RESPONSIBILITIES, RISK_OF_WAITING_FIELD, ROLES, type ResponsibilityId, type RoleId } from "@/lib/route2";
+import { CHECK_LABELS, GOVERNANCE_INSTRUCTION, NOW_DECISION_FIELD, R2, RESPONSIBILITIES, RISK_OF_WAITING_FIELD, ROLES, materialRefs, type ResponsibilityId, type RoleId } from "@/lib/route2";
 import { useRoute2, domId, responsibilityCardId, type CheckResult } from "./useRoute2";
 
 /**
@@ -31,7 +33,8 @@ export function StageGovernance() {
   const [selectedId, setSelectedId] = useState<ResponsibilityId | null>(null);
   const [draggingId, setDraggingId] = useState<ResponsibilityId | null>(null);
   const [overRole, setOverRole] = useState<RoleId | "pool" | null>(null);
-  const [results, setResults] = useState<Record<string, CheckResult>>({});
+  // A verdict belongs to the placement it checked: it disappears when the responsibility moves.
+  const [results, setResults] = useState<Record<string, { role: RoleId | null; res: CheckResult }>>({});
 
   const currentMap = (): PlacementMap => Object.fromEntries(RESPONSIBILITIES.map((r) => [r.id, r2.responsibilityRole[r.id]]));
   const applyMap = (map: PlacementMap) => {
@@ -73,7 +76,7 @@ export function StageGovernance() {
   const runCheck = (id: ResponsibilityId) => {
     const nextCount = r2.respCheckCount[id] + 1;
     setNote(R2.checkCountResp(id), String(nextCount));
-    setResults((r) => ({ ...r, [id]: r2.checkResponsibility(id, nextCount) }));
+    setResults((r) => ({ ...r, [id]: { role: r2.responsibilityRole[id] as RoleId | null, res: r2.checkResponsibility(id, nextCount) } }));
   };
 
   return (
@@ -82,6 +85,8 @@ export function StageGovernance() {
         <p className="max-w-prose text-caption text-ash">{GOVERNANCE_INSTRUCTION}</p>
         <UndoRedoControls onUndo={handleUndo} onRedo={handleRedo} canUndo={past.length > 0} canRedo={future.length > 0} />
       </div>
+
+      <MaterialRefs refs={materialRefs(["rolePriorities"])} lead="Roles and responsibilities are defined in" />
 
       <div
         onDragOver={(e) => {
@@ -114,7 +119,11 @@ export function StageGovernance() {
                   selectedId === resp.id ? "border-accent bg-accentSoft text-accent ring-2 ring-accent/30" : "border-line bg-paper text-ink hover:border-ash",
                 )}
               >
-                <DragHandle className="h-3.5 w-3.5 text-ash" /> {resp.name}
+                <DragHandle className="h-3.5 w-3.5 text-ash" />
+                <span>
+                  {resp.name}
+                  <span className="block max-w-xs text-micro font-normal text-ash">{resp.means}</span>
+                </span>
               </div>
             ))}
           </div>
@@ -140,12 +149,17 @@ export function StageGovernance() {
                 <Icon name={role.icon} className="h-4 w-4 text-accent" />
                 <p className="text-caption font-semibold text-ink">{role.name}</p>
               </div>
+              <p className="text-micro text-ash">
+                <span className="font-semibold text-ink">Use when: </span>
+                {role.useWhen}
+              </p>
               {held.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-line bg-canvas px-2.5 py-2 text-micro italic text-ash">Drop, or tap a selected item here.</p>
               ) : (
                 <div className="space-y-2">
                   {held.map((resp) => {
-                    const result = results[resp.id];
+                    const stored = results[resp.id];
+                    const result = stored && stored.role === role.id ? stored.res : null;
                     return (
                       <div key={resp.id} id={responsibilityCardId(resp.id)} draggable onDragStart={(e) => startDrag(e, resp.id)} onDragEnd={endDrag} className="space-y-1.5 rounded-lg border border-line bg-paper p-2">
                         <div className="flex items-center justify-between gap-2">
@@ -162,13 +176,11 @@ export function StageGovernance() {
                           </button>
                           {r2.respCheckCount[resp.id] > 0 && <span className="text-micro text-ash">checked {r2.respCheckCount[resp.id]}×</span>}
                         </div>
-                        {result?.holds && <p className="reveal-in text-micro font-semibold text-accent">{CHECK_LABELS.holds}</p>}
-                        {result && !result.holds && (
-                          <div className="reveal-in space-y-1">
-                            <p className="text-micro text-ink">{result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1}</p>
-                            <p className="rounded-lg border border-accent/25 bg-accentSoft px-2 py-1 text-micro text-ink">{result.clue}</p>
-                          </div>
-                        )}
+                        <p className="text-micro text-ash">
+                          <span className="font-semibold text-ink">What this adds up to: </span>
+                          {resp.consequence[role.id]}
+                        </p>
+                        <CheckVerdict compact result={result} holdsLabel={CHECK_LABELS.holds} notYetLabel={result && !result.holds && result.tier === "sharp" ? CHECK_LABELS.wrongTier2 : CHECK_LABELS.wrongTier1} />
                       </div>
                     );
                   })}
@@ -177,6 +189,24 @@ export function StageGovernance() {
             </div>
           );
         })}
+      </div>
+
+      <div aria-live="polite" className="rounded-xl border border-dashed border-line bg-paper p-3">
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">What the whole assignment adds up to</p>
+        <p className="mt-0.5 text-caption font-semibold tabular-nums text-ink">
+          {ROLES.map((role) => `${role.short} ${r2.byRole(role.id).length}`).join(" · ")} · unassigned {r2.unassignedResponsibilities.length}
+        </p>
+        <p className="mt-1 text-caption text-ink">
+          {r2.unassignedResponsibilities.length === RESPONSIBILITIES.length
+            ? "Nothing is assigned yet."
+            : [
+                ...ROLES.filter((role) => r2.byRole(role.id).length >= 3).map((role) => `${role.short} holds ${r2.byRole(role.id).length} of ${RESPONSIBILITIES.length} — a concentration in one mandate.`),
+                ...ROLES.filter((role) => r2.byRole(role.id).length === 0 && r2.unassignedResponsibilities.length === 0).map((role) => `${role.short} holds nothing — fine if independent challenge is the point (D4), a gap if that mandate matters here.`),
+                r2.unassignedResponsibilities.length > 0 ? `${r2.unassignedResponsibilities.length} still unassigned.` : "",
+              ]
+                .filter(Boolean)
+                .join(" ") || "Spread across the roles: each responsibility sits with a different mandate."}
+        </p>
       </div>
 
       <div id={domId.nowDecision} className="scroll-mt-24">

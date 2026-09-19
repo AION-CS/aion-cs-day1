@@ -37,7 +37,7 @@ export const R2_KEY_PREFIXES = ["r2:"];
 export const PAGE_INTRO = {
   tag: "ROUTE 2 — MANAGEMENT DECISION",
   title: "From Metrics to a Management Decision",
-  body: "Module 12, Level 3. KPIs, carbon monitoring and reporting only matter once they are reframed as leadership instruments rather than documentation. Four short cards give you that vocabulary — staging a model in layers, the senior five-factor trade-off, and how different roles prioritise differently — then you build the decision-ready management proposal for Verdeon Digital Governance Group: not a list of metrics, but a decision architecture, defended despite an incomplete picture.",
+  body: "Module 12, Level 3. KPIs, carbon monitoring and reporting only matter once they are reframed as leadership instruments rather than documentation. Four short cards give you that vocabulary — staging a model in layers, the senior five-factor trade-off, and how different roles prioritise differently — then you build a decision-ready management proposal: not a list of metrics, but a decision architecture, defended despite an incomplete picture.",
 } as const;
 
 export const ENGAGEMENT = {

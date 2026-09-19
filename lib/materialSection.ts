@@ -34,29 +34,35 @@ export type MaterialSection<Id extends string = string> = {
 };
 
 /**
- * The lighter material unit: one compact card, 3–5 sentences, one live diagram
- * and one micro-interaction. Used where a day's design puts the learning inside
- * the task rather than in a long facilitator-led reading block — the teaching
- * is not thinner, it is denser.
+ * The lighter material unit: one compact card. What stays on screen is a
+ * one-line standfirst, one live diagram and a short **definition** (2–4 plain
+ * sentences a non-expert can repeat back). Everything else — the decision rules,
+ * deeper explanation, the sources — sits behind a collapsed "Read more" so the
+ * visible part never grows.
  *
  * `reasoning` carries the same weight it does on a full section: it is the rule
- * set the task's MaterialRefs chips point back at, and it is what makes the
- * card operational rather than merely informative.
+ * set the task's MaterialRefs chips point back at (a chip also opens the Read
+ * more), and it is what makes the card operational rather than merely
+ * informative.
  */
 export type MicroCard<Id extends string = string> = {
   id: Id;
-  /** "C1" — the label the mini-nav and the reference chips use. */
+  /** "M1" — the label the mini-nav and the reference chips use. */
   code: string;
   n: number;
   icon: IconKey;
   title: string;
   /** One line under the title, before the diagram. */
   standfirst: string;
-  /** The whole written teaching for this card — 3 to 5 tight sentences. */
-  sentences: string[];
-  /** "How to decide when this comes up in the task" — 1–2 operational rules. */
+  /** Visible: 2–4 plain sentences that define what the card is about. */
+  definition: string[];
+  /** Read more — "How to decide when this comes up in the task". */
   reasoning: string[];
-  /** Small source tags under the card, never long paragraphs. */
+  /** One line shown beside the Read more button: what is inside. */
+  readMoreHint: string;
+  /** Read more — deeper explanation, as named sub-sections. */
+  more: { heading: string; paragraphs: string[] }[];
+  /** Read more — real, separately clickable sources. A missing `url` means it could not be link-checked. */
   sources: { label: string; detail?: string; url?: string }[];
   minutes: number;
 };

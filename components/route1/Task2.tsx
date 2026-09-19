@@ -8,6 +8,7 @@ import { undoRedoKeyHandler } from "@/lib/undoShortcuts";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
+import { CheckVerdict } from "@/components/ui/CheckVerdict";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { LivePanel } from "@/components/ui/LivePanel";
 import { RadarChart, SeriesSwatch, type RadarAxis, type RadarSeries } from "@/components/ui/RadarChart";
@@ -15,6 +16,7 @@ import { Icon } from "@/components/icons/LineIcons";
 import {
   ANSWER_KEY_L2,
   CHECK2_LABELS,
+  LINE_FACTS,
   CONTEXT_CHIPS_T2,
   CRITERIA,
   FOLLOWUP_FIELDS,
@@ -114,12 +116,11 @@ export function Task2() {
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
           <div className="rounded-2xl border border-accent/30 bg-accentSoft/60 p-5">
-            <p className="text-body font-semibold text-ink">{TASK2_FRAMING.lead}</p>
-            <p className="mt-2 max-w-prose text-body text-ash">{TASK2_FRAMING.instruction}</p>
+            <p className="max-w-prose text-body text-ink">{TASK2_FRAMING.instruction}</p>
           </div>
 
           <div className="rounded-2xl border border-line bg-paper p-5">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">General conditions</p>
+            <p className="text-micro font-semibold uppercase tracking-wide text-ash">Conditions you decide under</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {CONTEXT_CHIPS_T2.map((chip) => (
                 <span key={chip} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-micro text-ink">
@@ -140,6 +141,18 @@ export function Task2() {
             </div>
 
             <MaterialRefs refs={materialRefs(TASK2_MATERIAL_REFS)} />
+
+            <div className="rounded-xl border border-line bg-paper p-3">
+              <p className="text-micro font-semibold uppercase tracking-wide text-ash">Key — the seven criteria</p>
+              <ul className="mt-1.5 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+                {CRITERIA.map((c) => (
+                  <li key={c.id} className="text-micro text-ash">
+                    <span className="font-semibold text-ink">{c.name}</span>
+                    {c.direction === "higherRiskier" ? " (reads in reverse: High is a caution sign)" : ""} — {c.definition}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <div className="space-y-4">
               {OPTION_LINES.map((opt) => (
@@ -271,15 +284,11 @@ export function Task2() {
                 {!r1.priority && <span className="text-micro text-ash">Pick a priority line first.</span>}
                 {r1.checkCount2 > 0 && <span className="text-micro text-ash">checked {r1.checkCount2}×</span>}
               </div>
-              {result?.holds && <p className="reveal-in text-caption font-semibold text-accent">{CHECK2_LABELS.holds}</p>}
-              {result && !result.holds && (
-                <div className="reveal-in space-y-1">
-                  <p className="text-caption text-ink">
-                    {result.reason === "criteria" ? CHECK2_LABELS.needsCriteria : result.tier === "sharp" ? CHECK2_LABELS.wrongTier2 : CHECK2_LABELS.wrongTier1}
-                  </p>
-                  <p className="rounded-lg border border-accent/25 bg-accentSoft px-2.5 py-1.5 text-caption text-ink">{result.clue}</p>
-                </div>
-              )}
+              <CheckVerdict
+                result={result}
+                holdsLabel={CHECK2_LABELS.holds}
+                notYetLabel={result && !result.holds ? (result.reason === "criteria" ? CHECK2_LABELS.needsCriteria : result.tier === "sharp" ? CHECK2_LABELS.wrongTier2 : CHECK2_LABELS.wrongTier1) : ""}
+              />
             </div>
 
             <AnswerKey block={ANSWER_KEY_L2} />
@@ -317,6 +326,15 @@ function OptionCard({
           </p>
           <h4 className="text-h3 text-ink">{option.title}</h4>
           <p className="mt-0.5 max-w-prose text-caption text-ash">{option.description}</p>
+          <p className="mt-2 text-micro font-semibold uppercase tracking-wide text-ink">What it involves</p>
+          <ul className="mt-0.5 space-y-0.5">
+            {option.involves.map((line) => (
+              <li key={line} className="flex gap-1.5 text-micro text-ash">
+                <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-ash" />
+                {line}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
@@ -327,6 +345,10 @@ function OptionCard({
             <div key={c.id} id={domId.optionScore(option.id, c.id)} className="scroll-mt-24 rounded-lg border border-line bg-canvas p-2.5">
               <p className="text-micro font-semibold text-ink">{c.name}</p>
               <p className="mt-0.5 text-micro text-ash">{c.question.label}</p>
+              <p className="mt-1 rounded-md bg-paper px-2 py-1 text-micro text-ink">
+                <span className="font-semibold">Fact: </span>
+                {LINE_FACTS[c.id][option.id]}
+              </p>
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {c.question.options.map((o) => {
                   const on = level === o.level;

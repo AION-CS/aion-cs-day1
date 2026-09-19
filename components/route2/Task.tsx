@@ -4,7 +4,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { LivePanel } from "@/components/ui/LivePanel";
 import { MaterialRefs } from "@/components/ui/MaterialRefs";
 import { AnswerKey } from "@/components/ui/AnswerKey";
-import { ANSWER_KEY, CONTEXT_CHIPS, TASK_FRAMING, TASK_MATERIAL_REFS, materialRefs } from "@/lib/route2";
+import { ANSWER_KEY, TASK_FRAMING, TASK_MATERIAL_REFS, materialRefs } from "@/lib/route2";
 import { StageFrame } from "./StageFrame";
 import { StageGuiding } from "./StageGuiding";
 import { StageSequence } from "./StageSequence";
@@ -25,19 +25,7 @@ export function Task() {
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
           <div className="rounded-2xl border border-accent/30 bg-accentSoft/60 p-5">
-            <p className="text-body font-semibold text-ink">{TASK_FRAMING.lead}</p>
-            <p className="mt-2 max-w-prose text-body text-ash">{TASK_FRAMING.instruction}</p>
-          </div>
-
-          <div className="rounded-2xl border border-line bg-paper p-5">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">Where Verdeon stands today</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {CONTEXT_CHIPS.map((chip) => (
-                <span key={chip} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-micro text-ink">
-                  {chip}
-                </span>
-              ))}
-            </div>
+            <p className="max-w-prose text-body text-ink">{TASK_FRAMING.instruction}</p>
           </div>
 
           <MaterialRefs refs={materialRefs(TASK_MATERIAL_REFS)} />

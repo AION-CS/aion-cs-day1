@@ -3,153 +3,311 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { Icon } from "@/components/icons/LineIcons";
-import type { IconKey } from "@/lib/routes";
+import { AREAS, GATES, FILTER_SAMPLES, areaById, gateById, type AreaId, type GateId } from "@/lib/route1";
+import { Chip, WhatChanged, WhyResult } from "@/components/ui/DiagramKit";
 
 /**
- * The seven M1–M7 diagrams. Every one is a live widget with exactly one
- * micro-interaction — inline SVG plus CSS transitions, no charting or
- * animation library (CLAUDE.md §9). Sentences stay in HTML beside each SVG
- * rather than inside it, so they do not shrink with the viewBox at 380px.
+ * The M1–M4 diagrams. Every one is a live widget — inline SVG plus CSS
+ * transitions, no charting or animation library (CLAUDE.md §9). Each shows
+ * numbers, a reason per value, a live "Why this result", a live "What just
+ * changed" and a baseline to return to. Sentences stay in HTML beside each SVG
+ * rather than inside it, so they do not shrink with the viewBox at 380px. The
+ * practice cases are not Task 1's cases.
  */
 
 // ---------------------------------------------------------------------------
-// M1 — Loose gauges: wired to a decision, or just collected?
+// M1 — Wire a figure to management: target, owner, decision
 // ---------------------------------------------------------------------------
 
-type GaugeSample = { id: string; label: string; wired: boolean; note: string };
+type LinkId = "target" | "owner" | "decision";
 
-const GAUGES: GaugeSample[] = [
-  { id: "kwh", label: "Monthly kWh total", wired: false, note: "An activity number with no stated target, owner, or decision attached — collected, not managed." },
-  { id: "pue", label: "PUE, boundary varies by site", wired: false, note: "Even where a number is watched, an inconsistent boundary means it can't yet be compared or acted on across sites — collected, not managed." },
-  { id: "co2e", label: "CO₂e per service vs 2030 target, owned", wired: true, note: "Target, owner and a live decision (on track or not) are all present — this one is wired to a decision." },
-  { id: "reuse", label: "Device reuse rate vs 30% target, owned by Procurement", wired: true, note: "A named target and a named owner turn this into something a decision can actually be made from." },
+const LINKS: { id: LinkId; name: string; question: string; whenOn: string; whenOff: string; fix: string; thinking: string }[] = [
+  {
+    id: "target",
+    name: "Target",
+    question: "Is there a target to compare it with?",
+    whenOn: "can now be judged — is it on track, or not",
+    whenOff: "cannot be judged: there is nothing to compare it with",
+    fix: "agree a target",
+    thinking: "You are now asking “compared with what?”",
+  },
+  {
+    id: "owner",
+    name: "Owner",
+    question: "Does one named person answer for it?",
+    whenOn: "now has someone who must explain a miss",
+    whenOff: "has nobody who must explain a miss",
+    fix: "name one accountable person",
+    thinking: "You are now asking “who answers for this?”",
+  },
+  {
+    id: "decision",
+    name: "Decision",
+    question: "Does a decision change when it moves?",
+    whenOn: "now leads to a choice — fund, stop or change something",
+    whenOff: "leads to no choice at all, whatever it shows",
+    fix: "state which decision it feeds",
+    thinking: "You are now asking “what would we do differently?”",
+  },
 ];
 
+type Figure = { id: string; label: string; links: Record<LinkId, { on: boolean; reason: string }> };
+
+const FIGURES: Figure[] = [
+  {
+    id: "helpdesk",
+    label: "Tickets closed by the Green IT helpdesk",
+    links: {
+      target: { on: false, reason: "No target says how many tickets is enough." },
+      owner: { on: false, reason: "The helpdesk handles tickets, but nobody answers for the figure itself." },
+      decision: { on: false, reason: "Nothing is decided when the count goes up or down." },
+    },
+  },
+  {
+    id: "printing",
+    label: "Printer pages per employee",
+    links: {
+      target: { on: false, reason: "No target for pages exists." },
+      owner: { on: true, reason: "Facilities tracks it and answers for it." },
+      decision: { on: false, reason: "Nothing is decided from it." },
+    },
+  },
+  {
+    id: "water",
+    label: "Water use per data hall vs the permit limit",
+    links: {
+      target: { on: true, reason: "The permit sets a limit to compare with." },
+      owner: { on: false, reason: "Each hall reads its own meter; nobody answers for the total." },
+      decision: { on: true, reason: "Passing 90 % of the limit triggers a review." },
+    },
+  },
+  {
+    id: "utilisation",
+    label: "Server utilisation vs a 50 % target, reviewed monthly",
+    links: {
+      target: { on: true, reason: "A 50 % target exists." },
+      owner: { on: true, reason: "Platform Ops answers for it." },
+      decision: { on: true, reason: "A low reading triggers a decision to consolidate servers." },
+    },
+  },
+];
+
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/** Three-segment arc: one segment per link. */
+function arc(cx: number, cy: number, r: number, a0: number, a1: number) {
+  const p = (a: number) => [cx + r * Math.cos((a * Math.PI) / 180), cy + r * Math.sin((a * Math.PI) / 180)];
+  const [x0, y0] = p(a0);
+  const [x1, y1] = p(a1);
+  return `M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+}
+
 export function DataVsManagementGauges() {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const open = GAUGES.find((g) => g.id === openId) ?? null;
+  const [figureId, setFigureId] = useState<string>("printing");
+  const figure = FIGURES.find((f) => f.id === figureId)!;
+  const baseline: Record<LinkId, boolean> = { target: figure.links.target.on, owner: figure.links.owner.on, decision: figure.links.decision.on };
+  const [sim, setSim] = useState<Record<LinkId, boolean>>(baseline);
+  const [change, setChange] = useState<string | null>(null);
+
+  const pick = (id: string) => {
+    const f = FIGURES.find((x) => x.id === id)!;
+    const b = { target: f.links.target.on, owner: f.links.owner.on, decision: f.links.decision.on };
+    setFigureId(id);
+    setSim(b);
+    const n = Object.values(b).filter(Boolean).length;
+    setChange(`Now looking at “${f.label}”. As recorded, ${n} of 3 links are in place.`);
+  };
+
+  const toggle = (id: LinkId) => {
+    const link = LINKS.find((l) => l.id === id)!;
+    const next = { ...sim, [id]: !sim[id] };
+    setSim(next);
+    const n = Object.values(next).filter(Boolean).length;
+    setChange(
+      next[id]
+        ? `You wired the ${link.name.toLowerCase()} link. The figure ${link.whenOn}. ${n} of 3 links now. ${link.thinking}`
+        : `You removed the ${link.name.toLowerCase()} link. The figure ${link.whenOff}. ${n} of 3 links now.`,
+    );
+  };
+
+  const reset = () => {
+    setSim(baseline);
+    setChange("Back to the figure as recorded.");
+  };
+
+  const n = LINKS.filter((l) => sim[l.id]).length;
+  const missing = LINKS.filter((l) => !sim[l.id]);
+  const edited = LINKS.some((l) => sim[l.id] !== baseline[l.id]);
+  const headline = n === 3 ? "Managed" : n === 0 ? "Only collected" : "Partly wired";
+  const why =
+    n === 3
+      ? "A target, a named owner and a decision are all in place, so a change in the number leads to a choice and someone answers for it."
+      : `${cap(missing.map((l) => l.name.toLowerCase()).join(" and "))} ${missing.length > 1 ? "are" : "is"} missing. The first fix is to ${missing[0].fix}${missing.length > 1 ? `, then ${missing.slice(1).map((l) => l.fix).join(" and ")}` : ""}.`;
 
   return (
     <div className="space-y-4">
-      <svg
-        viewBox="0 0 360 150"
-        preserveAspectRatio="xMidYMid meet"
-        className="mx-auto h-auto w-full max-w-xl"
-        role="img"
-        aria-label="Four gauges representing Clarity's real figures; tap one to see whether it is wired to a decision or just being collected."
-      >
-        {GAUGES.map((g, i) => {
-          const cx = 46 + i * 90;
-          const cy = 70;
-          const isOpen = openId === g.id;
-          return (
-            <g key={g.id} className="cursor-pointer" onClick={() => setOpenId((cur) => (cur === g.id ? null : g.id))}>
-              <path
-                d={`M ${cx - 34} ${cy} A 34 34 0 0 1 ${cx + 34} ${cy}`}
-                fill="none"
-                stroke="currentColor"
-                className="text-line"
-                strokeWidth="8"
-                strokeLinecap="round"
-              />
-              <path
-                d={`M ${cx - 34} ${cy} A 34 34 0 0 1 ${cx + 34} ${cy}`}
-                fill="none"
-                stroke="currentColor"
-                className={g.wired ? "text-accent" : "text-warn"}
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray="107"
-                strokeDashoffset={g.wired ? "20" : "60"}
-                style={{ transition: "stroke-dashoffset .3s ease" }}
-              />
-              <circle cx={cx} cy={cy} r="4" className={isOpen ? "fill-ink" : "fill-ash"} />
-              <text x={cx} y={cy + 26} textAnchor="middle" className={clsx("text-[9px] font-semibold", isOpen ? "fill-ink" : "fill-ash")}>
-                {g.label.length > 22 ? g.label.slice(0, 20) + "…" : g.label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
       <div>
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Tap a gauge</p>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Pick a figure to inspect</p>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {GAUGES.map((g) => {
-            const on = openId === g.id;
-            return (
-              <button
-                key={g.id}
-                type="button"
-                onClick={() => setOpenId((cur) => (cur === g.id ? null : g.id))}
-                aria-pressed={on}
-                className={clsx(
-                  "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-                  on ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
-                )}
-              >
-                {g.label}
-              </button>
-            );
-          })}
+          {FIGURES.map((f) => (
+            <Chip key={f.id} on={figureId === f.id} onClick={() => pick(f.id)}>
+              {f.label}
+            </Chip>
+          ))}
         </div>
       </div>
 
-      {open ? (
-        <div
-          key={open.id}
-          className={clsx(
-            "reveal-in rounded-xl border p-3",
-            open.wired ? "border-accent/30 bg-accentSoft" : "border-warn/30 bg-warn/5",
-          )}
-        >
-          <p className={clsx("text-caption font-semibold", open.wired ? "text-accent" : "text-warn")}>
-            {open.wired ? "Wired to a decision." : "Just being collected."}
-          </p>
-          <p className="mt-1 text-caption text-ink">{open.note}</p>
-        </div>
-      ) : (
-        <p className="rounded-xl border border-dashed border-line bg-paper p-3 text-caption text-ash">
-          Tap a gauge to see whether it's wired to a decision, or just being collected.
-        </p>
-      )}
+      <svg
+        viewBox="0 0 300 130"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-sm"
+        role="img"
+        aria-label={`A gauge with three segments — target, owner, decision. ${n} of 3 are wired for ${figure.label}.`}
+      >
+        {LINKS.map((l, i) => {
+          const a0 = 180 + i * 60 + 3;
+          const a1 = 180 + (i + 1) * 60 - 3;
+          return (
+            <path
+              key={l.id}
+              d={arc(150, 105, 78, a0, a1)}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="16"
+              strokeLinecap="butt"
+              className={sim[l.id] ? "text-accent" : "text-line"}
+              style={{ transition: "color .25s ease" }}
+            />
+          );
+        })}
+        <text x="150" y="100" textAnchor="middle" className="fill-ink text-[28px] font-semibold tabular-nums">
+          {n} / 3
+        </text>
+        <text x="150" y="118" textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
+          links wired
+        </text>
+        <text x="62" y="82" textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
+          Target
+        </text>
+        <text x="150" y="20" textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
+          Owner
+        </text>
+        <text x="238" y="82" textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
+          Decision
+        </text>
+      </svg>
+
+      <p className="text-center text-caption font-semibold tabular-nums text-ink">
+        {LINKS.map((l) => `${l.name} ${sim[l.id] ? 1 : 0}`).join(" + ")} = {n} of 3
+        {edited && <span className="ml-1.5 font-normal text-ash">(you changed it — recorded: {Object.values(baseline).filter(Boolean).length})</span>}
+      </p>
+
+      <div className="grid gap-2 sm:grid-cols-3">
+        {LINKS.map((l) => {
+          const on = sim[l.id];
+          const changed = sim[l.id] !== baseline[l.id];
+          return (
+            <div key={l.id} className={clsx("rounded-xl border p-3", on ? "border-accent/40 bg-accentSoft" : "border-line bg-paper")}>
+              <p className="text-caption font-semibold text-ink">
+                {l.name}: {on ? "wired" : "missing"}
+              </p>
+              <p className="mt-0.5 text-micro text-ash">{l.question}</p>
+              <p className="mt-1 text-micro text-ink">{changed ? (on ? "Wired by you — not in the figure as recorded." : "Removed by you — it was in place as recorded.") : figure.links[l.id].reason}</p>
+              <button
+                type="button"
+                onClick={() => toggle(l.id)}
+                aria-pressed={on}
+                className="mt-2 rounded-full border border-line bg-paper px-2.5 py-1 text-micro font-semibold text-accent hover:border-accent"
+              >
+                {on ? `Remove ${l.name.toLowerCase()}` : `Try wiring ${l.name.toLowerCase()}`}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <WhyResult headline={headline} why={why} tone={n === 3 ? "accent" : "warn"} />
+      <WhatChanged text={change} onReset={edited ? reset : undefined} />
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// M2 — Three metric layers, as a pyramid
+// M2 — One fact, three layers
 // ---------------------------------------------------------------------------
 
-type Tier = { id: string; name: string; example: string; y0: number; y1: number; wTop: number; wBottom: number };
+type LayerId = "activity" | "outcome" | "management";
 
-const TIERS: Tier[] = [
-  { id: "management", name: "Management metric", example: "CO₂e per service, vs a stated target — the number a leader steers by.", y0: 12, y1: 52, wTop: 40, wBottom: 110 },
-  { id: "outcome", name: "Outcome metric", example: "Emissions avoided, utilisation improved, service life extended.", y0: 52, y1: 96, wTop: 110, wBottom: 190 },
-  { id: "activity", name: "Activity / input metric", example: "kWh drawn, devices bought, tickets closed.", y0: 96, y1: 144, wTop: 190, wBottom: 280 },
+const LAYER_META: { id: LayerId; name: string; answers: string; drives: string; added: string; y0: number; y1: number; wTop: number; wBottom: number }[] = [
+  { id: "management", name: "Management metric", answers: "Are we on track, and who acts?", drives: "Recurring: fund, adjust or stop — at every review.", added: "a target, a named owner and a review date", y0: 12, y1: 52, wTop: 40, wBottom: 110 },
+  { id: "outcome", name: "Outcome metric", answers: "Did it work?", drives: "One-off: was the change worth doing?", added: "a baseline to compare against (before → after)", y0: 52, y1: 96, wTop: 110, wBottom: 190 },
+  { id: "activity", name: "Activity / input metric", answers: "What did we do or use?", drives: "None by itself.", added: "", y0: 96, y1: 144, wTop: 190, wBottom: 280 },
+];
+
+const SUBJECTS: { id: string; label: string; wording: Record<LayerId, string> }[] = [
+  {
+    id: "laptops",
+    label: "Laptops",
+    wording: {
+      activity: "212 laptops replaced this year.",
+      outcome: "Average laptop service life rose from 3.1 to 4.4 years.",
+      management: "Average laptop service life vs a 5-year target — owned by IT Procurement, reviewed every quarter.",
+    },
+  },
+  {
+    id: "printing",
+    label: "Printing",
+    wording: {
+      activity: "1.2 million pages printed this year.",
+      outcome: "Pages per employee fell from 3,100 to 2,400.",
+      management: "Pages per employee vs a 2,000 target — owned by the Head of Facilities, reviewed every quarter.",
+    },
+  },
 ];
 
 export function MetricLayersPyramid() {
-  const [openId, setOpenId] = useState<string>("management");
-  const open = TIERS.find((t) => t.id === openId)!;
+  const [subjectId, setSubjectId] = useState("laptops");
+  const [layerId, setLayerId] = useState<LayerId>("activity");
+  const [change, setChange] = useState<string | null>(null);
+  const subject = SUBJECTS.find((s) => s.id === subjectId)!;
+  const layer = LAYER_META.find((l) => l.id === layerId)!;
+  const order: LayerId[] = ["activity", "outcome", "management"];
+
+  const select = (next: LayerId) => {
+    if (next === layerId) return;
+    const from = LAYER_META.find((l) => l.id === layerId)!;
+    const to = LAYER_META.find((l) => l.id === next)!;
+    const up = order.indexOf(next) > order.indexOf(layerId);
+    setChange(
+      up
+        ? `You moved up from “${from.answers}” to “${to.answers}” — the measurement can stay the same; what was added is ${to.added}. Decisions it can drive: ${to.drives.toLowerCase()}`
+        : `You moved down from “${from.answers}” to “${to.answers}”. What you lost is ${from.added}, so it can drive less: ${to.drives.toLowerCase()}`,
+    );
+    setLayerId(next);
+  };
 
   return (
     <div className="space-y-4">
-      <svg
-        viewBox="0 0 300 160"
-        preserveAspectRatio="xMidYMid meet"
-        className="mx-auto h-auto w-full max-w-sm"
-        role="img"
-        aria-label="A three-tier pyramid: management metrics at the apex, outcome metrics in the middle, activity metrics at the base."
-      >
-        {TIERS.map((t) => {
-          const on = openId === t.id;
+      <div>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">One subject, three wordings</p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {SUBJECTS.map((s) => (
+            <Chip key={s.id} on={subjectId === s.id} onClick={() => setSubjectId(s.id)}>
+              {s.label}
+            </Chip>
+          ))}
+        </div>
+      </div>
+
+      <svg viewBox="0 0 300 160" preserveAspectRatio="xMidYMid meet" className="mx-auto h-auto w-full max-w-sm" role="img" aria-label="A three-tier pyramid: management metrics at the apex, outcome metrics in the middle, activity metrics at the base.">
+        {LAYER_META.map((t) => {
+          const on = layerId === t.id;
           const x0Top = 150 - t.wTop / 2;
           const x1Top = 150 + t.wTop / 2;
           const x0Bottom = 150 - t.wBottom / 2;
           const x1Bottom = 150 + t.wBottom / 2;
           return (
-            <g key={t.id} className="cursor-pointer" onClick={() => setOpenId(t.id)}>
+            <g key={t.id} className="cursor-pointer" onClick={() => select(t.id)}>
               <polygon
                 points={`${x0Top},${t.y0} ${x1Top},${t.y0} ${x1Bottom},${t.y1} ${x0Bottom},${t.y1}`}
                 className={on ? "fill-accent" : "fill-mist stroke-line"}
@@ -165,61 +323,87 @@ export function MetricLayersPyramid() {
       </svg>
 
       <div className="flex flex-wrap justify-center gap-1.5">
-        {TIERS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setOpenId(t.id)}
-            aria-pressed={openId === t.id}
-            className={clsx(
-              "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-              openId === t.id ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
-            )}
-          >
-            {t.name}
-          </button>
+        {order.map((id) => (
+          <Chip key={id} on={layerId === id} onClick={() => select(id)}>
+            {LAYER_META.find((l) => l.id === id)!.name}
+          </Chip>
         ))}
       </div>
 
-      <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
-        <p className="text-caption text-ink">
-          <span className="font-semibold text-accent">Example — </span>
-          {open.example}
+      <div key={`${subjectId}-${layerId}`} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
+        <p className="text-caption font-semibold text-ink">{subject.wording[layerId]}</p>
+        <p className="mt-1 text-caption text-ink">
+          <span className="font-semibold text-accent">It answers: </span>
+          {layer.answers}
+        </p>
+        <p className="mt-0.5 text-caption text-ink">
+          <span className="font-semibold text-accent">Decisions it can drive: </span>
+          {layer.drives}
         </p>
       </div>
+
+      <WhyResult
+        headline={`${layer.name} — layer ${order.indexOf(layerId) + 1} of 3`}
+        why={
+          layerId === "activity"
+            ? "It is a count of what happened. It becomes an outcome once a baseline exists, and a management metric once a target, an owner and a review sit around it."
+            : layerId === "outcome"
+              ? "The effect is measured against a baseline, so “did it work?” has an answer — but nobody has yet committed to a target, so it cannot yet say “are we on track?”."
+              : "Everything the outcome had, plus a target, a named owner and a fixed review — this is the number a leader steers by."
+        }
+      />
+      <WhatChanged text={change} onReset={layerId !== "activity" ? () => { setLayerId("activity"); setChange("Back to the raw count at the base."); } : undefined} resetLabel="Back to the base" />
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// M3 — The six areas, as clickable chips
+// M3 — The six areas: what each one looks for, and how it differs from its neighbour
 // ---------------------------------------------------------------------------
 
-type AreaChip = { id: string; name: string; icon: IconKey; definition: string };
-
-const AREA_CHIPS: AreaChip[] = [
-  { id: "metricQuality", name: "Metric Quality", icon: "certificate", definition: "Comparable, robust, built on consistent boundaries." },
-  { id: "dataAvailability", name: "Data Availability", icon: "database", definition: "Is it captured at all, and completely?" },
-  { id: "reporting", name: "Reporting", icon: "clipboard", definition: "Informs — or actually supports a decision." },
-  { id: "managementRelevance", name: "Management Relevance", icon: "target", definition: "Tied to a target, an owner, and a decision." },
-  { id: "carbonMonitoring", name: "Carbon Monitoring", icon: "radar", definition: "IT emissions captured and allocated — Scope 1/2/3, in one line." },
-  { id: "responsibilities", name: "Responsibilities", icon: "person", definition: "Is there a named owner?" },
+const PRACTICE: { text: string; expected: AreaId; says: string; why: string }[] = [
+  {
+    text: "The two warehouses record server-room temperature in different units and at different times of day.",
+    expected: "metricQuality",
+    says: "the figure exists at both sites but the two cannot be compared",
+    why: "Both warehouses record it, so nothing is missing — the two figures just do not line up.",
+  },
+  {
+    text: "Nobody has been asked who signs off the annual energy figure.",
+    expected: "responsibilities",
+    says: "no named person answers for the figure",
+    why: "The sentence is about accountability, not about the number or how it is presented.",
+  },
+  {
+    text: "Every site sends a monthly report and head office files it; no priority or budget has ever moved because of one.",
+    expected: "managementRelevance",
+    says: "the report reaches people, but no decision follows from it",
+    why: "The output exists and arrives on time — what is missing is the link to a decision.",
+  },
+  {
+    text: "Emissions from the cloud provider's servers appear in no calculation at all.",
+    expected: "carbonMonitoring",
+    says: "IT's emissions are not captured or allocated",
+    why: "The gap is specifically about IT emissions (Scope 3 here), not just any figure being absent.",
+  },
 ];
 
 export function SixAreaChips() {
-  const [seen, setSeen] = useState<string[]>([]);
-  const [openId, setOpenId] = useState<string | null>(null);
-  const open = AREA_CHIPS.find((a) => a.id === openId) ?? null;
+  const [seen, setSeen] = useState<AreaId[]>([]);
+  const [openId, setOpenId] = useState<AreaId | null>(null);
+  const [answers, setAnswers] = useState<(AreaId | null)[]>(PRACTICE.map(() => null));
+  const open = openId ? areaById(openId) : null;
 
-  const select = (id: string) => {
+  const select = (id: AreaId) => {
     setOpenId((cur) => (cur === id ? null : id));
     setSeen((cur) => (cur.includes(id) ? cur : [...cur, id]));
   };
+  const tried = answers.filter(Boolean).length;
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {AREA_CHIPS.map((a) => {
+        {AREAS.map((a) => {
           const isOpen = openId === a.id;
           const wasSeen = seen.includes(a.id);
           return (
@@ -230,11 +414,7 @@ export function SixAreaChips() {
               aria-pressed={isOpen}
               className={clsx(
                 "flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-colors duration-150",
-                isOpen
-                  ? "border-accent bg-accent text-paper"
-                  : wasSeen
-                    ? "border-accent/40 bg-accentSoft text-accent"
-                    : "border-line bg-paper text-ash hover:border-ash",
+                isOpen ? "border-accent bg-accent text-paper" : wasSeen ? "border-accent/40 bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
               )}
             >
               <Icon name={a.icon} className="h-5 w-5" />
@@ -244,357 +424,235 @@ export function SixAreaChips() {
         })}
       </div>
 
-      {open ? (
-        <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
-          <p className="text-caption text-ink">
-            <span className="font-semibold text-accent">{open.name} — </span>
-            {open.definition}
+      <div aria-live="polite">
+        {open ? (
+          <div key={open.id} className="reveal-in space-y-1.5 rounded-xl border border-accent/30 bg-accentSoft p-3">
+            <p className="text-caption font-semibold text-accent">{open.name}</p>
+            <p className="text-caption text-ink">{open.note}</p>
+            <p className="text-caption text-ink">
+              <span className="font-semibold">Look for: </span>
+              {open.lookFor}.
+            </p>
+            <p className="text-caption text-ink">
+              <span className="font-semibold">Example: </span>
+              {open.example}
+            </p>
+            <p className="text-caption text-ink">
+              <span className="font-semibold">Often confused with {areaById(open.confusedWith).name}. </span>
+              Ask: {open.ask}
+            </p>
+          </div>
+        ) : (
+          <p className="rounded-xl border border-dashed border-line bg-paper p-3 text-caption text-ash">
+            Tap an area to see what it looks for and how it differs from its neighbour — {seen.length} of 6 opened.
           </p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-line bg-paper p-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="text-micro font-semibold uppercase tracking-wide text-ash">Try it — which area does each sentence show?</p>
+          <p className="text-micro tabular-nums text-ash">{tried} of {PRACTICE.length} tried</p>
         </div>
-      ) : (
-        <p className="rounded-xl border border-dashed border-line bg-paper p-3 text-caption text-ash">
-          Tap an area to read what it covers — {seen.length} of 6 opened.
-        </p>
-      )}
+        <p className="mt-0.5 text-micro text-ash">Practice sentences only — they are not in Task 1.</p>
+        <ul className="mt-2 space-y-3">
+          {PRACTICE.map((p, i) => {
+            const tapped = answers[i];
+            const expected = areaById(p.expected);
+            return (
+              <li key={i}>
+                <p className="text-caption text-ink">“{p.text}”</p>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {AREAS.map((a) => (
+                    <Chip key={a.id} on={tapped === a.id} onClick={() => setAnswers((cur) => cur.map((v, k) => (k === i ? a.id : v)))}>
+                      {a.name}
+                    </Chip>
+                  ))}
+                </div>
+                {tapped && (
+                  <p aria-live="polite" className="reveal-in mt-1 text-micro text-ink">
+                    {tapped === p.expected ? (
+                      <>
+                        <span className="font-semibold text-accent">Fits — {expected.name}. </span>
+                        {p.why}
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-semibold text-warn">Not the best fit. </span>
+                        {areaById(tapped).name} would be right if the sentence said something like {areaById(tapped).lookFor}. This one says {p.says}, which makes it {expected.name}.
+                      </>
+                    )}
+                  </p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// M4 — The six-gate filter
+// M4 — The six gates: filter a practice metric, then fix a failing gate
 // ---------------------------------------------------------------------------
 
-const GATES = ["Relevant", "Understandable", "Comparable", "Robust", "Actionable", "Owned"];
-
-type FilterSample = { id: string; label: string; passes: boolean[]; horizon: "shortTerm" | "structural" };
-
-const FILTER_SAMPLES: FilterSample[] = [
-  { id: "pue-good", label: "PUE, one shared boundary, reviewed quarterly", passes: [true, true, true, true, true, true], horizon: "structural" },
-  { id: "pue-bad", label: "PUE, each site uses a different boundary", passes: [true, true, false, false, false, false], horizon: "shortTerm" },
-  { id: "dashboards", label: "Number of dashboards produced this quarter", passes: [false, true, true, true, false, true], horizon: "shortTerm" },
-  { id: "co2e", label: "CO₂e per service, target + owner + review", passes: [true, true, true, true, true, true], horizon: "structural" },
-];
-
 export function SixGateFilter() {
-  const [sampleId, setSampleId] = useState<string>("pue-bad");
+  const [sampleId, setSampleId] = useState<string>("kwh-sites");
+  const [fixed, setFixed] = useState<GateId[]>([]);
+  const [change, setChange] = useState<string | null>(null);
   const sample = FILTER_SAMPLES.find((s) => s.id === sampleId)!;
-  const allPass = sample.passes.every(Boolean);
+
+  const cleared = (id: GateId) => sample.gates[id].pass || fixed.includes(id);
+  const soundCount = GATES.filter((g) => g.half === "sound" && cleared(g.id)).length;
+  const wiredCount = GATES.filter((g) => g.half === "wired" && cleared(g.id)).length;
+  const total = soundCount + wiredCount;
+  const open = GATES.filter((g) => !cleared(g.id));
+  const baseTotal = GATES.filter((g) => sample.gates[g.id].pass).length;
+  const shortFixes = fixed.filter((id) => gateById(id).fixKind === "shortTerm").length;
+  const structFixes = fixed.length - shortFixes;
+
+  const pick = (id: string) => {
+    const s = FILTER_SAMPLES.find((x) => x.id === id)!;
+    setSampleId(id);
+    setFixed([]);
+    const base = GATES.filter((g) => s.gates[g.id].pass).length;
+    setChange(`Now filtering “${s.label}”: ${base} of 6 gates clear as it stands.`);
+  };
+
+  const fix = (id: GateId) => {
+    if (sample.gates[id].pass) return;
+    const g = gateById(id);
+    if (fixed.includes(id)) {
+      setFixed((cur) => cur.filter((x) => x !== id));
+      setChange(`You undid the fix for “${g.name}”. It is open again — ${total - 1} of 6 gates clear.`);
+      return;
+    }
+    setFixed((cur) => [...cur, id]);
+    const now = total + 1;
+    setChange(
+      `You fixed “${g.name}”: ${sample.gates[id].fix} That is a ${g.fixKind === "shortTerm" ? "short-term" : "structural"} fix — ${g.fixKind === "shortTerm" ? "it changes how the number is captured or written down" : "it creates accountability and needs a review to hold"}. ${now} of 6 gates clear now (was ${total}).${now === 6 ? " All six clear — and notice how much of the work was structural." : ""}`,
+    );
+  };
+
+  const reset = () => {
+    setFixed([]);
+    setChange("Back to the metric as it stands.");
+  };
+
+  const soundAll = soundCount === 4;
+  const wiredAll = wiredCount === 2;
+  const headline = total === 6 ? "Clears all six — management-effective" : `Clears ${total} of 6 — merely informative for now`;
+  const why =
+    total === 6
+      ? "The number is sound and it is wired to a target, a decision and an owner."
+      : soundAll && !wiredAll
+        ? `A good number nobody steers by: it is sound (4 of 4), but ${open.map((g) => g.name.toLowerCase()).join(" and ")} ${open.length > 1 ? "are" : "is"} still open.`
+        : !soundAll && wiredAll
+          ? `The wiring is in place (2 of 2) but the number cannot yet be trusted or compared: ${open.map((g) => g.name.toLowerCase()).join(", ")} still open.`
+          : `Both halves need work — sound number ${soundCount} of 4, wired ${wiredCount} of 2. Still open: ${open.map((g) => g.name.toLowerCase()).join(", ")}.`;
 
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Drop a sample metric in</p>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Drop a practice metric in</p>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {FILTER_SAMPLES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setSampleId(s.id)}
-              aria-pressed={sampleId === s.id}
-              className={clsx(
-                "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-                sampleId === s.id ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
-              )}
-            >
+            <Chip key={s.id} on={sampleId === s.id} onClick={() => pick(s.id)}>
               {s.label}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
 
-      <svg
-        viewBox="0 0 360 120"
-        preserveAspectRatio="xMidYMid meet"
-        className="mx-auto h-auto w-full max-w-xl"
-        role="img"
-        aria-label={`Six gates; this sample ${allPass ? "clears all six" : "fails at least one"}.`}
-      >
+      <svg viewBox="0 0 360 120" preserveAspectRatio="xMidYMid meet" className="mx-auto h-auto w-full max-w-xl" role="img" aria-label={`Six gates; this metric clears ${total} of six.`}>
         <rect x="4" y="46" width="60" height="28" rx="8" className="fill-paper stroke-ink" strokeWidth="1.4" />
         <text x="34" y="64" textAnchor="middle" className="fill-ink text-[10px] font-semibold">
           Metric
         </text>
         {GATES.map((g, i) => {
           const x = 84 + i * 46;
-          const pass = sample.passes[i];
+          const base = sample.gates[g.id].pass;
+          const isFixed = fixed.includes(g.id);
+          const pass = base || isFixed;
           return (
-            <g key={g}>
+            <g key={g.id} className={base ? undefined : "cursor-pointer"} onClick={() => fix(g.id)}>
               <path d={i === 0 ? "M64 60 H84" : `M${x - 46 + 30} 60 H${x}`} stroke="currentColor" className="text-ash" strokeWidth="1.2" />
               <circle
-                key={sampleId + i}
+                key={sampleId + g.id + isFixed}
                 cx={x + 15}
                 cy="60"
                 r="15"
                 className={clsx("anim-pop", pass ? "fill-accentSoft stroke-accent" : "fill-danger/10 stroke-danger")}
                 strokeWidth="1.6"
+                strokeDasharray={isFixed ? "3 2" : undefined}
               />
               {pass ? (
                 <path d={`M${x + 9} 60 l4 4 l9 -9`} fill="none" stroke="currentColor" className="text-accent" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               ) : (
                 <path d={`M${x + 10} 54 l10 12 M${x + 20} 54 l-10 12`} stroke="currentColor" className="text-danger" strokeWidth="2" strokeLinecap="round" />
               )}
-              <text x={x + 15} y="88" textAnchor="middle" className="fill-ash text-[8px] font-semibold uppercase tracking-wide">
-                {g}
+              <text x={x + 15} y="88" textAnchor="middle" className="fill-ash text-[7px] font-semibold uppercase tracking-wide">
+                {g.name}
               </text>
             </g>
           );
         })}
-      </svg>
-
-      <div className={clsx("rounded-xl border p-3", allPass ? "border-accent/30 bg-accentSoft" : "border-warn/30 bg-warn/5")}>
-        <p className={clsx("text-caption font-semibold", allPass ? "text-accent" : "text-warn")}>
-          {allPass ? "Clears all six — management-effective." : "Fails at least one gate — merely informative for now."}
-        </p>
-        <p className="mt-1 text-caption text-ink">
-          Buildable{" "}
-          <span className="font-semibold">{sample.horizon === "shortTerm" ? "short-term" : "only structurally"}</span> —{" "}
-          {sample.horizon === "shortTerm"
-            ? "the fix here is an operational one, not a governance one."
-            : "it needs a target, an owner and a review cadence before it counts."}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// M5 — The PDCA loop, clickable arcs
-// ---------------------------------------------------------------------------
-
-type LoopStep = { id: string; verb: string; owner: string; detail: string; angle: number };
-
-const LOOP_STEPS: LoopStep[] = [
-  { id: "measure", verb: "Measure", owner: "Data owner", detail: "Capture the figure consistently, on a fixed boundary.", angle: -90 },
-  { id: "evaluate", verb: "Evaluate", owner: "Metric owner", detail: "Compare it against the target — on track, or not?", angle: -18 },
-  { id: "prioritise", verb: "Prioritise", owner: "Review lead", detail: "Decide what, out of everything found, actually gets acted on.", angle: 54 },
-  { id: "adjust", verb: "Adjust", owner: "Delivery owner", detail: "Make the change — a process, a policy, a target revision.", angle: 126 },
-  { id: "review", verb: "Review", owner: "Management review", detail: "On a fixed cadence, check the adjustment worked — then the loop repeats.", angle: 198 },
-];
-
-const LOOP_CX = 150;
-const LOOP_CY = 100;
-const LOOP_R = 62;
-
-export function PdcaLoop() {
-  const [openId, setOpenId] = useState<string>("measure");
-  const open = LOOP_STEPS.find((s) => s.id === openId)!;
-
-  return (
-    <div className="space-y-4">
-      <svg
-        viewBox="0 0 300 200"
-        preserveAspectRatio="xMidYMid meet"
-        className="mx-auto h-auto w-full max-w-sm"
-        role="img"
-        aria-label="A five-step PDCA loop: measure, evaluate, prioritise, adjust, review, then repeating."
-      >
-        <circle cx={LOOP_CX} cy={LOOP_CY} r={LOOP_R} fill="none" stroke="currentColor" className="text-line" strokeWidth="10" />
-        {LOOP_STEPS.map((s) => {
-          const rad = (a: number) => (a * Math.PI) / 180;
-          const x = LOOP_CX + LOOP_R * Math.cos(rad(s.angle));
-          const y = LOOP_CY + LOOP_R * Math.sin(rad(s.angle));
-          const on = openId === s.id;
-          return (
-            <g key={s.id} className="cursor-pointer" onClick={() => setOpenId(s.id)}>
-              <circle cx={x} cy={y} r="20" className={clsx("transition-colors duration-150", on ? "fill-accent" : "fill-paper stroke-accent/40")} strokeWidth="1.4" />
-              <text x={x} y={y + 3} textAnchor="middle" className={clsx("text-[8px] font-semibold", on ? "fill-paper" : "fill-ink")}>
-                {s.verb}
-              </text>
-            </g>
-          );
-        })}
-        <text x={LOOP_CX} y={LOOP_CY - 4} textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
-          repeats
+        <text x="84" y="14" className="fill-ash text-[8px] font-semibold uppercase tracking-wide">
+          Sound number · {soundCount} of 4
         </text>
-        <text x={LOOP_CX} y={LOOP_CY + 10} textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
-          on a cadence
+        <text x="268" y="14" className="fill-ash text-[8px] font-semibold uppercase tracking-wide">
+          Wired · {wiredCount} of 2
         </text>
       </svg>
 
-      <div className="flex flex-wrap justify-center gap-1.5">
-        {LOOP_STEPS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => setOpenId(s.id)}
-            aria-pressed={openId === s.id}
-            className={clsx(
-              "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-              openId === s.id ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
-            )}
-          >
-            {s.verb}
-          </button>
-        ))}
-      </div>
-
-      <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
-        <p className="text-caption text-ink">
-          <span className="font-semibold text-accent">{open.verb} — </span>
-          {open.detail}
-        </p>
-        <p className="mt-1 text-micro text-ash">Typical owner: {open.owner}</p>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// M6 — The measurability / informative value / controllability triangle
-// ---------------------------------------------------------------------------
-
-type TriangleSample = { id: string; label: string; x: number; y: number; note: string };
-
-// Triangle vertices: Measurability top (180,26), Informative value bottom-left (60,190), Controllability bottom-right (300,190).
-const TRIANGLE_SAMPLES: TriangleSample[] = [
-  { id: "kwh", label: "kWh drawn, no target", x: 168, y: 70, note: "Easy to measure, but on its own barely informative — pulled hard toward Measurability." },
-  { id: "grid", label: "Grid carbon intensity", x: 130, y: 150, note: "Genuinely informative — and almost entirely outside Clarity's control. Pulled toward Informative value, away from Controllability." },
-  { id: "reuse", label: "Device reuse rate vs target, owned", x: 224, y: 150, note: "Something Procurement can actually steer — pulled toward Controllability, with real informative value too." },
-  { id: "co2e", label: "CO₂e per service, target + owner + review", x: 180, y: 118, note: "Reasonably strong on all three at once — closer to the centre than any single corner." },
-];
-
-export function TradeoffTriangle() {
-  const [sampleId, setSampleId] = useState<string>("kwh");
-  const sample = TRIANGLE_SAMPLES.find((s) => s.id === sampleId)!;
-
-  return (
-    <div className="space-y-4">
-      <svg
-        viewBox="0 0 360 220"
-        preserveAspectRatio="xMidYMid meet"
-        className="mx-auto h-auto w-full max-w-md"
-        role="img"
-        aria-label={`A triangle of measurability, informative value and controllability; the selected metric sits closest to ${sample.note}`}
-      >
-        <polygon points="180,26 60,190 300,190" fill="none" stroke="currentColor" className="text-line" strokeWidth="1.6" />
-        <text x="180" y="18" textAnchor="middle" className="fill-ink text-[11px] font-semibold">
-          Measurability
-        </text>
-        <text x="52" y="204" textAnchor="middle" className="fill-ink text-[11px] font-semibold">
-          Informative value
-        </text>
-        <text x="308" y="204" textAnchor="middle" className="fill-ink text-[11px] font-semibold">
-          Controllability
-        </text>
-        <circle cx="180" cy="26" r="4" className="fill-ash" />
-        <circle cx="60" cy="190" r="4" className="fill-ash" />
-        <circle cx="300" cy="190" r="4" className="fill-ash" />
-
-        <circle
-          key={sampleId}
-          cx={sample.x}
-          cy={sample.y}
-          r="8"
-          className="anim-pop fill-accent"
-        />
-      </svg>
-
-      <div>
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Try a sample metric</p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {TRIANGLE_SAMPLES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setSampleId(s.id)}
-              aria-pressed={sampleId === s.id}
-              className={clsx(
-                "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-                sampleId === s.id ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div key={sample.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
-        <p className="text-caption text-ink">{sample.note}</p>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// M7 — Three candidate lines: shine vs structural strength
-// ---------------------------------------------------------------------------
-
-type LinePreview = { id: string; letter: string; icon: IconKey; title: string; shine: number; strength: number; note: string };
-
-const LINE_PREVIEWS: LinePreview[] = [
-  { id: "a", letter: "A", icon: "gauge", title: "KPI & dashboard system", shine: 3, strength: 2, note: "Visible fast — but only as strong as the review process reading it." },
-  { id: "b", letter: "B", icon: "factory", title: "IT carbon monitoring", shine: 2, strength: 2, note: "Credible once built — but a full baseline and allocation build takes time." },
-  { id: "c", letter: "C", icon: "cycle", title: "Review & improvement process", shine: 1, strength: 3, note: "Least visible on day one — but it is what makes any of the data already collected start steering." },
-];
-
-export function ThreeLinesPreview() {
-  const [openId, setOpenId] = useState<string>("a");
-  const open = LINE_PREVIEWS.find((l) => l.id === openId)!;
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        {LINE_PREVIEWS.map((l) => {
-          const on = openId === l.id;
-          return (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => setOpenId(l.id)}
-              aria-pressed={on}
-              className={clsx(
-                "flex flex-col gap-2 rounded-xl border p-3 text-left transition-colors duration-150",
-                on ? "border-accent bg-accentSoft" : "border-line bg-paper hover:border-ash",
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <span className={clsx("flex h-7 w-7 shrink-0 items-center justify-center rounded-lg", on ? "bg-accent text-paper" : "bg-mist text-ash")}>
-                  <Icon name={l.icon} className="h-3.5 w-3.5" />
-                </span>
-                <p className="text-caption font-semibold text-ink">
-                  {l.letter} — {l.title}
-                </p>
-              </div>
-              <BarPair shine={l.shine} strength={l.strength} />
-            </button>
-          );
-        })}
-      </div>
-
-      <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
-        <p className="text-caption text-ink">
-          <span className="font-semibold text-accent">
-            Line {open.letter} — {open.title}.{" "}
-          </span>
-          {open.note}
-        </p>
-      </div>
-      <p className="text-micro text-ash">
-        Shine and structural strength are not the same axis — a line can score high on one and low on the other (M7).
+      <p className="text-center text-caption font-semibold tabular-nums text-ink">
+        {soundCount} + {wiredCount} = {total} of 6 gates
+        {total !== baseTotal && <span className="ml-1.5 font-normal text-ash">(as it stands: {baseTotal})</span>}
       </p>
-    </div>
-  );
-}
 
-function BarPair({ shine, strength }: { shine: number; strength: number }) {
-  return (
-    <div className="space-y-1.5">
-      <MiniBar label="Shine" value={shine} tone="warn" />
-      <MiniBar label="Structural strength" value={strength} tone="accent" />
-    </div>
-  );
-}
+      <ul className="space-y-1.5">
+        {GATES.map((g) => {
+          const res = sample.gates[g.id];
+          const isFixed = fixed.includes(g.id);
+          const pass = res.pass || isFixed;
+          return (
+            <li key={g.id} className="flex flex-wrap items-start gap-x-2 gap-y-1 rounded-lg border border-line bg-paper p-2">
+              <span
+                aria-hidden
+                className={clsx("mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-paper", pass ? "bg-accent" : "bg-danger")}
+              >
+                {pass ? "✓" : "✕"}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption text-ink">
+                  <span className="font-semibold">{g.name}</span> — <span className="text-ash">{g.question}</span>
+                </p>
+                <p className="text-micro text-ink">{isFixed ? `Fixed: ${res.fix}` : res.reason}</p>
+              </div>
+              {!res.pass && (
+                <button
+                  type="button"
+                  onClick={() => fix(g.id)}
+                  aria-pressed={isFixed}
+                  className="shrink-0 rounded-full border border-line bg-canvas px-2.5 py-1 text-micro font-semibold text-accent hover:border-accent"
+                >
+                  {isFixed ? "Undo fix" : `Fix it (${g.fixKind === "shortTerm" ? "short-term" : "structural"})`}
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
 
-function MiniBar({ label, value, tone }: { label: string; value: number; tone: "warn" | "accent" }) {
-  return (
-    <div>
-      <p className="text-micro text-ash">{label}</p>
-      <div className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-mist">
-        <div
-          className={clsx("h-full rounded-full", tone === "warn" ? "bg-warn" : "bg-accent")}
-          style={{ width: `${(value / 3) * 100}%`, transition: "width .3s ease" }}
-        />
-      </div>
+      {fixed.length > 0 && (
+        <p className="text-micro tabular-nums text-ash">
+          Fixes so far: {shortFixes} short-term + {structFixes} structural = {fixed.length}.
+        </p>
+      )}
+
+      <WhyResult headline={headline} why={why} tone={total === 6 ? "accent" : "warn"} />
+      <WhatChanged text={change} onReset={fixed.length > 0 ? reset : undefined} resetLabel="Undo all fixes" />
     </div>
   );
 }

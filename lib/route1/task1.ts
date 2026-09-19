@@ -7,9 +7,9 @@
  *  area is required; a secondary area is an optional second tag, since a
  *  few signals genuinely touch two areas at once.
  *  Stage B — six candidate metrics, each resolved into "Effective for
- *  Management" or "Merely Informative" by one qualifying question (M4's
- *  six-gate test, collapsed to its decisive combination: target + owner +
- *  decision), never free-dragged.
+ *  Management" or "Merely Informative" by one qualifying question (M4's six
+ *  gates: a sound number AND a wired one — target, decision, owner), never
+ *  free-dragged.
  *  Stage C — the same six-gate idea read as effort rather than quality: sort
  *  six concrete moves into what can be built short-term versus what has to
  *  be built structurally.
@@ -46,21 +46,88 @@ export type AreaId =
   | "carbonMonitoring"
   | "responsibilities";
 
-export type Area = { id: AreaId; name: string; note: string; icon: IconKey };
+export type Area = {
+  id: AreaId;
+  name: string;
+  note: string;
+  icon: IconKey;
+  /** Tell-tale wording in a sentence that points at this area. */
+  lookFor: string;
+  /** A one-sentence example that is deliberately not one of the task's signals. */
+  example: string;
+  /** The area learners most often confuse it with. */
+  confusedWith: AreaId;
+  /** The question that separates it from the area it is confused with. */
+  ask: string;
+};
 
 export const AREAS: Area[] = [
-  { id: "metricQuality", name: "Metric Quality", note: "Comparable, robust, built on consistent boundaries.", icon: "certificate" },
-  { id: "dataAvailability", name: "Data Availability", note: "Is it captured at all, and completely?", icon: "database" },
-  { id: "reporting", name: "Reporting", note: "Informs — or actually supports a decision.", icon: "clipboard" },
-  { id: "managementRelevance", name: "Management Relevance", note: "Tied to a target, an owner, and a decision.", icon: "target" },
-  { id: "carbonMonitoring", name: "Carbon Monitoring", note: "IT emissions captured and allocated — Scope 1/2/3.", icon: "radar" },
-  { id: "responsibilities", name: "Responsibilities", note: "Is there a named owner?", icon: "person" },
+  {
+    id: "metricQuality",
+    name: "Metric Quality",
+    note: "Comparable, robust, built on consistent boundaries.",
+    icon: "certificate",
+    lookFor: "“different boundaries”, “no consistent structure”, “can't be compared”, different units",
+    example: "Two offices report “IT electricity” — one includes the print room, the other does not.",
+    confusedWith: "dataAvailability",
+    ask: "Does the number exist, yet not line up with another figure?",
+  },
+  {
+    id: "dataAvailability",
+    name: "Data Availability",
+    note: "Is it captured at all, and completely?",
+    icon: "database",
+    lookFor: "“not captured”, “only partly available”, “no data”, “missing”",
+    example: "Nobody records how long spare laptops sit in storage before they are reused.",
+    confusedWith: "metricQuality",
+    ask: "Is a number simply missing — rather than present but not comparable?",
+  },
+  {
+    id: "reporting",
+    name: "Reporting",
+    note: "Informs — or actually supports a decision.",
+    icon: "clipboard",
+    lookFor: "“requests”, “slide”, “totals only”, “no coordinated system”, external requirements",
+    example: "Three departments each ask for a monthly figure, and a different person builds each one by hand.",
+    confusedWith: "managementRelevance",
+    ask: "Is the fault the shape or route of the output — not the numbers, and not what gets decided?",
+  },
+  {
+    id: "managementRelevance",
+    name: "Management Relevance",
+    note: "Tied to a target, an owner, and a decision.",
+    icon: "target",
+    lookFor: "“not linked to goals”, “hardly used for prioritisation”, “no target”",
+    example: "A quarterly figure is shown to management, and nothing in the next budget round refers to it.",
+    confusedWith: "reporting",
+    ask: "Does anyone decide anything differently because of the number?",
+  },
+  {
+    id: "carbonMonitoring",
+    name: "Carbon Monitoring",
+    note: "IT emissions captured and allocated — Scope 1/2/3.",
+    icon: "radar",
+    lookFor: "“emissions”, “CO₂e”, “Scope 1/2/3”, “allocation” — about IT's emissions specifically",
+    example: "The company knows what it pays for electricity but has never estimated the emissions of its laptops.",
+    confusedWith: "dataAvailability",
+    ask: "Is it about IT's emissions being captured and allocated — not just any figure being absent?",
+  },
+  {
+    id: "responsibilities",
+    name: "Responsibilities",
+    note: "Is there a named owner?",
+    icon: "person",
+    lookFor: "“nobody owns”, “no one is responsible”, “unclear who”",
+    example: "The energy figure is quoted in three documents, and each team assumes another team owns it.",
+    confusedWith: "managementRelevance",
+    ask: "Is the fault that no named person answers for the figure?",
+  },
 ];
 
 export const areaById = (id: AreaId): Area => AREAS.find((a) => a.id === id)!;
 
 export const AREA_FIELD = {
-  instruction: "Drag a card into the area it most directly demonstrates, or tap it and then tap an area. A second, optional tag is available once it's placed.",
+  instruction: "Drag a card into the area it most directly demonstrates, or tap it and then tap an area. A second, optional tag is available once it's placed. Each area shows what to look for and the question that tells it apart from its neighbour.",
   material: ["sixAreas"] as MaterialSectionId[],
 };
 
@@ -293,11 +360,12 @@ export function resolveEffectiveness(answer: EffectivenessAnswer): Effectiveness
 }
 
 export const QUALIFYING_QUESTION = {
-  label: "Is this metric tied to a target AND an owner AND a decision?",
-  instruction: "All three, together — M4's six gates collapse to this one combination. Partial credit doesn't apply: missing any one of the three makes it merely informative.",
+  label: "Is the number sound AND wired to management?",
+  instruction:
+    "Sound = relevant, understandable, comparable and robust. Wired = a target and a decision that changes when it moves (actionable), and one named owner. There is no partial credit: missing any one of the six gates makes it merely informative.",
   options: [
-    { id: "yes" as const, label: "Yes — target, owner and decision are all in place" },
-    { id: "no" as const, label: "No — at least one of the three is missing" },
+    { id: "yes" as const, label: "Yes — all six gates are cleared" },
+    { id: "no" as const, label: "No — at least one gate is missing" },
   ],
   material: ["effectiveVsStructural"] as MaterialSectionId[],
 };
@@ -352,7 +420,7 @@ export const STAGE_B_METRICS: StageBMetric[] = [
     text: "CO₂e per business service, measured against a stated 2030 reduction target, owned by the Sustainability Lead.",
     expected: "yes",
     clue: {
-      soft: "Count the three things M4's gate needs, one by one, against this description.",
+      soft: "Walk the six gates against this description: is the number sound, and are the target, the decision and the owner all named?",
       sharp: "A stated target, a named owner, and the implied decision (whether the service is on track) are all present — that is a full pass.",
     },
     answerKey: {
@@ -432,8 +500,8 @@ export type HorizonItem = {
 };
 
 export const HORIZON_LANES: { id: Horizon; name: string; note: string }[] = [
-  { id: "shortTerm", name: "Buildable short-term", note: "Consistent capture, a shared definition — no governance required to start." },
-  { id: "structural", name: "Has to be built structurally", note: "Needs a target, an owner and a review cadence before it counts as management-effective." },
+  { id: "shortTerm", name: "Buildable short-term", note: "Changes how a number is captured or written down — no governance needed to start." },
+  { id: "structural", name: "Has to be built structurally", note: "Creates accountability — a target, an owner and a review cadence — before it counts as management-effective." },
 ];
 
 export const HORIZON_ITEMS: HorizonItem[] = [
@@ -529,27 +597,18 @@ export const HORIZON_ITEMS: HorizonItem[] = [
 
 export const TASK1_FRAMING = {
   tag: "TASK 1 · DIAGNOSE",
-  title: "Clarity Digital Services — which metrics really help?",
+  title: "Which metrics really help?",
   minutes: 15,
-  lead:
-    "Clarity Digital Services has introduced several Green IT measures but only has scattered figures with no management logic.",
   instruction:
     "Diagnose why the data isn't steering anything, and sketch one robust first improvement per area. No deep metric knowledge needed — this is a management and reporting problem.",
 } as const;
 
-export const CONTEXT_CHIPS_T1: string[] = [
-  "Several Green IT measures already introduced",
-  "Figures exist, scattered across teams",
-  "No coordinated management logic yet",
-  "External reporting pressure is rising",
-];
-
 export const WORK_ASSIGNMENT_T1: string[] = [
-  "Drag each of the ten signal cards into the area it most directly evidences. A second tag is optional where a signal genuinely touches two areas.",
+  "Drag each of the ten signal cards into the area it most directly evidences. Each area shows what to look for and the question that tells it apart from its neighbour. A second tag is optional where a signal genuinely touches two areas.",
   "Write one robust first improvement approach for each of the six areas.",
-  "For six candidate metrics, answer the qualifying question and see whether each resolves into Effective for Management or Merely Informative.",
+  "For six candidate metrics, answer the one qualifying question against the six gates and see whether each resolves into Effective for Management or Merely Informative.",
   "Sort six concrete moves into what's buildable short-term versus what has to be built structurally.",
-  "Use Check whenever you want a clue — it tells you whether a placement holds, never the answer.",
+  "Use Check whenever you want feedback: ✓ means it holds up, ✕ means not yet — with a clue to reason from, never the answer. Change an answer and the verdict clears.",
 ];
 
 /** One export for Task 1 only. Filename: `1-{name}-day16-l1task1`. */

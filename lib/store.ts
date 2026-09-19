@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export const STORAGE_KEY = "aion-greenit-day15";
+export const STORAGE_KEY = "aion-greenit-day16";
 
 /**
  * Deliberately generic so the next module reuses it unchanged:
- *  - seen:    sectionId -> item ids the learner has engaged (basics cards, task1 clues)
- *  - choices: sectionId -> the single option id they picked (task2, bluegrid)
- *  - checks:  arbitrary key -> boolean (Nexora checklist)
- *  - notes:   arbitrary key -> text (Nexora note fields)
+ *  - seen:    sectionId -> item ids the learner has engaged (material cards, clues)
+ *  - choices: sectionId -> the single option id they picked
+ *  - checks:  arbitrary key -> boolean (exercise checks, export flags)
+ *  - notes:   arbitrary key -> text (free-text and single-choice answers)
  * The store knows nothing about what a section means; lib/progress.ts joins it
  * to the content to decide what "done" is.
  */

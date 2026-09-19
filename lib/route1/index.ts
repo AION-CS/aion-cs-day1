@@ -11,6 +11,7 @@ import type { MaterialSectionId } from "./sections";
 
 export * from "./sections";
 export * from "./material";
+export * from "./gates";
 export * from "./task1";
 export * from "./task2";
 
@@ -58,7 +59,7 @@ export const R1_KEY_PREFIXES = ["r1:t1:", "r1:t2:"];
 export const PAGE_INTRO = {
   tag: "ROUTE 1 — KPIS, OPTIMISATION & MONITORING",
   title: "Capturing & Visualising Sustainability Targets",
-  body: "Module 12. Many organisations measure a great deal and manage very little: a figure can be accurate, even impressive, and still change nothing because it was never wired to a target, an owner and a decision. Two short pairs of material and task below give you that vocabulary and then put it to work — first diagnosing why Clarity Digital Services' metrics don't yet steer anything, then prioritising which single line of measures to build first, under real budget and data constraints.",
+  body: "Module 12. Many organisations measure a great deal and manage very little: a figure can be accurate, even impressive, and still change nothing because it was never wired to a target, an owner and a decision. Two short pairs of material and task follow — first the vocabulary and a diagnosis, then the trade-offs behind choosing which line of measures to build first.",
 } as const;
 
 /** Stated once, above both pairs, and never re-introduced mid-page. */

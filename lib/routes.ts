@@ -87,7 +87,7 @@ export const ROUTES: Route[] = [
       "Two short material-then-task pairs. First: why data collected isn't the same as data managed, the three metric layers, the six areas a Green IT metric system needs, and what makes a KPI management-effective rather than merely informative — then diagnose Clarity Digital Services' scattered metrics. Second: continuous optimisation as a PDCA routine, the measurability–informative-value–controllability trade-off, and the three candidate lines of measures — then prioritise which one to build first, under real uncertainty.",
     deliverable: "Clarity Digital Services — Metrics Diagnosis & Priority Line",
     levels: [1, 2],
-    minutes: 34,
+    minutes: 48,
     available: true,
   },
   {
@@ -101,7 +101,7 @@ export const ROUTES: Route[] = [
       "Metrics, carbon monitoring and reporting reframed as leadership instruments, not documentation: staging a management model in layers, the senior five-factor trade-off, and how different roles prioritise differently — then Verdeon Digital Governance Group: build the decision-ready management proposal, not a metrics list.",
     deliverable: "Verdeon Digital Governance Group — Management Proposal",
     levels: [3],
-    minutes: 35,
+    minutes: 31,
     available: true,
   },
 ];

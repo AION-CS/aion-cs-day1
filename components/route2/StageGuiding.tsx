@@ -5,7 +5,8 @@ import { useProgress } from "@/lib/store";
 import { createPlacementHistory, type PlacementMap } from "@/lib/usePlacementHistory";
 import { undoRedoKeyHandler } from "@/lib/undoShortcuts";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
-import { GUIDING_DECISIONS, GUIDING_JUSTIFICATION_FIELD, GUIDING_PICK_COUNT, R2 } from "@/lib/route2";
+import { MaterialRefs } from "@/components/ui/MaterialRefs";
+import { GUIDING_DECISIONS, GUIDING_JUSTIFICATION_FIELD, GUIDING_PICK_COUNT, R2, materialRefs } from "@/lib/route2";
 import { useRoute2, domId } from "./useRoute2";
 import { useState } from "react";
 
@@ -58,6 +59,8 @@ export function StageGuiding() {
         <UndoRedoControls onUndo={handleUndo} onRedo={handleRedo} canUndo={past.length > 0} canRedo={future.length > 0} />
       </div>
 
+      <MaterialRefs refs={materialRefs(["layeredModel"])} lead="Each option is defined in" />
+
       <div className="grid gap-2.5 sm:grid-cols-2">
         {GUIDING_DECISIONS.map((d) => {
           const on = r2.selectedGuiding.includes(d.id);
@@ -76,6 +79,18 @@ export function StageGuiding() {
                 </span>
                 {d.text}
               </button>
+              <p className="mt-1.5 pl-6 text-micro text-ash">{d.means}</p>
+              <details className="mt-1 pl-6 text-micro text-ash">
+                <summary className="cursor-pointer font-semibold text-accent">Use when · watch out</summary>
+                <p className="mt-1">
+                  <span className="font-semibold text-ink">Use when: </span>
+                  {d.useWhen}
+                </p>
+                <p className="mt-0.5">
+                  <span className="font-semibold text-ink">Watch out: </span>
+                  {d.watchOut}
+                </p>
+              </details>
 
               {on && (
                 <div id={domId.guidingJustification(d.id)} className="mt-2 scroll-mt-24 border-t border-accent/20 pt-2">
