@@ -10,7 +10,7 @@ import { scrollToAndFlash } from "@/lib/flash";
 import { useHydrated, useStore } from "@/store/useStore";
 
 /** A source chip: "Author Year". Click opens the block's References accordion and flashes the full citation. */
-export function SourceChip({ refKey, block }: { refKey: RefKey; block: "A" | "B" }) {
+export function SourceChip({ refKey, block }: { refKey: RefKey; block: "A" | "B" | "C" }) {
   const r = REFERENCES[refKey];
   return (
     <button
@@ -76,7 +76,7 @@ export function MaterialCard({
 
       <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="smallcaps mr-1">Sources</span>
+          {sources.length > 0 && <span className="smallcaps mr-1">Sources</span>}
           {sources.map((s) => (
             <SourceChip key={s} refKey={s} block={meta.block} />
           ))}

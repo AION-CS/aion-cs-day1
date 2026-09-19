@@ -1,4 +1,5 @@
 import { RECORDS } from "@/data/kesslerDossier";
+import { MAP_ROWS } from "@/data/mapping";
 import { FIGURES } from "@/data/offers";
 import { KESSLER_ROLES } from "@/data/motives";
 import { citedFigures, figureLabel } from "@/lib/checks";
@@ -20,13 +21,18 @@ export const IDS = {
   justification: "justification-field",
   limits: "limits-field",
   q6: "q6-field",
+  mapRow: (id: string) => `map-${id}`,
+  mapSentence: "map-sentence",
   exportL1: "export-l1",
   exportL2: "export-l2",
 } as const;
 
+/** "Relative attitude (the attitude side of loyalty)" -> "Relative attitude". */
+const shortLabel = (s: string) => s.split(" (")[0];
+
 export type MissingEntry = { id: string; label: string };
 
-function participantMissing(p: Persisted): MissingEntry[] {
+export function participantMissing(p: Persisted): MissingEntry[] {
   const bad = !/^\d+$/.test(p.participant.no.trim()) || !p.participant.name.trim();
   return bad
     ? [{ id: IDS.participant, label: "Participant number and name are needed for the file name." }]
@@ -42,6 +48,17 @@ export function l1Missing(p: Persisted): MissingEntry[] {
       out.push({ id: IDS.record(r.id), label: `Record ${r.id} is not placed in any bin.` });
     }
   }
+  for (const row of MAP_ROWS) {
+    const a = p.l1.mapping.rows[row.id];
+    if (a.bucket === null) {
+      out.push({ id: IDS.mapRow(row.id), label: `Reading ${row.id} (${shortLabel(row.label)}) has no bucket.` });
+    } else if (a.bucket !== "not_recorded" && a.cite === "") {
+      out.push({ id: IDS.mapRow(row.id), label: `Reading ${row.id} (${shortLabel(row.label)}) names no record it rests on.` });
+    }
+  }
+  const mlen = p.l1.mapping.sentence.trim().length;
+  if (mlen === 0) out.push({ id: IDS.mapSentence, label: "Mapping: the one-sentence reading of the loyalty map is empty." });
+  else if (mlen < 30) out.push({ id: IDS.mapSentence, label: "Mapping: the one-sentence reading needs at least 30 characters." });
   if (!verdict.category) out.push({ id: IDS.v1, label: "Verdict: no category selected." });
   if (!verdict.cite1) out.push({ id: IDS.v2, label: "Verdict: the first cited record is empty." });
   if (!verdict.cite2) out.push({ id: IDS.v3, label: "Verdict: the second cited record is empty." });

@@ -1,9 +1,15 @@
 import { BIN_LABEL, RECORDS, RECORD_BY_ID } from "@/data/kesslerDossier";
+import { BUCKETS, CITE_LABEL, MAP_ROWS } from "@/data/mapping";
+import { loyaltyMarker } from "@/lib/mapping";
 import { FIGURES } from "@/data/offers";
 import { KESSLER_ROLES, MOTIVE_LABEL } from "@/data/motives";
 import { RECOMMENDATION_LABEL } from "@/store/selectors";
 import { citedFigures } from "@/lib/checks";
-import { esc, evidenceBoardSvg, motiveMapSvg } from "@/lib/svgModels";
+import { esc, evidenceBoardSvg, loyaltyMapSvg, motiveMapSvg } from "@/lib/svgModels";
+import { CAP, LEVERS, POSITION_LABEL, computeBoard } from "@/data/leverData";
+import { ACTIVITIES, CHIP_NAME, ROLES } from "@/data/raciModel";
+import { formatEuro } from "@/lib/parseAmount";
+import { G_IDS } from "@/data/leverData";
 import type { Persisted } from "@/store/useStore";
 
 /**
@@ -61,6 +67,10 @@ export function diagnosticBody(p: Persisted): string {
     return `<tr><td class="id">${r.id}</td><td>${esc(r.source)}</td><td>${esc(r.when)}</td><td>${esc(r.text)}</td><td>${b ? esc(BIN_LABEL[b]) : '<span class="muted">not placed</span>'}</td></tr>`;
   }).join("");
   const cites = [verdict.cite1, verdict.cite2].filter(Boolean);
+  const mapRows = MAP_ROWS.map((r) => {
+    const a = p.l1.mapping.rows[r.id];
+    return `<tr><td class="id">${r.id}</td><td>${esc(r.label)}</td><td>${a.bucket ? `${BUCKETS[a.bucket].glyph} ${esc(BUCKETS[a.bucket].label)}` : '<span class="muted">not read</span>'}</td><td>${a.bucket === "not_recorded" ? '<span class="muted">no record measures it</span>' : esc(CITE_LABEL(a.cite))}</td></tr>`;
+  }).join("");
   return `
 ${header("Diagnostic Note — Kessler Präzisionstechnik GmbH", "Day 1 · Route 1 · Level 1 · Task 1", p)}
 <h2>1. Evidence register</h2>
@@ -68,7 +78,11 @@ ${header("Diagnostic Note — Kessler Präzisionstechnik GmbH", "Day 1 · Route 
 <h2>2. Evidence board</h2>
 ${evidenceBoardSvg(placements, "note")}
 <p class="legend">Solid: an observed record. Hatched: an interpretation filed as if it were evidence. Outline: an observed record set aside.</p>
-<h2>3. Verdict</h2>
+<h2>3. Reading of the file</h2>
+<table><thead><tr><th>#</th><th>Reading</th><th>What the file shows</th><th>Rests on</th></tr></thead><tbody>${mapRows}</tbody></table>
+${loyaltyMapSvg(loyaltyMarker(p.l1.mapping), "note")}
+<blockquote>${p.l1.mapping.sentence.trim() ? esc(p.l1.mapping.sentence.trim()) : "—"}</blockquote>
+<h2>4. Verdict</h2>
 <div class="box">
   <div><span class="muted">Category holding the most observed evidence of a shortfall on TechSolutions' side:</span> <strong>${verdict.category ? esc(BIN_LABEL[verdict.category]) : "—"}</strong></div>
   <div style="margin-top:4px"><span class="muted">Cited records:</span> ${cites.length ? cites.map((c) => `<strong>${esc(c)}</strong> (${esc(RECORD_BY_ID[c as keyof typeof RECORD_BY_ID].source)})`).join(", ") : "—"}</div>
@@ -124,6 +138,56 @@ ${motiveMapSvg(l2.motives, "note")}
   <blockquote>${q6 ? esc(q6) : "—"}</blockquote>
 </div>
 <div class="foot">Checks requested: ${l2.checks}</div>`;
+}
+
+// --- Task 3 -----------------------------------------------------------------
+
+/** The decision memo. Reading order differs from the order it is written in: the executive summary is authored last and leads. */
+export function memoBody(p: Persisted): string {
+  const r3 = p.route3;
+  const board = computeBoard(r3.levers);
+  const q = (s: string) => (s.trim() ? esc(s.trim()) : "—");
+  const val = (g: (typeof G_IDS)[number]) => (r3.fillins[g].trim() ? esc(r3.fillins[g].trim()) : "—");
+
+  const leverRows = LEVERS.map((l) => {
+    const pos = r3.levers[l.id];
+    return `<tr><td class="id">${esc(l.name)}</td><td>${esc(POSITION_LABEL[pos])}</td><td>${formatEuro(l.cost[pos])}</td><td>${l.produces[pos]} ${esc(l.producesUnit)}</td></tr>`;
+  }).join("");
+  const totalNote = board.over > 0 ? ` <span class="muted">(${formatEuro(board.over)} over the ${formatEuro(CAP)} cap)</span>` : ` <span class="muted">(cap ${formatEuro(CAP)})</span>`;
+
+  const raciHead = ROLES.map((r) => `<th>${esc(r.short)}</th>`).join("");
+  const raciRows = ACTIVITIES.map(
+    (a) => `<tr><td class="id">${esc(a.label)}</td>${ROLES.map((r) => { const c = r3.raci[a.id][r.id]; return `<td>${c ? `<strong>${c}</strong> <span class="muted">${CHIP_NAME[c]}</span>` : ""}</td>`; }).join("")}</tr>`,
+  ).join("");
+  const govRows = r3.governance
+    .map((r, i) => `<tr><td class="id">${i + 1}</td><td>${q(r.decision)}</td><td>${q(r.owner)}</td><td>${q(r.date)}</td></tr>`)
+    .join("");
+
+  return `
+${header("Decision Memo — Customer Retention Investment Program", "Day 1 · Route 3 · Level 3 · Task 3", p)}
+<p class="muted" style="font-family:system-ui,sans-serif;font-size:12.5px">To: Geschäftsführer · From: Head of Sales / Chief Customer Officer</p>
+<h2>Executive summary</h2>
+<blockquote>${q(r3.exec)}</blockquote>
+<h2>1. Situation</h2>
+<p>TechSolutions GmbH serves roughly 60 active customers. At the 70% one-off rate, 42 are one-off: delivered once, with no standing account relationship. The Managing Director has approved a €200,000, six-month pilot program to raise retention across this one-off segment. <span class="muted">Case assumption.</span></p>
+<h2>2. Allocation decision</h2>
+<table><thead><tr><th>Lever</th><th>Position</th><th>6-month cost</th><th>Produces</th></tr></thead><tbody>${leverRows}
+<tr><td class="id">Total</td><td></td><td><strong>${formatEuro(board.cost)}</strong>${totalNote}</td><td></td></tr></tbody></table>
+<h2>3. What it produced</h2>
+<table><thead><tr><th>Reading</th><th>Status Quo</th><th>Price War</th></tr></thead><tbody>
+<tr><td class="id">Total commitment (G1)</td><td colspan="2">€${val("G1")}</td></tr>
+<tr><td class="id">Accounts with a named owner (G2)</td><td colspan="2">${val("G2")}</td></tr>
+<tr><td class="id">Accounts receiving a review (G3)</td><td colspan="2">${val("G3")}</td></tr>
+<tr><td class="id">Framework conversions (G4 · G5)</td><td>${val("G4")}</td><td>${val("G5")}</td></tr>
+<tr><td class="id">Uncovered pool (G6)</td><td colspan="2">${val("G6")}</td></tr></tbody></table>
+<h2>4. Risk and reversibility</h2>
+<blockquote>${q(r3.risk)}</blockquote>
+<h2>5. Governance</h2>
+<table><thead><tr><th>Activity</th>${raciHead}</tr></thead><tbody>${raciRows}</tbody></table>
+<table style="margin-top:10px"><thead><tr><th>#</th><th>Decision</th><th>Owner</th><th>Date</th></tr></thead><tbody>${govRows}</tbody></table>
+<h2>6. What we are not funding this cycle</h2>
+<blockquote>${q(r3.notFunding)}</blockquote>
+<div class="foot">Checks requested: ${r3.checks}</div>`;
 }
 
 // --- Wrapping / delivery ------------------------------------------------------

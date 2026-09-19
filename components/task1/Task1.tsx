@@ -13,6 +13,7 @@ import { undoRedoKeyHandler } from "@/components/ui/UndoRedoControls";
 import { EvidenceBoard } from "@/components/task1/EvidenceBoard";
 import { SortBoard } from "@/components/task1/SortBoard";
 import { VerdictBlock } from "@/components/task1/VerdictBlock";
+import { MapBlock } from "@/components/task1/MapBlock";
 import { diagnosticBody } from "@/lib/exportDoc";
 import { IDS, l1Missing } from "@/lib/missing";
 import { exportName } from "@/lib/slug";
@@ -54,7 +55,7 @@ export function Task1() {
   return (
     <section id="task-1" className="space-y-5" onKeyDown={undoRedoKeyHandler(undo, redo)}>
       <header className="space-y-1">
-        <p className="smallcaps text-accent">Task 1 · Level 1 · 15 min</p>
+        <p className="smallcaps text-accent">Task 1 · Level 1 · 30 min</p>
         <h2 className="text-h1">Task 1 · Diagnostic Note · Kessler Präzisionstechnik GmbH</h2>
         <p className="text-body italic text-ash">One task. Three levels. Level 1 establishes what the file records.</p>
       </header>
@@ -90,6 +91,9 @@ export function Task1() {
             key is in Materi A · A6.
           </li>
           <li>If two participants disagree, one has misread the file.</li>
+          <li>
+            Time: about <strong>10 min</strong> for the sort (1.1), <strong>12 min</strong> for the map (1.2) and <strong>8 min</strong> for the verdict (1.3).
+          </li>
         </ul>
         <MaterialRefs refs={["A6", "A5"]} lead="Read first" />
       </div>
@@ -174,9 +178,20 @@ export function Task1() {
       {/* Block 1.2 */}
       <AnswerBlock
         id="block-1-2"
-        title="Block 1.2 · Name the weak point"
+        title="Block 1.2 · Map the customer"
         kind="OBJECTIVE + JUDGED"
-        findIt="Route 1 → Task 1 → “Evidence board”. Answer below."
+        findIt="Route 1 → Task 1 → “Kessler journey map” and “Evidence board”, then “Loyalty map” inside this block. Answer in the grid below."
+      >
+        <MaterialRefs refs={["A2", "A3", "A4"]} />
+        <MapBlock />
+      </AnswerBlock>
+
+      {/* Block 1.3 */}
+      <AnswerBlock
+        id="block-1-3"
+        title="Block 1.3 · Name the weak point"
+        kind="OBJECTIVE + JUDGED"
+        findIt="Route 1 → Task 1 → “Evidence board” and “Loyalty map”. Answer below."
       >
         <MaterialRefs refs={["A6", "A3"]} />
         <VerdictBlock />

@@ -29,7 +29,7 @@ export const ROUTES: RouteInfo[] = [
       "Read what a customer file actually records, and what it does not. Study material, then a Diagnostic Note on the Kessler case.",
     plan: [
       { label: "Materi A · Level 1", minutes: 60 },
-      { label: "Task 1 · Diagnostic Note", minutes: 15 },
+      { label: "Task 1 · Diagnostic Note", minutes: 30 },
     ],
     built: true,
   },
@@ -53,8 +53,12 @@ export const ROUTES: RouteInfo[] = [
     short: "Decide",
     title: "Route 3 · Management decision",
     level: "Level 3 · Management decision",
-    blurb: "The management decision. Built in the next release.",
-    plan: [],
-    built: false,
+    blurb:
+      "Decide under a budget that cannot fund everything, and say in writing what you left uncovered. Study material, then a Decision Memo built beside the exercises.",
+    plan: [
+      { label: "Materi C · Level 3", minutes: 60 },
+      { label: "Task 3 · Decision Memo", minutes: 20 },
+    ],
+    built: true,
   },
 ];

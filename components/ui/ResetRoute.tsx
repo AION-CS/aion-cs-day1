@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useStore } from "@/store/useStore";
 
 /** Clears one route's state only — the participant strip and the other route stay. Inline two-step confirm. */
-export function ResetRoute({ route }: { route: 1 | 2 }) {
+export function ResetRoute({ route }: { route: 1 | 2 | 3 }) {
   const reset = useStore((s) => s.resetRoute);
   const [ask, setAsk] = useState(false);
   return (

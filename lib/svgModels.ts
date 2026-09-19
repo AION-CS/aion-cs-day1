@@ -152,3 +152,57 @@ export function motiveMapSvg(motives: Record<RoleKey, MotiveId | null>, uid = "e
 }
 
 export { RECORD_BY_ID };
+
+// --- Loyalty map (Task 1 · Block 1.3) ---------------------------------------
+
+import { QGEOM, QUADS, quadCenter } from "@/data/loyalty";
+import type { Attitude, Behaviour, Q } from "@/data/loyalty";
+
+export type LoyaltyMarker = { att: Attitude; beh: Behaviour; quad: Q | null };
+
+/** Shapes to draw for a marker: a point when both axes are read, a band across the open axis otherwise. */
+export function markerShape(m: LoyaltyMarker):
+  | { kind: "point"; x: number; y: number }
+  | { kind: "hband"; y: number }
+  | { kind: "vband"; x: number }
+  | { kind: "none" } {
+  if (m.att && m.beh && m.quad) return { kind: "point", ...quadCenter(m.quad) };
+  if (!m.att && m.beh) return { kind: "hband", y: QGEOM.y0 + (m.beh === "high" ? 0 : QGEOM.h) };
+  if (m.att && !m.beh) return { kind: "vband", x: QGEOM.x0 + (m.att === "strong" ? QGEOM.w : 0) };
+  return { kind: "none" };
+}
+
+export function loyaltyMapSvg(m: LoyaltyMarker, uid = "exp"): string {
+  const shape = markerShape(m);
+  const p: string[] = [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 330" role="img" aria-labelledby="lm-t-${uid}" style="width:100%;max-width:560px;height:auto">`,
+    `<title id="lm-t-${uid}">Loyalty map for Kessler</title>`,
+    `<defs><pattern id="lmh-${uid}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#FBF0D6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#8A5A0B" stroke-width="2.2"/></pattern></defs>`,
+  ];
+  (Object.keys(QUADS) as Q[]).forEach((q) => {
+    const c = quadCenter(q);
+    p.push(
+      `<rect x="${QGEOM.x0 + QUADS[q].x * QGEOM.w}" y="${QGEOM.y0 + QUADS[q].y * QGEOM.h}" width="${QGEOM.w}" height="${QGEOM.h}" fill="#FFFEFA" stroke="#59606A" stroke-width="1.3"/>`,
+      `<text x="${c.x}" y="${c.y - 40}" text-anchor="middle" font-size="15" font-weight="700" fill="#1F2328" font-family="system-ui,sans-serif">${esc(QUADS[q].label)}</text>`,
+    );
+  });
+  p.push(
+    `<text x="320" y="318" text-anchor="middle" font-size="12.5" fill="#59606A" font-family="system-ui,sans-serif">Relative attitude: weak → strong</text>`,
+    `<text x="16" y="170" font-size="12.5" fill="#59606A" transform="rotate(-90 16 170)" text-anchor="middle" font-family="system-ui,sans-serif">Repeat behaviour: low → high</text>`,
+  );
+  if (shape.kind === "point") {
+    p.push(`<circle cx="${shape.x}" cy="${shape.y}" r="14" fill="#8A5A0B" stroke="#FFFEFA" stroke-width="3"/>`, `<text x="${shape.x}" y="${shape.y + 5}" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFEFA" font-family="system-ui,sans-serif">K</text>`);
+  } else if (shape.kind === "hband") {
+    p.push(
+      `<rect x="${QGEOM.x0}" y="${shape.y}" width="${QGEOM.w * 2}" height="${QGEOM.h}" fill="url(#lmh-${uid})" fill-opacity="0.55" stroke="#8A5A0B" stroke-width="2.4" stroke-dasharray="7 5"/>`,
+      `<text x="${QGEOM.x0 + QGEOM.w}" y="${shape.y + QGEOM.h - 10}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1F2328" font-family="system-ui,sans-serif">Kessler: attitude axis not placed</text>`,
+    );
+  } else if (shape.kind === "vband") {
+    p.push(
+      `<rect x="${shape.x}" y="${QGEOM.y0}" width="${QGEOM.w}" height="${QGEOM.h * 2}" fill="url(#lmh-${uid})" fill-opacity="0.55" stroke="#8A5A0B" stroke-width="2.4" stroke-dasharray="7 5"/>`,
+      `<text x="${shape.x + QGEOM.w / 2}" y="${QGEOM.y0 + QGEOM.h * 2 - 10}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1F2328" font-family="system-ui,sans-serif">Kessler: behaviour axis not placed</text>`,
+    );
+  }
+  p.push("</svg>");
+  return p.join("");
+}

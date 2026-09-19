@@ -35,7 +35,7 @@ function Ring({ done, total }: { done: number; total: number }) {
 }
 
 /** Sticky section rail with hash anchors, minutes per section and the Dossier progress ring. */
-export function SectionRail({ route }: { route: 1 | 2 }) {
+export function SectionRail({ route }: { route: 1 | 2 | 3 }) {
   const hydrated = useHydrated();
   const progress = dossierProgress(usePersisted(), route);
   const sections = SECTIONS[route];
@@ -92,7 +92,7 @@ export function SectionRail({ route }: { route: 1 | 2 }) {
         <div className="flex shrink-0 items-center gap-2" title="Cards marked read + task blocks completed">
           <Ring done={done} total={total} />
           <span className="hidden text-micro leading-tight text-ash lg:block">
-            Dossier
+            {route === 3 ? "Portfolio" : "Dossier"}
             <br />
             {done}/{total}
           </span>

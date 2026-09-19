@@ -33,11 +33,18 @@ export type RefKey =
   | "bsi2025"
   | "gdpr"
   | "uwg7"
-  | "betrvg87";
+  | "betrvg87"
+  | "bezos2015"
+  | "kahneman1993"
+  | "intercom2016"
+  | "ellis2017"
+  | "pmbok"
+  | "brealey"
+  | "amram1999";
 
 export type Reference = { key: RefKey; chip: string; full: string };
 
-export const REFERENCES: Record<RefKey, Reference> = {
+export const REFERENCES = {
   anderson2006: {
     key: "anderson2006",
     chip: "Anderson, Narus & van Rossum 2006",
@@ -188,7 +195,45 @@ export const REFERENCES: Record<RefKey, Reference> = {
     chip: "§ 87 BetrVG",
     full: "§ 87(1) no. 6 BetrVG (Betriebsverfassungsgesetz).",
   },
-};
+} as Record<RefKey, Reference>;
+
+Object.assign(REFERENCES, {
+  bezos2015: {
+    key: "bezos2015",
+    chip: "Bezos 2015",
+    full: "Bezos, J. (2015). 2015 Letter to Shareholders. Amazon.com. (Type 1 / Type 2, “one-way door / two-way door” decisions.)",
+  },
+  kahneman1993: {
+    key: "kahneman1993",
+    chip: "Kahneman & Lovallo 1993",
+    full: "Kahneman, D., & Lovallo, D. (1993). Timid choices and bold forecasts: A cognitive perspective on risk taking. Management Science, 39(1), 17–31.",
+  },
+  intercom2016: {
+    key: "intercom2016",
+    chip: "Intercom 2016 (RICE)",
+    full: "Intercom (2016). The RICE scoring model for prioritization (Reach × Impact × Confidence ÷ Effort), as documented in Intercom's product-management practice.",
+  },
+  ellis2017: {
+    key: "ellis2017",
+    chip: "Ellis & Brown 2017",
+    full: "Ellis, S., & Brown, M. (2017). Hacking Growth. Crown Business. (ICE: Impact × Confidence × Ease.)",
+  },
+  pmbok: {
+    key: "pmbok",
+    chip: "PMI · PMBOK Guide",
+    full: "Project Management Institute. A Guide to the Project Management Body of Knowledge (PMBOK Guide). (RACI matrix.)",
+  },
+  brealey: {
+    key: "brealey",
+    chip: "Brealey, Myers & Allen",
+    full: "Brealey, R. A., Myers, S. C., & Allen, F. Principles of Corporate Finance. McGraw-Hill. (Opportunity cost, capital rationing.)",
+  },
+  amram1999: {
+    key: "amram1999",
+    chip: "Amram & Kulatilaka 1999",
+    full: "Amram, M., & Kulatilaka, N. (1999). Real Options: Managing Strategic Investment in an Uncertain World. Harvard Business School Press.",
+  },
+} satisfies Partial<Record<RefKey, Reference>>);
 
 /** Print order of the accordion: the order of the supplied list. */
 export const REFERENCE_ORDER: RefKey[] = Object.keys(REFERENCES) as RefKey[];

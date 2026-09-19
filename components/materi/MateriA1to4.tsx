@@ -6,6 +6,8 @@ import { Bul, Diagram, Exploratory, Toggles } from "@/components/materi/kit";
 import { useInView } from "@/lib/useInView";
 import { useCountUp } from "@/lib/useCountUp";
 import { formatEuro } from "@/lib/parseAmount";
+import { QUADS, QGEOM, quadCenter } from "@/data/loyalty";
+import type { Q } from "@/data/loyalty";
 
 /* ------------------------------------------------------------------ A1 */
 
@@ -109,13 +111,6 @@ export function CardA1() {
 
 /* ------------------------------------------------------------------ A2 */
 
-type Q = "loyalty" | "latent" | "spurious" | "none";
-const QUADS: Record<Q, { label: string; x: number; y: number; example: string }> = {
-  loyalty: { label: "Loyalty", x: 1, y: 0, example: "Recommends the supplier and re-orders." },
-  latent: { label: "Latent loyalty", x: 1, y: 1, example: "Recommends the supplier, yet a procurement policy forces three offers." },
-  spurious: { label: "Spurious loyalty", x: 0, y: 0, example: "Stays only because exit is expensive." },
-  none: { label: "No loyalty", x: 0, y: 1, example: "Neither a positive attitude nor repeat orders." },
-};
 const SCENARIOS: Record<string, { label: string; from: Q; to: Q; text: string }> = {
   costs: { label: "Switching costs rise", from: "none", to: "spurious", text: "Repeat behaviour rises while the attitude stays weak: the customer stays because leaving costs more. Retention goes up; loyalty does not." },
   contact: { label: "Key contact leaves", from: "loyalty", to: "spurious", text: "The relationship behind the attitude goes. Repeat orders may continue for a while on habit and contract, so the score of the relationship falls before the behaviour does." },
@@ -128,7 +123,7 @@ function LoyaltyQuadrant() {
   const [scn, setScn] = useState<string | null>(null);
   const [ref, seen] = useInView<HTMLDivElement>();
   const S = scn ? SCENARIOS[scn] : null;
-  const pos = (q: Q) => ({ x: 70 + QUADS[q].x * 250 + 125, y: 22 + QUADS[q].y * 130 + 65 });
+  const pos = (q: Q) => quadCenter(q);
   const m = S ? pos(S.to) : pos("loyalty");
   const start = S ? pos(S.from) : m;
   return (
@@ -142,7 +137,7 @@ function LoyaltyQuadrant() {
           return (
             <g key={q} className="hit" role="button" tabIndex={0} aria-pressed={sel} aria-label={`${QUADS[q].label}: ${QUADS[q].example}`}
               onClick={() => setHover(q)} onMouseEnter={() => setHover(q)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setHover(q); } }}>
-              <rect x={70 + QUADS[q].x * 250} y={22 + QUADS[q].y * 130} width={250} height={130} fill={sel ? "#FBF0D6" : q === "loyalty" ? "#DFEEEB" : "#FFFEFA"} stroke="#59606A" strokeWidth={sel ? 2.6 : 1.3} className="hit-shape" />
+              <rect x={QGEOM.x0 + QUADS[q].x * QGEOM.w} y={QGEOM.y0 + QUADS[q].y * QGEOM.h} width={QGEOM.w} height={QGEOM.h} fill={sel ? "#FBF0D6" : q === "loyalty" ? "#DFEEEB" : "#FFFEFA"} stroke="#59606A" strokeWidth={sel ? 2.6 : 1.3} className="hit-shape" />
               <text x={p.x} y={p.y - 30} textAnchor="middle" fontSize="15" fontWeight="700" fill="#1F2328">{QUADS[q].label}</text>
             </g>
           );
@@ -179,6 +174,8 @@ export function CardA2() {
         "A high satisfaction score does not prove the customer will re-order: a 4 out of 5 is not a safe score.",
         "Retention is what the records show (renewal, repeat orders). Do not read attitude into it: a customer can stay only because exit is expensive.",
         "In project business the survey respondent (often the head of IT) is rarely the decider, so a stated intention is weak evidence.",
+        "Read each construct from the record that measures it: satisfaction from a survey or rating; relative attitude from NPS, stated intention or share of wallet; retention from orders and renewals. If no record in the file measures a construct, it is “not recorded”, and the loyalty quadrant cannot be placed on that axis.",
+        "Place a customer on the quadrant from the two axes you have read, never by picking the quadrant first. An axis with no record stays open: the answer is then a band across two quadrants, not a point.",
       ]}
     >
       <Diagram label="Loyalty quadrant" caption="Select a quadrant for a B2B IT example, then run a scenario.">
@@ -274,6 +271,9 @@ export function CardA3() {
         "Name the rope before the fix: contact that has stopped is an emotional-rope problem; a rival's discount is an economic one; a term that ends is a contractual one.",
         "Retention that rests only on economic or contractual ropes is the “hostage / spurious” case from A2, not loyalty.",
         "A data signal points at a rope: contact cadence and sponsor continuity for emotional; the TCO gap versus switching cost for economic; end date and notice window for contractual.",
+        "The economic rope needs both halves of the comparison: a rival's price gap and the customer's switching cost. A file that records only the price gap does not show the economic rope; it is “not recorded”.",
+        "No service or framework agreement on file means the contractual rope is absent; a tender at the end is a new procurement event, not a renewal.",
+        "Emotional rope: count what still works. If some contact, owner or channel is left, the rope is weak; if none is left, it is absent.",
       ]}
     >
       <Diagram label="Three ropes" caption="Two demo customers, three triggers. Select a trigger to fray its rope.">
