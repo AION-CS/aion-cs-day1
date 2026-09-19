@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { useProgress, useHydrated } from "@/lib/store";
 import { Slider } from "@/components/ui/Slider";
 import { Icon } from "@/components/icons/LineIcons";
-import { LENSES, R1 } from "@/lib/route1";
+import { RadarChart, type RadarAxis } from "@/components/ui/RadarChart";
+import { DIMENSIONS, LENSES, R1 } from "@/lib/route1";
 
 /**
- * The five C1–C5 diagrams. Every one is a live widget with exactly one
+ * The nine C1–C9 diagrams. Every one is a live widget with exactly one
  * micro-interaction — inline SVG plus CSS transitions, no charting or
  * animation library (CLAUDE.md §9). Sentences stay in HTML beside each SVG
  * rather than inside it, so they do not shrink with the viewBox at 380px.
@@ -614,6 +615,376 @@ export function AttractiveVsViable() {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C6 — Deciding under uncertainty: a fork, reusing C1's travelling-dot rig
+// ---------------------------------------------------------------------------
+
+type DecisionMode = "wait" | "decide";
+
+const DECISION_COPY: Record<DecisionMode, { end: string; verdict: string }> = {
+  wait: {
+    end: "Stalled — the risk just moves downstream.",
+    verdict:
+      "Waiting for perfect data feels safe, but it does not remove the uncertainty — it hands the same incomplete picture to whoever decides later, with less time left to act on it.",
+  },
+  decide: {
+    end: "Moving — and learning from a real commitment.",
+    verdict:
+      "Deciding from the seven dimensions in C7, even with gaps, keeps things moving and gives you real information to sharpen the next call.",
+  },
+};
+
+export function UncertaintyFork() {
+  const [mode, setMode] = useState<DecisionMode>("wait");
+  const copy = DECISION_COPY[mode];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {(["wait", "decide"] as DecisionMode[]).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            aria-pressed={mode === m}
+            className={clsx(
+              "rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors duration-150",
+              mode === m ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+            )}
+          >
+            {m === "wait" ? "Wait for perfect data" : "Decide with logic"}
+          </button>
+        ))}
+      </div>
+
+      <svg
+        viewBox="0 0 360 180"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-lg"
+        role="img"
+        aria-label={`A decision point forking into waiting for perfect data and deciding with logic. ${copy.end}`}
+      >
+        <rect x="8" y="70" width="98" height="40" rx="10" className="fill-paper stroke-ink" strokeWidth="1.5" />
+        <text x="57" y="87" textAnchor="middle" className="fill-ink text-[12px] font-semibold">
+          Decision
+        </text>
+        <text x="57" y="101" textAnchor="middle" className="fill-ink text-[12px] font-semibold">
+          point
+        </text>
+
+        {/* Upper branch — wait, fading into fog */}
+        <g className={mode === "wait" ? "opacity-100" : "opacity-25"} style={{ transition: "opacity .3s ease" }}>
+          <path
+            d="M110 90 L170 45 L330 45"
+            fill="none"
+            stroke="currentColor"
+            className="text-ash"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* Fog — overlapping low-opacity circles over the far half of the branch */}
+          <circle cx="255" cy="45" r="22" className="fill-ash/15" />
+          <circle cx="285" cy="40" r="26" className="fill-ash/15" />
+          <circle cx="310" cy="48" r="20" className="fill-ash/20" />
+          <circle cx="330" cy="45" r="9" fill="none" stroke="currentColor" className="text-ash" strokeWidth="1.5" strokeDasharray="3 3" />
+          <text x="330" y="49" textAnchor="middle" className="fill-ash text-[11px] font-semibold">
+            ?
+          </text>
+        </g>
+
+        {/* Lower branch — decide, clear all the way */}
+        <g className={mode === "decide" ? "opacity-100" : "opacity-25"} style={{ transition: "opacity .3s ease" }}>
+          <path
+            d="M110 90 L170 135 L330 135"
+            fill="none"
+            stroke="currentColor"
+            className="text-accent"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="330" cy="135" r="9" className="fill-accentSoft stroke-accent" strokeWidth="1.5" />
+          <path d="M326 135 l3 3 l6 -7" fill="none" stroke="currentColor" className="text-accent" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+
+        <text x="118" y="22" className="fill-ash text-[11px] font-semibold uppercase tracking-wide">
+          wait for perfect data
+        </text>
+        <text x="118" y="172" className="fill-ash text-[11px] font-semibold uppercase tracking-wide">
+          decide with logic
+        </text>
+
+        <circle
+          key={mode}
+          cx="110"
+          cy="90"
+          r="5"
+          className={clsx(mode === "wait" ? "fill-ash anim-travel-up" : "fill-accent anim-travel-down")}
+        />
+      </svg>
+
+      <div
+        className={clsx(
+          "rounded-xl border p-3",
+          mode === "wait" ? "border-line bg-mist" : "border-accent/30 bg-accentSoft",
+        )}
+      >
+        <p className={clsx("text-caption font-semibold", mode === "wait" ? "text-ash" : "text-accent")}>{copy.end}</p>
+        <p className="mt-1 text-caption text-ink">{copy.verdict}</p>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C7 — The seven assessment dimensions: a radar preview, strong vs weak
+// ---------------------------------------------------------------------------
+
+const DIMENSION_AXES: RadarAxis[] = DIMENSIONS.map((d) => ({ key: d.id, label: d.short, full: d.name }));
+
+// Same 1–3 (Low/Medium/High) scale Task 2's real radar uses, so this preview
+// is not just illustrative — it is the exact instrument, pre-filled. Six axes
+// read "bigger is stronger"; Risk alone reads in reverse (bigger = more could
+// go wrong), which is why the weak profile spikes there while everything else
+// on it is small.
+const DEMO_PROFILES: Record<"weak" | "strong", Record<string, number>> = {
+  weak: { leverage: 1, innovation: 3, sustainability: 1, feasibility: 3, risk: 3, longTerm: 1, controllability: 1 },
+  strong: { leverage: 3, innovation: 2, sustainability: 3, feasibility: 2, risk: 1, longTerm: 3, controllability: 3 },
+};
+
+export function DimensionsRadarPreview() {
+  const hydrated = useHydrated();
+  const seen = useProgress((s) => s.seen);
+  const markSeen = useProgress((s) => s.markSeen);
+  const [profile, setProfile] = useState<"weak" | "strong">("weak");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const open = DIMENSIONS.find((d) => d.id === openId) ?? null;
+
+  const seenIds = hydrated ? (seen[R1.dimensionsSeen] ?? []) : [];
+
+  const select = (id: string) => {
+    setOpenId((cur) => (cur === id ? null : id));
+    markSeen(R1.dimensionsSeen, id);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {(["weak", "strong"] as const).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setProfile(p)}
+            aria-pressed={profile === p}
+            className={clsx(
+              "rounded-full border px-3 py-1.5 text-caption font-semibold capitalize transition-colors duration-150",
+              profile === p ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+            )}
+          >
+            {p} profile
+          </button>
+        ))}
+      </div>
+
+      <RadarChart
+        axes={DIMENSION_AXES}
+        series={[{ id: "demo", label: `${profile} profile`, values: DEMO_PROFILES[profile], tone: "real" }]}
+        max={4}
+        animate
+        title={`A demo ${profile} profile across the seven assessment dimensions`}
+        className="max-w-sm"
+      />
+
+      <div>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
+          Tap a dimension to read its definition — {seenIds.length} of 7 opened
+        </p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {DIMENSIONS.map((d) => {
+            const on = openId === d.id;
+            const wasSeen = seenIds.includes(d.id);
+            return (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => select(d.id)}
+                aria-pressed={on}
+                className={clsx(
+                  "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
+                  on
+                    ? "border-accent bg-accent text-paper"
+                    : wasSeen
+                      ? "border-accent/40 bg-accentSoft text-accent"
+                      : "border-line text-ash hover:border-ash",
+                )}
+              >
+                {d.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {open ? (
+        <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
+          <p className="text-caption text-ink">
+            <span className="font-semibold text-accent">{open.name} — </span>
+            {open.definition}
+          </p>
+        </div>
+      ) : (
+        <p className="rounded-xl border border-dashed border-line bg-paper p-3 text-caption text-ash">
+          This is the exact scoring vocabulary Task 2's radar uses — open a few before you start.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C8 — Enabler vs point-solution: one hub, how many decisions it touches
+// ---------------------------------------------------------------------------
+
+type LeverageMode = "point" | "enabler";
+
+const DOWNSTREAM_NODES = [
+  { x: 260, y: 30 },
+  { x: 260, y: 78 },
+  { x: 260, y: 126 },
+  { x: 260, y: 174 },
+];
+
+export function EnablerVsPointSolution() {
+  const [mode, setMode] = useState<LeverageMode>("point");
+  const touched = mode === "enabler" ? 4 : 1;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {(["point", "enabler"] as LeverageMode[]).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            aria-pressed={mode === m}
+            className={clsx(
+              "rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors duration-150",
+              mode === m ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+            )}
+          >
+            {m === "point" ? "Point solution" : "Enabler"}
+          </button>
+        ))}
+      </div>
+
+      <svg
+        viewBox="0 0 340 204"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-lg"
+        role="img"
+        aria-label={`A candidate measure touching ${touched} downstream decision${touched === 1 ? "" : "s"}.`}
+      >
+        <rect x="8" y="82" width="110" height="40" rx="10" className="fill-paper stroke-ink" strokeWidth="1.5" />
+        <text x="63" y="99" textAnchor="middle" className="fill-ink text-[11px] font-semibold">
+          Candidate
+        </text>
+        <text x="63" y="112" textAnchor="middle" className="fill-ink text-[11px] font-semibold">
+          measure
+        </text>
+
+        {DOWNSTREAM_NODES.map((node, i) => {
+          const active = i < touched;
+          return (
+            <g key={i} className={active ? undefined : "opacity-20"} style={{ transition: "opacity .25s ease" }}>
+              <path
+                d={`M118 102 L190 ${node.y + 12} L${node.x} ${node.y + 12}`}
+                fill="none"
+                stroke="currentColor"
+                className={active ? "text-accent" : "text-ash"}
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <rect
+                key={mode + i}
+                x={node.x}
+                y={node.y}
+                width="76"
+                height="24"
+                rx="7"
+                className={clsx(active && "anim-pop", active ? "fill-accentSoft stroke-accent" : "fill-mist stroke-line")}
+                strokeWidth="1.4"
+              />
+              <text x={node.x + 38} y={node.y + 16} textAnchor="middle" className={clsx("text-[9px] font-semibold", active ? "fill-accent" : "fill-ash")}>
+                Future decision
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="rounded-xl border border-line bg-paper p-3">
+        <p className="text-caption text-ink">
+          <span className="font-semibold text-ink">
+            Touches {touched} downstream decision{touched === 1 ? "" : "s"}.
+          </span>{" "}
+          {mode === "point"
+            ? "A point solution answers this one case. The next similar decision starts from zero again."
+            : "An enabler is inherited automatically by everything that comes after it — every one of these future decisions now runs through the same logic."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// C9 — Attractive-but-weak: a trophy that cracks on the back
+// ---------------------------------------------------------------------------
+
+const WEAKNESS_ITEMS = [
+  { label: "Symbolic politics", detail: "A visible signal with little real effect behind it." },
+  { label: "Misinvestment", detail: "Money and attention committed before the case is proven." },
+  { label: "Rebound", detail: "The efficiency gain gets eaten by more usage — C1's trap, at portfolio scale." },
+];
+
+export function AttractiveButWeakTrophy() {
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      <button
+        type="button"
+        onClick={() => setFlipped((v) => !v)}
+        aria-pressed={flipped}
+        className="flip-card mx-auto block h-48 w-full max-w-sm text-left"
+      >
+        <div className={clsx("flip-card-inner h-full w-full", flipped && "is-flipped")}>
+          <div className="flip-card-face flex h-full w-full flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-paper p-4">
+            <Icon name="trophy" className="h-14 w-14 text-warn" />
+            <p className="text-caption font-semibold text-ink">&ldquo;Looks like real progress.&rdquo;</p>
+            <p className="text-micro text-ash">Tap to see what the front doesn&rsquo;t show</p>
+          </div>
+          <div className="flip-card-face flip-card-face-back h-full w-full rounded-2xl border border-warn/40 bg-warn/5 p-4">
+            <p className="text-micro font-semibold uppercase tracking-wide text-warn">What might actually be there</p>
+            <ul className="mt-2 space-y-1.5">
+              {WEAKNESS_ITEMS.map((w) => (
+                <li key={w.label} className="text-caption text-ink">
+                  <span className="font-semibold text-warn">{w.label} — </span>
+                  {w.detail}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </button>
+      <p className="text-center text-micro text-ash">
+        A defensible pick names, in advance, which of these three is the live risk — not just that risk exists.
+      </p>
     </div>
   );
 }

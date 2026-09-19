@@ -13,14 +13,13 @@ const ROUTE = ROUTES[0];
 export const metadata: Metadata = {
   title: `AION Green IT — Day 15 · ${ROUTE.tag}`,
   description:
-    "Why novelty is not innovation, AI as both efficiency promise and resource burden, circular versus linear IT, the seven assessment lenses and the attractive-versus-viable distinction — then FutureGrid Technologies: diagnose six innovation initiatives as opportunity, risk or mixed.",
+    "Why novelty is not innovation, AI as both efficiency promise and resource burden, circular versus linear IT, the seven assessment lenses and dimensions, deciding under uncertainty, enabler versus point-solution leverage, and attractive-but-weak failure modes — then FutureGrid Technologies: diagnose six innovation initiatives, then prioritise whole lines of measures under a limited budget.",
 };
 
 /**
- * Route 1, Level 1 only so far: the case once, five material micro-cards, one
- * task on a single scroll, then one export bar covering everything above it.
- * Level 2 (prioritisation) is a separate, later addition to this same page,
- * between the task and the export bar (CLAUDE.md §12).
+ * Route 1, Levels 1 and 2: the case once, nine material micro-cards, one task
+ * on a single scroll — Part 1 Diagnose → inline handover → Part 2 Decide —
+ * then one export bar covering everything above it (CLAUDE.md §12).
  */
 export default function Route1Page() {
   return (

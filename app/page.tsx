@@ -25,11 +25,11 @@ export default function DayLanding() {
           Module 11. New technology is not automatically sustainable technology. AI can cut energy and add compute at
           the same time; a circular model can be exactly the right direction and still be hard to run; and an
           initiative can be genuinely exciting while reducing nothing at all. Route 1 is deliberately short on reading
-          and long on doing: five micro-cards give you the vocabulary and the decision rules — novelty versus
-          innovation, AI&apos;s two-sided balance, circular versus linear, the seven assessment lenses, attractive
-          versus viable — and then you apply them to FutureGrid Technologies&apos; six planned initiatives, telling a
-          genuine sustainability opportunity from something that is only technologically attractive. Route 2, the
-          management decision, is built in a later session.
+          and long on doing: nine micro-cards give you the vocabulary and the decision rules, and you apply them
+          twice on FutureGrid Technologies — first diagnosing six planned initiatives one by one, then stepping up to
+          prioritise whole lines of measures under a limited budget and incomplete data. Route 2 steps up again: at
+          NovaCircular Technologies you connect six building blocks into one decision architecture and turn it into a
+          management proposal, including the one decision to make now despite incomplete information.
         </p>
       </div>
 

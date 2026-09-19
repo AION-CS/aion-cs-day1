@@ -1,10 +1,9 @@
 /**
  * Day 15 route registry.
  *
- * Module 11: Route 1 carries Level 1 (this build) and later Level 2, both set
- * at FutureGrid Technologies — short micro-card material, then one diagnosis
- * task. Route 2 (Level 3, the management decision) is a separate, later
- * prompt and is marked unavailable until it is written.
+ * Module 11: Route 1 carries Level 1 (diagnose) and Level 2 (decide), one
+ * continuous engagement at FutureGrid Technologies. Route 2 carries Level 3
+ * (the management decision) at a new company, NovaCircular Technologies.
  */
 
 export const CASE = {
@@ -41,7 +40,15 @@ export type IconKey =
   // Day 13: the six-area diagnostic framework's User Behaviour tile.
   | "person"
   // Day 15: AI compute as its own assessment lens.
-  | "chip";
+  | "chip"
+  // Day 15 L2/L3: prioritisation and management-decision material.
+  | "compass"
+  | "radar"
+  | "trophy"
+  // Day 15 L3: the decision-architecture canvas and review loop.
+  | "funnel"
+  | "clipboard"
+  | "clock";
 
 export type Route = {
   n: 1 | 2;
@@ -52,7 +59,7 @@ export type Route = {
   cardTitle: string; // landing card title
   cardBlurb: string; // landing card one-liner
   deliverable: string; // what the route produces
-  /** Curriculum levels this route covers. Route 1 spans two once L2 lands; Route 2 spans one. */
+  /** Curriculum levels this route covers. Route 1 spans two; Route 2 spans one. */
   levels: number[];
   /** Roughly how long the whole route takes, material and task together. */
   minutes: number;
@@ -73,10 +80,10 @@ export const ROUTES: Route[] = [
     title: "Route 1 — Assess & Decide",
     cardTitle: "Assess & Decide",
     cardBlurb:
-      "Why novelty is not innovation, why AI is both an efficiency promise and a resource burden, what circular IT keeps in the loop that linear IT throws away, the seven lenses every sustainable-innovation decision is read through, and how to tell attractive from viable — then FutureGrid Technologies: diagnose six innovation initiatives as opportunity, risk, or mixed.",
-    deliverable: "FutureGrid Technologies Innovation Diagnosis",
-    levels: [1],
-    minutes: 27,
+      "Why novelty is not innovation, AI as both an efficiency promise and a resource burden, circular versus linear IT, the seven lenses and seven scoring dimensions, and how to tell attractive from viable — then FutureGrid Technologies: diagnose six innovation initiatives one by one, then step up to prioritise whole lines of measures under a limited budget and incomplete data.",
+    deliverable: "FutureGrid Technologies Innovation Diagnosis & Priority",
+    levels: [1, 2],
+    minutes: 54,
     available: true,
   },
   {
@@ -87,11 +94,11 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "Level 3 — the management decision on FutureGrid's innovation portfolio. Written in a later session; this card will open once it is built.",
-    deliverable: "FutureGrid Technologies Innovation Decision",
+      "From scattered initiatives to a decision architecture: assessment logic, governance and approval flow, and short/medium/structural time horizons — then NovaCircular Technologies: connect six building blocks into one framework and build the management proposal that puts it to work.",
+    deliverable: "NovaCircular Technologies Management Proposal",
     levels: [3],
-    minutes: 45,
-    available: false,
+    minutes: 35,
+    available: true,
   },
 ];
 

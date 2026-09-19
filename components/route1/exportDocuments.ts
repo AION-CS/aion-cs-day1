@@ -1,12 +1,25 @@
-import { ENGAGEMENT, EXPORT, ZONES, answerLabel, lensLabel } from "@/lib/route1";
+import {
+  DIMENSIONS,
+  ENGAGEMENT,
+  EXPORT,
+  FOLLOWUP_FIELDS,
+  LEVEL_LABEL,
+  OPTION_LINES,
+  RISK_FIELDS,
+  ZONES,
+  answerLabel,
+  lensLabel,
+  optionById,
+} from "@/lib/route1";
 import { CASE } from "@/lib/routes";
 import type { Route1State } from "./useRoute1";
 
 /**
  * The route's single export: one print-ready HTML report sent straight to the
  * browser's print dialog — "Save as PDF" is the export (see lib/downloadFile.ts
- * `printHtmlDocument`). No JSON, no PDF library. Grouped by zone so the
- * document reads as a verdict on the portfolio rather than a list of answers.
+ * `printHtmlDocument`). No JSON, no PDF library. One top-level block per level
+ * (CLAUDE.md §12) — Part 1 grouped by zone, Part 2 by option line — so each
+ * stays separately gradable out of the one file.
  */
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -48,6 +61,21 @@ export function buildEngagementHtml(r1: Route1State): string {
   }`;
   }).join("\n");
 
+  const optionSections = OPTION_LINES.map((opt) => {
+    const a = r1.optionAssessment(opt.id);
+    const rows = DIMENSIONS.map(
+      (d) => `<tr><td>${esc(d.name)}</td><td class="nowrap">${a.scores[d.id] ? esc(LEVEL_LABEL[a.scores[d.id]!]) : "—"}</td></tr>`,
+    ).join("");
+    return `<h3>Line ${esc(opt.letter)} — ${esc(opt.title)}</h3>
+  <table>
+    <thead><tr><th>Dimension</th><th>Level</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+  }).join("\n");
+
+  const followUpRows = FOLLOWUP_FIELDS.map((f, i) => `<li>${esc(r1.followUps[i] || "—")}</li>`).join("");
+  const riskRows = RISK_FIELDS.map((r, i) => `<li>${esc(r1.risks[i] || "—")}</li>`).join("");
+
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -66,6 +94,8 @@ export function buildEngagementHtml(r1: Route1State): string {
   h1 { margin: 0 0 4px; font-size: 27px; line-height: 1.2; }
   h2 { margin: 24px 0 10px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
        color: #5E6670; border-top: 1px solid #E2E5E9; padding-top: 16px; }
+  h3 { margin: 18px 0 4px; font-size: 14px; color: #16191D; }
+  ol, ul.plain { margin: 6px 0 0; padding-left: 20px; font-size: 13px; }
   .meta { margin: 0; color: #5E6670; font-size: 13px; }
   table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
   th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
@@ -93,25 +123,43 @@ export function buildEngagementHtml(r1: Route1State): string {
 </head>
 <body>
 <div class="sheet">
-  <p class="kicker">AION Green IT · Day ${CASE.day} · Route 1 · Level 1</p>
+  <p class="kicker">AION Green IT · Day ${CASE.day} · Route 1 · Levels 1–2</p>
   <h1>${esc(EXPORT.docHeading)}</h1>
   <p class="meta">${esc(r1.name.trim() || "learner")} · ${esc(date)} · Case: ${esc(
     ENGAGEMENT.company,
   )} · Role: ${esc(ENGAGEMENT.role)}</p>
 
+  <h2>Part 1 — Diagnose</h2>
   ${zoneSections}
 
-  <h2>Attractive now, structurally weak</h2>
+  <h3>Attractive now, structurally weak</h3>
   <div class="closing">&ldquo;${esc(r1.closing)}&rdquo;</div>
 
-  <h2>Split</h2>
   <div class="summary">
     <strong>${r1.completeCount} of ${r1.totalCards} initiatives fully written up — verdict, lens and rationale.</strong>
-    <span class="muted">${r1.diagnosedCount} of ${r1.totalCards} diagnosed on both questions.</span>
+  </div>
+
+  <h2>Part 2 — Decide</h2>
+  ${optionSections}
+
+  <h3>Priority pick</h3>
+  <p>${r1.priority ? `<strong>Line ${esc(optionById(r1.priority).letter)} — ${esc(optionById(r1.priority).title)}</strong>` : "<em>Not yet picked</em>"}</p>
+
+  <h3>Justification</h3>
+  <p>${r1.justification ? `&ldquo;${esc(r1.justification)}&rdquo;` : "<em>Not yet written</em>"}</p>
+
+  <h3>Follow-up decisions</h3>
+  <ol>${followUpRows}</ol>
+
+  <h3>Two risks of an attractive-but-weak pick</h3>
+  <ul class="plain">${riskRows}</ul>
+
+  <div class="summary">
+    <strong>${r1.options.filter((o) => o.fullyScored).length} of 3 lines fully assessed across all seven dimensions.</strong>
   </div>
 
   <footer>
-    AION Green IT — Day ${CASE.day}, Route 1 (Assess &amp; Decide), Level 1.
+    AION Green IT — Day ${CASE.day}, Route 1 (Assess &amp; Decide), Levels 1–2.
     ${esc(ENGAGEMENT.company)} is a fictional case for training use. Prepared by the learner named above.
   </footer>
 </div>

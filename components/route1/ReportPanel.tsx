@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { useHydrated } from "@/lib/store";
 import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
-import { ENGAGEMENT, EXPORT, ZONES, answerLabel, lensLabel } from "@/lib/route1";
+import { ENGAGEMENT, EXPORT, OPTION_LINES, ZONES, answerLabel, lensLabel, optionById } from "@/lib/route1";
 import { useRoute1, domId } from "./useRoute1";
 
 /** The date line. Client-only, so the static export stays stable. */
@@ -34,6 +34,7 @@ export function ReportPanel() {
       </p>
 
       <div className="mt-4 space-y-4">
+        <p className="text-micro font-semibold uppercase tracking-wide text-accent">Part 1 — Diagnose</p>
         {ZONES.map((zone) => {
           const inZone = r1.byZone(zone.id);
           return (
@@ -95,6 +96,55 @@ export function ReportPanel() {
           ) : (
             <p className="mt-1 text-micro italic text-ash">Not answered yet.</p>
           )}
+        </div>
+
+        <p className="border-t border-line pt-3 text-micro font-semibold uppercase tracking-wide text-accent">
+          Part 2 — Decide
+        </p>
+
+        {OPTION_LINES.map((opt) => {
+          const a = r1.optionAssessment(opt.id);
+          return (
+            <div key={opt.id} className="rounded-lg border border-line bg-canvas p-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-caption font-semibold text-ink">
+                  Line {opt.letter} — {opt.title}
+                </p>
+                <span
+                  className={clsx(
+                    "shrink-0 rounded-full px-1.5 py-0.5 text-micro font-semibold",
+                    a.fullyScored ? "bg-accentSoft text-accent" : "border border-line text-ash",
+                  )}
+                >
+                  {a.scoredCount}/7 rated
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => scrollToAndFlash(domId.optionCard(opt.id), "ref")}
+                className="mt-1.5 text-micro font-semibold text-accent underline decoration-dotted underline-offset-2 hover:text-accentHi"
+              >
+                Edit this entry
+              </button>
+            </div>
+          );
+        })}
+
+        <div className="rounded-lg border border-line bg-canvas p-2.5">
+          <Row label="Priority" value={r1.priority ? `Line ${optionById(r1.priority).letter} — ${optionById(r1.priority).title}` : "— not picked"} />
+          {r1.justification && (
+            <div className="mt-1 pt-0.5">
+              <dt className="text-micro text-ash">Justification</dt>
+              <dd className="mt-0.5 text-micro italic text-ink">&ldquo;{r1.justification}&rdquo;</dd>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => scrollToAndFlash(domId.priority, "ref")}
+            className="mt-1.5 text-micro font-semibold text-accent underline decoration-dotted underline-offset-2 hover:text-accentHi"
+          >
+            Edit this entry
+          </button>
         </div>
       </div>
     </div>

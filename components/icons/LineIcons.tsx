@@ -238,6 +238,71 @@ function Chip({ className }: P) {
   );
 }
 
+// --- Day 15 L2/L3: prioritisation and management-decision material --------
+
+/** A compass — a bearing to steer by when the map itself is incomplete. */
+function Compass({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="8.4" />
+      <path d="M14.8 9.2 L13 13 L9.2 14.8 L11 11 Z" />
+      <path d="M12 3.2v1.6M12 19.2v1.6M3.2 12h1.6M19.2 12h1.6" />
+    </svg>
+  );
+}
+
+/** A four-spoke radar outline — the seven-dimension scoring instrument, simplified. */
+function RadarIcon({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <polygon points="12,4 19,9.5 16.5,18 7.5,18 5,9.5" />
+      <polygon points="12,8 15.4,10.6 14.2,15 9.8,15 8.6,10.6" />
+      <path d="M12 4v4M19 9.5l-3.6 1.1M16.5 18l-2.3-3M7.5 18l2.3-3M5 9.5l3.6 1.1" />
+    </svg>
+  );
+}
+
+/** A trophy — the shiny front an attractive-but-weak option shows first. */
+function Trophy({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" />
+      <path d="M8 5H5.5a2 2 0 0 0 0 4H8M16 5h2.5a2 2 0 0 1 0 4H16" />
+      <path d="M12 13v3M9 20h6M10 20c0-2.2.5-3 2-3s2 .8 2 3" />
+    </svg>
+  );
+}
+
+/** A funnel — many initiatives in, a few prioritised decisions out. */
+function Funnel({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 4h16l-6 8v6l-4 2v-8Z" />
+    </svg>
+  );
+}
+
+/** A clipboard — the management-review stage of a governed decision loop. */
+function Clipboard({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="5.5" y="4.5" width="13" height="16" rx="2" />
+      <path d="M9 4.5V3.8a1.3 1.3 0 0 1 1.3-1.3h3.4A1.3 1.3 0 0 1 15 3.8v.7" />
+      <path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4.5" />
+    </svg>
+  );
+}
+
+/** A clock — the short/medium/structural time-horizon band picker. */
+function ClockIcon({ className }: P) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="8.4" />
+      <path d="M12 7.4V12l3.2 2" />
+    </svg>
+  );
+}
+
 const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   coins: Coins,
   factory: Factory,
@@ -259,6 +324,12 @@ const REGISTRY: Record<IconKey, (p: P) => JSX.Element> = {
   sensor: Sensor,
   person: Person,
   chip: Chip,
+  compass: Compass,
+  radar: RadarIcon,
+  trophy: Trophy,
+  funnel: Funnel,
+  clipboard: Clipboard,
+  clock: ClockIcon,
 };
 
 export function Icon({ name, className }: { name: IconKey; className?: string }) {

@@ -1,10 +1,19 @@
 /**
- * Route 1 — the FutureGrid Technologies engagement, Level 1 only.
+ * Route 1 — the FutureGrid Technologies engagement, Level 1 + Level 2.
  *
- * Day 15 ships Route 1's Level 1 first: five micro-cards of material, then one
- * diagnosis task, then one export. Level 2 (prioritisation) is a separate,
- * later prompt and is not scaffolded here — but the page is shaped to grow it
- * onto the same scroll, below the task and above the export bar (CLAUDE.md §12).
+ * Nine micro-cards of material (C1–C9), then one task on one continuous
+ * scroll — Part 1 Diagnose (Task 1) → inline handover → Part 2 Decide
+ * (Task 2) — then one export (CLAUDE.md §12).
+ *
+ * **Export-naming note.** The Level 2 build prompt names a second, standalone
+ * export id (`1-{name}-day15-l2task1`), independent from Level 1's
+ * (`1-{name}-day15-l1task1`). The established codebase convention —
+ * CLAUDE.md §12 ("one export bar, one deliverable, one missing list spanning
+ * the whole task") and Day 14 Route 1's own precedent for a merged L1+L2
+ * route — is **one export per route**, so this route now exports a single
+ * PDF covering both parts as `1-{name}-day15-l1l2task1`, not two files.
+ * Flagged here per that prompt's own instruction to surface the discrepancy
+ * rather than pick silently (see also README.md).
  *
  * Everything that would otherwise be said twice lives here and only here: the
  * company, the role, the learner's name field, and the export contract.
@@ -15,6 +24,7 @@ import type { MaterialSectionId } from "./sections";
 export * from "./sections";
 export * from "./material";
 export * from "./task1";
+export * from "./task2";
 
 export const LEARNER_NAME_KEY = "learner:name";
 
@@ -24,6 +34,7 @@ export const LEARNER_NAME_KEY = "learner:name";
 export const R1 = {
   name: LEARNER_NAME_KEY,
 
+  // -- Task 1 (Level 1 — Diagnose) -------------------------------------------
   /** Q1 — the load answer for one initiative. */
   load: (initiativeId: string) => `r1:t1:load:${initiativeId}`,
   /** Q2 — the structure answer for one initiative. */
@@ -36,28 +47,41 @@ export const R1 = {
   closing: "r1:t1:closing",
   /** Which of the seven lens chips in C4 have been opened — drives a soft nudge only. */
   lensesSeen: "r1:c4:lenses",
+
+  // -- Task 2 (Level 2 — Decide) ---------------------------------------------
+  /** Phase 1 — one Low/Medium/High level per (option, dimension) pair. */
+  score: (optionId: string, dimensionId: string) => `r1:t2:score:${optionId}:${dimensionId}`,
+  /** Phase 2 — the single priority pick (option id). */
+  priority: "r1:t2:priority",
+  justification: "r1:t2:justification",
+  followUp: (index: number) => `r1:t2:followup:${index}`,
+  risk: (index: number) => `r1:t2:risk:${index}`,
+  /** Stringified count of "Check my reasoning" runs on the priority decision. */
+  checkCount2: "r1:t2:check",
+  /** Which of the seven dimension chips in C7 have been opened — drives a soft nudge only. */
+  dimensionsSeen: "r1:c7:dimensions",
 } as const;
 
 /** Prefixes resetSection() must sweep to clear every compound key this route writes. */
-export const R1_KEY_PREFIXES = ["r1:t1:", "r1:c4:"];
+export const R1_KEY_PREFIXES = ["r1:t1:", "r1:t2:", "r1:c4:", "r1:c7:"];
 
 export const PAGE_INTRO = {
   tag: "ROUTE 1 — ASSESS & DECIDE",
   title: "Innovations for the Sustainable IT of Tomorrow",
-  body: "Module 11, Level 1. New technology is not automatically sustainable technology: AI can cut energy and add compute at the same time, a circular model can be the right direction and still be hard to run, and an initiative can be genuinely exciting while reducing nothing at all. Five short cards below give you the vocabulary and the decision rules. Then you use them on FutureGrid Technologies' six planned initiatives — telling a sustainability opportunity from something that is only technologically attractive.",
+  body: "Module 11. New technology is not automatically sustainable technology: AI can cut energy and add compute at the same time, a circular model can be the right direction and still be hard to run, and an initiative can be genuinely exciting while reducing nothing at all. Nine short cards below give you the vocabulary and the decision rules. Then you use them twice on FutureGrid Technologies: first diagnosing six planned initiatives one by one, then stepping up to prioritise whole lines of measures under a limited budget and incomplete data.",
 } as const;
 
 /** Stated once, above the task, and never re-introduced mid-page. */
 export const ENGAGEMENT = {
   company: "FutureGrid Technologies",
-  role: "Innovation assessment analyst",
+  role: "Innovation assessment analyst, then senior consultant",
   heading: "The engagement",
   brief:
     "FutureGrid Technologies is planning six innovation initiatives at once — AI, data services, procurement, hardware and a new customer offering. Management is enthusiastic about all of them, and no integrated way of judging them exists yet.",
   mandate:
-    "You have been brought in to assess, not to approve: to say which initiatives are genuine sustainability opportunities, which are sustainability risks, and which are mixed and need conditions attached.",
+    "Part 1: assess, not approve — say which of the six initiatives are genuine sustainability opportunities, which are risks, and which are mixed. Part 2: step up a level — with only one line of measures fundable first, prioritise and defend a choice under incomplete data.",
   deliverable:
-    "You leave with one document: a FutureGrid Technologies Innovation Diagnosis, giving every initiative a verdict, the lens that explains it, and a one-line rationale naming both the benefit and the burden.",
+    "You leave with one document: a FutureGrid Technologies Innovation Diagnosis & Priority, covering the initiative-level diagnosis and the portfolio-level priority decision.",
 } as const;
 
 export const NAME_FIELD = {
@@ -67,16 +91,23 @@ export const NAME_FIELD = {
 } as const;
 
 /**
- * One export for the whole route so far: a print-ready HTML report sent
- * straight to the browser's print dialog — "Save as PDF" is the export
- * (lib/downloadFile.ts `printHtmlDocument`). Filename: `1-{name}-day15-l1task1`.
+ * One export for the whole route: a print-ready HTML report sent straight to
+ * the browser's print dialog — "Save as PDF" is the export
+ * (lib/downloadFile.ts `printHtmlDocument`). Filename:
+ * `1-{name}-day15-l1l2task1` (see the export-naming note above).
  */
 export const EXPORT = {
-  filenameLevels: [1],
+  filenameLevels: [1, 2],
   filenameTask: 1,
-  docHeading: "FutureGrid Technologies Innovation Diagnosis",
+  docHeading: "FutureGrid Technologies Innovation Diagnosis & Priority",
   buttonLabel: "Export as PDF",
 } as const;
 
 /** Material chips shown on the case brief. */
 export const BRIEF_REFS: MaterialSectionId[] = ["lenses", "viability"];
+
+/** The handover panel between Part 1 (Diagnose) and Part 2 (Decide). */
+export const HANDOVER = {
+  heading: "From one initiative to a whole portfolio",
+  body: "You just diagnosed six initiatives one at a time. Now zoom out: FutureGrid can only fund one central line of measures first. The same reasoning — net effect, structure, attractive versus viable — still applies, but the decision is bigger, the data is thinner, and you have to defend it before all the numbers exist.",
+} as const;

@@ -8,69 +8,105 @@ import { AnswerKeyNote } from "@/components/ui/AnswerKey";
 import {
   CLOSING_FIELD,
   CONTEXT_CHIPS,
+  CONTEXT_CHIPS_L2,
   EXPORT,
   R1,
+  TASK2_FRAMING,
   TASK_FRAMING,
   WORK_ASSIGNMENT,
   materialRefs,
 } from "@/lib/route1";
 import { DiagnosisBoard } from "./DiagnosisBoard";
+import { Handover } from "./Handover";
+import { PartTwo } from "./PartTwo";
 import { ReportPanel } from "./ReportPanel";
 import { useRoute1, domId } from "./useRoute1";
 
 /**
- * Task 1 in full, on one continuous scroll: the framing, the initial situation
- * as chips rather than a paragraph, the work assignment, the diagnosis board,
- * and the closing question — with the report assembling beside it. This is
- * Level 1 alone; Level 2 is a separate, later addition below this section and
- * above the export bar (CLAUDE.md §12).
+ * The whole task, one continuous scroll: Part 1 — Diagnose (Task 1) → an
+ * inline handover → Part 2 — Decide (Task 2), with one report assembling
+ * beside it (CLAUDE.md §12). No material sits between the parts — everything
+ * either part needs was taught in the nine cards above this section.
  */
 export function Task() {
   const r1 = useRoute1();
 
   return (
     <section id={domId.task} className="scroll-mt-24 space-y-6">
-      <SectionHeading
-        kicker={`${TASK_FRAMING.tag} · about ${TASK_FRAMING.minutes} minutes`}
-        title={TASK_FRAMING.title}
-      />
-
-      <div className="rounded-2xl border border-accent/30 bg-accentSoft/60 p-5">
-        <p className="text-body font-semibold text-ink">{TASK_FRAMING.lead}</p>
-        <p className="mt-2 max-w-prose text-body text-ash">{TASK_FRAMING.instruction}</p>
-      </div>
-
-      <div className="rounded-2xl border border-line bg-paper p-5">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Where FutureGrid stands today</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {CONTEXT_CHIPS.map((chip) => (
-            <span key={chip} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-micro text-ink">
-              {chip}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-line bg-canvas p-5">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Your work</p>
-        <ol className="mt-2 list-decimal space-y-1.5 pl-5">
-          {WORK_ASSIGNMENT.map((step, i) => (
-            <li key={i} className="text-caption text-ink">
-              {step}
-            </li>
-          ))}
-        </ol>
-      </div>
+      <SectionHeading kicker="THE TASK" title="FutureGrid Technologies — Diagnose, then Decide" />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 space-y-6">
-          <DiagnosisBoard />
-          <ClosingQuestion />
+        <div className="min-w-0 space-y-8">
+          {/* Part 1 — Diagnose */}
+          <div className="space-y-6">
+            <SectionHeading
+              kicker={`${TASK_FRAMING.tag} · about ${TASK_FRAMING.minutes} minutes`}
+              title={TASK_FRAMING.title}
+            />
+
+            <div className="rounded-2xl border border-accent/30 bg-accentSoft/60 p-5">
+              <p className="text-body font-semibold text-ink">{TASK_FRAMING.lead}</p>
+              <p className="mt-2 max-w-prose text-body text-ash">{TASK_FRAMING.instruction}</p>
+            </div>
+
+            <div className="rounded-2xl border border-line bg-paper p-5">
+              <p className="text-micro font-semibold uppercase tracking-wide text-ash">Where FutureGrid stands today</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {CONTEXT_CHIPS.map((chip) => (
+                  <span key={chip} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-micro text-ink">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-line bg-canvas p-5">
+              <p className="text-micro font-semibold uppercase tracking-wide text-ash">Your work</p>
+              <ol className="mt-2 list-decimal space-y-1.5 pl-5">
+                {WORK_ASSIGNMENT.map((step, i) => (
+                  <li key={i} className="text-caption text-ink">
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <DiagnosisBoard />
+            <ClosingQuestion />
+          </div>
+
+          <Handover />
+
+          {/* Part 2 — Decide */}
+          <div id={domId.partTwo} className="scroll-mt-24 space-y-6">
+            <SectionHeading
+              kicker={`${TASK2_FRAMING.tag} · about ${TASK2_FRAMING.minutes} minutes`}
+              title={TASK2_FRAMING.title}
+            />
+
+            <div className="rounded-2xl border border-accent/30 bg-accentSoft/60 p-5">
+              <p className="text-body font-semibold text-ink">{TASK2_FRAMING.lead}</p>
+              <p className="mt-2 max-w-prose text-body text-ash">{TASK2_FRAMING.instruction}</p>
+            </div>
+
+            <div className="rounded-2xl border border-line bg-paper p-5">
+              <p className="text-micro font-semibold uppercase tracking-wide text-ash">General conditions</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {CONTEXT_CHIPS_L2.map((chip) => (
+                  <span key={chip} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-micro text-ink">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <PartTwo />
+          </div>
         </div>
 
         <LivePanel
           title={EXPORT.docHeading}
-          summary={`${r1.diagnosedCount} of ${r1.totalCards} diagnosed · ${r1.completeCount} written up`}
+          summary={`Part 1: ${r1.diagnosedCount}/${r1.totalCards} diagnosed · Part 2: ${r1.options.filter((o) => o.fullyScored).length}/3 assessed`}
         >
           <ReportPanel />
         </LivePanel>
@@ -79,7 +115,7 @@ export function Task() {
   );
 }
 
-/** The one free-text question that closes the diagnosis — C5's distinction, applied. */
+/** The one free-text question that closes Part 1 — C5's distinction, applied. */
 function ClosingQuestion() {
   const hydrated = useHydrated();
   const setNote = useProgress((s) => s.setNote);

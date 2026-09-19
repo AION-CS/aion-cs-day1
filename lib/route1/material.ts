@@ -1,13 +1,20 @@
 /**
- * The five micro-cards, C1–C5 — the whole teaching block for Route 1's
- * Level 1, about 10–12 minutes of reading.
+ * The nine micro-cards, C1–C9 — the whole teaching block for Route 1, both
+ * levels, read continuously before either task (CLAUDE.md §12: no material
+ * between the parts).
  *
- * Coverage rule (CLAUDE.md §11a): every dimension Task 1 asks the learner to
- * judge is introduced here first. Net resource effect and the rebound trap in
- * C1, AI's benefit-versus-load trade-off in C2, circular versus linear and the
- * R-ladder in C3, the seven lenses the task's chips use verbatim in C4, and
- * both organisational maturity and the opportunity/mixed/risk verdict rule in
- * C5. Nothing in the task offers a choice the cards have not named.
+ * Coverage rule (CLAUDE.md §11a): every dimension either task asks the learner
+ * to judge is introduced here first. C1–C5 cover Level 1's diagnosis
+ * vocabulary — net resource effect and the rebound trap in C1, AI's
+ * benefit-versus-load trade-off in C2, circular versus linear and the
+ * R-ladder in C3, the seven assessment *lenses* in C4, and the
+ * opportunity/mixed/risk verdict rule in C5. C6–C9 step the perspective up
+ * for Level 2's prioritisation: deciding under uncertainty in C6, the seven
+ * assessment *dimensions* Task 2's radar scores in C7 (a deeper, task-specific
+ * cousin of C4's lenses — deliberately not the same seven), enabler versus
+ * point-solution leverage in C8, and the attractive-but-weak failure modes
+ * (symbolic politics, misinvestment, rebound) in C9. Nothing in either task
+ * offers a choice the cards have not named.
  */
 
 import type { MicroCard } from "@/lib/materialSection";
@@ -129,11 +136,87 @@ export const MATERIAL: MicroCard<MaterialSectionId>[] = [
     sources: [],
     minutes: 2,
   },
+  {
+    id: "uncertainty",
+    code: "C6",
+    n: 6,
+    icon: "compass",
+    title: "Deciding under uncertainty",
+    standfirst: "Task 2 steps you up from analyst to consultant — the data stays incomplete either way.",
+    sentences: [
+      "Managers rarely get complete ROI data before deciding. The skill is not waiting for certainty — it is having a decision logic that stays defensible when information is incomplete.",
+      "Waiting has a cost that is easy to miss because it looks like caution: a delayed decision does not remove risk, it just moves that risk downstream to whoever has to decide later with less runway left.",
+      "A good early decision, reasoned from the dimensions in C7, also improves your position for the next one — you learn from a real commitment in a way you cannot from a postponed one.",
+    ],
+    reasoning: [
+      "When a task asks you to prioritise with partial data, treat \"we don't have full ROI numbers yet\" as the normal case, not a reason to default to the safest-looking option.",
+      "Defend a choice by naming which dimensions it wins on now and which ones stay genuinely open — not by claiming certainty you do not have.",
+    ],
+    sources: [],
+    minutes: 3,
+  },
+  {
+    id: "dimensions",
+    code: "C7",
+    n: 7,
+    icon: "radar",
+    title: "The seven assessment dimensions",
+    standfirst: "This is the scoring vocabulary Task 2's radar uses — open it before you rate anything.",
+    sentences: [
+      "Every candidate line of measures is judged on seven dimensions: Strategic leverage (how much it shifts the whole board, not just one square), Innovation effect (genuine new capability, not a rebadge), Sustainability impact (real net resource or emissions benefit), Feasibility (can it actually be delivered now, with today's people and budget).",
+      "Risk (what can concretely go wrong), Long-term effect (does the benefit last or decay once attention moves on), and Controllability (can the organisation steer and govern it once it exists) complete the set.",
+      "These deepen C4's seven lenses for a prioritisation decision rather than repeating them — a lens named *why* an initiative succeeds or fails; a dimension gives it a Low/Medium/High score you can compare across options.",
+    ],
+    reasoning: [
+      "Score a dimension from what the option's own description supports, not from general enthusiasm for the technology category.",
+      "Six axes read \"bigger is stronger.\" Risk reads in reverse — a bigger Risk score means more could concretely go wrong, so a strong profile keeps that one axis small while the rest are large.",
+      "A profile with one very high dimension and several low ones is not automatically weaker than an all-Medium profile — which pattern wins depends on what the decision actually needs, which is Task 2's judgement call.",
+    ],
+    sources: [],
+    minutes: 3,
+  },
+  {
+    id: "enablerVsPoint",
+    code: "C8",
+    n: 8,
+    icon: "network",
+    title: "Enabler versus point-solution",
+    standfirst: "Where the real leverage sits is not always where the visible impact sits.",
+    sentences: [
+      "A point solution is one technology or one programme solving one thing — visible, contained, easy to evaluate on its own.",
+      "An enabler changes how every future decision gets made — an assessment or governance framework, for instance — so every later initiative inherits it automatically.",
+      "Enablers usually look less exciting on day one: lower immediate visibility, no single dramatic win to show management. Their payoff is structural — higher strategic leverage and higher controllability, compounding across everything that comes after.",
+    ],
+    reasoning: [
+      "Before scoring Strategic leverage or Controllability (C7) on an option, ask whether it is a decision the organisation makes once, or a decision it will now make correctly every time.",
+      "Do not mistake \"less visible now\" for \"less valuable\" — an enabler's benefit shows up in every initiative that follows it, not in itself.",
+    ],
+    sources: [],
+    minutes: 3,
+  },
+  {
+    id: "attractiveWeak",
+    code: "C9",
+    n: 9,
+    icon: "trophy",
+    title: "Attractive-but-weak: symbolic innovation and rebound",
+    standfirst: "Naming what breaks if the shiny option wins is part of a defensible prioritisation.",
+    sentences: [
+      "A measure can look excellent for the future and still be structurally weak underneath. Three specific failure modes recur: symbolic politics (a visible signal with little real effect behind it), misinvestment (money and attention committed before the case is proven), and rebound (C1's efficiency-gain-eaten-by-more-usage trap, showing up again at portfolio scale).",
+      "None of these make a measure automatically wrong — a first visible win can matter politically. What they demand is that you can say, in advance, what specifically breaks if the attractive option is chosen and the weakness turns out to be real.",
+    ],
+    reasoning: [
+      "When justifying a prioritisation pick, name at least one concrete way it could turn out to be attractive-but-weak, and what would signal that early.",
+      "A risk phrased as \"it might not work\" is not this card's point — the point is naming which of the three specific mechanisms (symbolic, misinvestment, rebound) is the live one for this option.",
+    ],
+    sources: [],
+    minutes: 3,
+  },
 ];
 
 export const MATERIAL_INTRO = {
-  kicker: "Material · five cards · about 10 minutes",
-  title: "Five ideas, then you use them",
+  kicker: "Material · nine cards · about 22 minutes",
+  title: "Nine ideas, then you use them — twice",
   intro:
-    "This day is deliberately short on reading and long on doing. Each card below is a few sentences, one live diagram you can play with, and the rule you will need when the task asks. Everything Task 1 expects is on this page — nothing is assumed from another day.",
+    "This day is deliberately short on reading and long on doing. Each card below is a few sentences, one live diagram you can play with, and the rule you will need when a task asks. C1–C5 give you the diagnosis vocabulary for Task 1; C6–C9 step the perspective up — from reading individual initiatives to prioritising whole lines of measures under incomplete data — for Task 2. Everything either task expects is on this page.",
 } as const;

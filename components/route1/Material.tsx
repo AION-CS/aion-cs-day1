@@ -12,22 +12,27 @@ import {
 } from "@/lib/route1";
 import {
   AiBalanceScale,
+  AttractiveButWeakTrophy,
   AttractiveVsViable,
   CircularVsLinear,
+  DimensionsRadarPreview,
+  EnablerVsPointSolution,
   LensWheel,
   NoveltyVsImpactFork,
+  UncertaintyFork,
 } from "./MaterialDiagrams";
 
 export const MATERIAL_TRACK_ID = "r1-material";
 
 /**
- * The whole teaching block: five micro-cards, C1–C5, about ten minutes of
- * reading. Deliberately the light end of the material budget — Day 15 puts
- * the learning inside the task, so each card is a few sentences, one live
- * diagram, and the rule the task will ask for.
+ * The whole teaching block: nine micro-cards, C1–C9, about 22 minutes of
+ * reading, continuous before either task (CLAUDE.md §12). Deliberately the
+ * light end of the material budget per card — Day 15 puts the learning
+ * inside the tasks, so each card is a few sentences, one live diagram, and
+ * the rule a task will ask for. C1–C5 feed Task 1; C6–C9 feed Task 2.
  */
 export function Material() {
-  const [c1, c2, c3, c4, c5] = MATERIAL;
+  const [c1, c2, c3, c4, c5, c6, c7, c8, c9] = MATERIAL;
 
   const navItems = SECTION_ORDER.map((id) => ({
     id,
@@ -60,6 +65,22 @@ export function Material() {
 
       <MicroCard card={c5} anchorId={materialAnchorId("viability")}>
         <AttractiveVsViable />
+      </MicroCard>
+
+      <MicroCard card={c6} anchorId={materialAnchorId("uncertainty")}>
+        <UncertaintyFork />
+      </MicroCard>
+
+      <MicroCard card={c7} anchorId={materialAnchorId("dimensions")}>
+        <DimensionsRadarPreview />
+      </MicroCard>
+
+      <MicroCard card={c8} anchorId={materialAnchorId("enablerVsPoint")}>
+        <EnablerVsPointSolution />
+      </MicroCard>
+
+      <MicroCard card={c9} anchorId={materialAnchorId("attractiveWeak")}>
+        <AttractiveButWeakTrophy />
       </MicroCard>
     </div>
   );
