@@ -19,11 +19,12 @@ function RevenueCliff() {
   const [ref, seen] = useInView<HTMLDivElement>();
   const value = useCountUp(clv(r));
   const delta = (clv(r) / clv(0.8) - 1) * 100;
-  const quarters = ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8"];
+  // Four quarters of delivery, then four quarters counted from go-live (Abnahme).
+  const quarters = ["Q1", "Q2", "Q3", "Q4", "+1Q", "+2Q", "+3Q", "+4Q"];
   const level = 30 + (r - 0.5) * 200; // illustrative: the dotted follow-on line rises with r
   return (
     <div ref={ref} className="space-y-3">
-      <svg viewBox="0 0 640 250" className="h-auto w-full" role="img" aria-labelledby={`${uid}-t ${uid}-d`}>
+      <svg viewBox="0 0 640 264" className="h-auto w-full" role="img" aria-labelledby={`${uid}-t ${uid}-d`}>
         <title id={`${uid}-t`}>Revenue cliff</title>
         <desc id={`${uid}-d`}>Quarterly revenue of a project: four high delivery quarters, then zero after go-live. A dotted line shows revenue if a follow-on continues it.</desc>
         <line x1="40" x2="620" y1="206" y2="206" stroke="#59606A" strokeWidth="1.3" />
@@ -41,10 +42,14 @@ function RevenueCliff() {
             </g>
           );
         })}
-        <text x="160" y="52" textAnchor="middle" fontSize="13" fontWeight="700" fill="#1F2328">Delivery: milestone invoices</text>
-        <text x="482" y="188" textAnchor="middle" fontSize="13" fontWeight="700" fill="#A4472A">After Abnahme: zero</text>
+        <text x="188" y="52" textAnchor="middle" fontSize="13" fontWeight="700" fill="#1F2328">Delivery, quarters 1–4: milestone invoices</text>
+        {/* go-live: the last delivery quarter ends, acceptance (Abnahme) */}
+        <line x1="330" x2="330" y1="34" y2="206" stroke="#1F2328" strokeWidth="1.6" strokeDasharray="4 4" />
+        <text x="336" y="30" fontSize="12" fontWeight="700" fill="#1F2328">Go-live · Abnahme</text>
+        <text x="482" y="192" textAnchor="middle" fontSize="13" fontWeight="700" fill="#A4472A">After go-live: zero</text>
+        <text x="482" y="256" textAnchor="middle" fontSize="11.5" fill="#59606A">quarters counted from go-live</text>
         <path
-          d={`M 340 ${206 - 140 * 0.9} L 340 ${206 - level} L 610 ${206 - level}`}
+          d={`M 330 ${206 - level} L 610 ${206 - level}`}
           fill="none"
           stroke="#D99A2B"
           strokeWidth="3"
