@@ -1,16 +1,10 @@
 "use client";
 
 import { useProgress, useHydrated } from "@/lib/store";
-import { MaterialRefs } from "@/components/ui/MaterialRefs";
-import { BRIEF_REFS, ENGAGEMENT, NAME_FIELD, R2, materialRefs } from "@/lib/route2";
+import { ENGAGEMENT, NAME_FIELD, R2 } from "@/lib/route2";
 import { useRoute2, domId } from "./useRoute2";
 
-/**
- * The case and the learner's name, stated once for the whole route. The task
- * runs on this one engagement, so it is never re-introduced mid-page
- * (CLAUDE.md §12). NovaCircular is the company Task 3 assesses — distinct
- * from CircularMind, the read-only worked example inside the material.
- */
+/** The case and the learner's name, stated once. */
 export function CaseBrief() {
   return (
     <div className="space-y-4">
@@ -27,7 +21,6 @@ export function CaseBrief() {
             Client: <span className="font-semibold text-ink">{ENGAGEMENT.company}</span>
           </p>
         </div>
-        <MaterialRefs refs={materialRefs(BRIEF_REFS)} lead="Grounded in" />
       </div>
 
       <NameField />
@@ -35,7 +28,6 @@ export function CaseBrief() {
   );
 }
 
-/** Learner name — same store key as Route 1, per NAME_FIELD's own instruction to reuse one name all week. */
 function NameField() {
   const hydrated = useHydrated();
   const setNote = useProgress((s) => s.setNote);

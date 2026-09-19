@@ -4,29 +4,22 @@ import { useProgress } from "@/lib/store";
 import { MentorFillButton } from "@/components/ui/MentorFillButton";
 import { AnswerKeyButton } from "@/components/ui/AnswerKeyButton";
 import {
-  CANDIDATE_MEASURES,
-  GUIDING_DECISION_FIELDS,
+  FACTORS,
   R2,
-  SAMPLE_CONNECTIONS,
-  SAMPLE_ELEMENT_1,
-  SAMPLE_ELEMENT_3,
-  SAMPLE_ELEMENT_4,
-  SAMPLE_ELEMENT_5_WHY,
-  SAMPLE_ELEMENT_6,
-  SAMPLE_ELEMENT_7,
-  SAMPLE_FIRST_MEASURE,
-  SAMPLE_GUIDING_DECISIONS,
-  SAMPLE_HORIZONS,
-  connectionKey,
+  SAMPLE_ALLOCATION,
+  SAMPLE_FIRST_MOVE,
+  SAMPLE_GUIDING,
+  SAMPLE_GUIDING_JUSTIFICATIONS,
+  SAMPLE_NOW_DECISION,
+  SAMPLE_REASONS,
+  SAMPLE_RELEVANCE_JUSTIFICATION,
+  SAMPLE_RESPONSIBILITY_ROLE,
+  SAMPLE_RISK_OF_WAITING,
+  SAMPLE_ROLE,
+  SAMPLE_SEQUENCE,
 } from "@/lib/route2";
 
-/**
- * The route's mentor bar: one demo auto-fill plus the answer key, both behind
- * the shared passcode (CLAUDE.md §7). One fill, everything: a fully connected
- * canvas, all seven proposal elements, the first-measure pick, and all six
- * measures classified — instantly exportable. Every sample comes from
- * lib/route2/task3.ts rather than a second copy that could drift.
- */
+/** One demo auto-fill covering all five stages, plus the mentor answer key. */
 export function MentorTools() {
   const setNote = useProgress((s) => s.setNote);
   const choose = useProgress((s) => s.choose);
@@ -35,18 +28,28 @@ export function MentorTools() {
   const fill = () => {
     setNote(R2.name, "Muchson");
 
-    for (const [a, b] of SAMPLE_CONNECTIONS) toggleCheck(R2.connection(connectionKey(a, b)), true);
+    // Stage A
+    choose(R2.roleLens, SAMPLE_ROLE);
+    for (const id of SAMPLE_REASONS) toggleCheck(R2.reason(id), true);
+    setNote(R2.relevanceJustification, SAMPLE_RELEVANCE_JUSTIFICATION);
 
-    setNote(R2.element1, SAMPLE_ELEMENT_1);
-    GUIDING_DECISION_FIELDS.forEach((f, i) => setNote(R2.guidingDecision(i), SAMPLE_GUIDING_DECISIONS[i]));
-    setNote(R2.element3, SAMPLE_ELEMENT_3);
-    setNote(R2.element4, SAMPLE_ELEMENT_4);
-    choose(R2.firstMeasure, SAMPLE_FIRST_MEASURE);
-    setNote(R2.element5Why, SAMPLE_ELEMENT_5_WHY);
-    setNote(R2.element6, SAMPLE_ELEMENT_6);
-    setNote(R2.element7, SAMPLE_ELEMENT_7);
+    // Stage B
+    for (const id of SAMPLE_GUIDING) {
+      toggleCheck(R2.guiding(id), true);
+      setNote(R2.guidingJustification(id), SAMPLE_GUIDING_JUSTIFICATIONS[id]);
+    }
 
-    for (const m of CANDIDATE_MEASURES) choose(R2.horizon(m.id), SAMPLE_HORIZONS[m.id]);
+    // Stage C
+    for (const [layerId, pos] of Object.entries(SAMPLE_SEQUENCE)) choose(R2.sequence(layerId), String(pos));
+    setNote(R2.firstMove, SAMPLE_FIRST_MOVE);
+
+    // Stage D
+    for (const f of FACTORS) setNote(R2.allocation(f.id), String(SAMPLE_ALLOCATION[f.id]));
+
+    // Stage E
+    for (const [respId, roleId] of Object.entries(SAMPLE_RESPONSIBILITY_ROLE)) choose(R2.responsibilityRole(respId), roleId);
+    setNote(R2.nowDecision, SAMPLE_NOW_DECISION);
+    setNote(R2.riskOfWaiting, SAMPLE_RISK_OF_WAITING);
   };
 
   return (

@@ -1,18 +1,22 @@
 /**
- * Day 15 route registry.
+ * Day 16 route registry.
  *
- * Module 11: Route 1 carries Level 1 (diagnose) and Level 2 (decide), one
- * continuous engagement at FutureGrid Technologies. Route 2 carries Level 3
- * (the management decision) at a new company, NovaCircular Technologies.
+ * Module 12: Capturing & Visualising Sustainability Targets — Green IT KPIs,
+ * continuous optimisation, transparent reporting and IT-specific carbon
+ * monitoring. Route 1 is two short material-then-task pairs (L1 — diagnosing
+ * why Clarity Digital Services' metrics don't yet steer anything; L2 —
+ * prioritising which line of measures to build first), each with its own
+ * export. Route 2 carries Level 3, the Verdeon Digital Governance Group
+ * management proposal.
  */
 
 export const CASE = {
   company: "AION Green IT",
   /** Curriculum day number. The export filename reads it (CURRICULUM-GUIDE.md §7). */
-  day: 15,
-  module: "Day 15",
-  moduleNumber: 11,
-  moduleTitle: "Innovations for the Sustainable IT of Tomorrow",
+  day: 16,
+  module: "Day 16",
+  moduleNumber: 12,
+  moduleTitle: "Capturing & Visualising Sustainability Targets",
 } as const;
 
 /** Icon keys resolved by components/icons/LineIcons.tsx. */
@@ -74,16 +78,16 @@ export type Route = {
 export const ROUTES: Route[] = [
   {
     n: 1,
-    slug: "route-1-assess-and-decide",
-    href: "/route-1-assess-and-decide",
-    tag: "Route 1 — Assess & Decide",
-    title: "Route 1 — Assess & Decide",
-    cardTitle: "Assess & Decide",
+    slug: "route-1-kpis-and-monitoring",
+    href: "/route-1-kpis-and-monitoring",
+    tag: "Route 1 — KPIs, Optimisation & Monitoring",
+    title: "Route 1 — KPIs, Optimisation & Monitoring",
+    cardTitle: "KPIs, Optimisation & Monitoring",
     cardBlurb:
-      "Why novelty is not innovation, AI as both an efficiency promise and a resource burden, circular versus linear IT, the seven lenses and seven scoring dimensions, and how to tell attractive from viable — then FutureGrid Technologies: diagnose six innovation initiatives one by one, then step up to prioritise whole lines of measures under a limited budget and incomplete data.",
-    deliverable: "FutureGrid Technologies Innovation Diagnosis & Priority",
+      "Two short material-then-task pairs. First: why data collected isn't the same as data managed, the three metric layers, the six areas a Green IT metric system needs, and what makes a KPI management-effective rather than merely informative — then diagnose Clarity Digital Services' scattered metrics. Second: continuous optimisation as a PDCA routine, the measurability–informative-value–controllability trade-off, and the three candidate lines of measures — then prioritise which one to build first, under real uncertainty.",
+    deliverable: "Clarity Digital Services — Metrics Diagnosis & Priority Line",
     levels: [1, 2],
-    minutes: 54,
+    minutes: 34,
     available: true,
   },
   {
@@ -94,8 +98,8 @@ export const ROUTES: Route[] = [
     title: "Route 2 — Management Decision",
     cardTitle: "Management Decision",
     cardBlurb:
-      "From scattered initiatives to a decision architecture: assessment logic, governance and approval flow, and short/medium/structural time horizons — then NovaCircular Technologies: connect six building blocks into one framework and build the management proposal that puts it to work.",
-    deliverable: "NovaCircular Technologies Management Proposal",
+      "Metrics, carbon monitoring and reporting reframed as leadership instruments, not documentation: staging a management model in layers, the senior five-factor trade-off, and how different roles prioritise differently — then Verdeon Digital Governance Group: build the decision-ready management proposal, not a metrics list.",
+    deliverable: "Verdeon Digital Governance Group — Management Proposal",
     levels: [3],
     minutes: 35,
     available: true,

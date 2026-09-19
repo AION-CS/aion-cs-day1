@@ -2,52 +2,83 @@
 
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { LivePanel } from "@/components/ui/LivePanel";
-import { EXPORT, TASK3_FRAMING } from "@/lib/route2";
-import { Canvas } from "./Canvas";
-import { ProposalBuilder } from "./ProposalBuilder";
+import { MaterialRefs } from "@/components/ui/MaterialRefs";
+import { AnswerKey } from "@/components/ui/AnswerKey";
+import { ANSWER_KEY, CONTEXT_CHIPS, TASK_FRAMING, TASK_MATERIAL_REFS, materialRefs } from "@/lib/route2";
+import { StageFrame } from "./StageFrame";
+import { StageGuiding } from "./StageGuiding";
+import { StageSequence } from "./StageSequence";
+import { StageAllocate } from "./StageAllocate";
+import { StageGovernance } from "./StageGovernance";
 import { ReportPanel } from "./ReportPanel";
+import { ExportBar } from "./ExportBar";
 import { useRoute2, domId } from "./useRoute2";
 
-/**
- * Task 3 in full, one continuous scroll: the framing, the decision-
- * architecture canvas (Stage 1), then the guided proposal (Stage 2), with the
- * proposal document assembling beside it. One task, no parts to split — the
- * whole exercise is the deliverable (CLAUDE.md §12).
- */
+/** The whole task, one continuous scroll across five stages, its live memo assembling beside it. */
 export function Task() {
   const r2 = useRoute2();
 
   return (
     <section id={domId.task} className="scroll-mt-24 space-y-6">
-      <SectionHeading kicker={`${TASK3_FRAMING.tag} · about ${TASK3_FRAMING.minutes} minutes`} title={TASK3_FRAMING.title} />
-
-      <div className="rounded-2xl border border-accent/30 bg-accentSoft/60 p-5">
-        <p className="text-body font-semibold text-ink">{TASK3_FRAMING.lead}</p>
-        <p className="mt-2 max-w-prose text-body text-ash">{TASK3_FRAMING.instruction}</p>
-      </div>
+      <SectionHeading kicker={`${TASK_FRAMING.tag} · about ${TASK_FRAMING.minutes} minutes`} title={TASK_FRAMING.title} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
-          <div className="rounded-2xl border border-line bg-canvas p-5">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">Stage 1 — Build the decision architecture</p>
-            <Canvas />
+          <div className="rounded-2xl border border-accent/30 bg-accentSoft/60 p-5">
+            <p className="text-body font-semibold text-ink">{TASK_FRAMING.lead}</p>
+            <p className="mt-2 max-w-prose text-body text-ash">{TASK_FRAMING.instruction}</p>
           </div>
 
           <div className="rounded-2xl border border-line bg-paper p-5">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">Stage 2 — Write the proposal</p>
-            <div className="mt-3">
-              <ProposalBuilder />
+            <p className="text-micro font-semibold uppercase tracking-wide text-ash">Where Verdeon stands today</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {CONTEXT_CHIPS.map((chip) => (
+                <span key={chip} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-micro text-ink">
+                  {chip}
+                </span>
+              ))}
             </div>
           </div>
+
+          <MaterialRefs refs={materialRefs(TASK_MATERIAL_REFS)} />
+
+          <div>
+            <p className="mb-2 text-micro font-semibold uppercase tracking-wide text-accent">Stage A — Frame it</p>
+            <StageFrame />
+          </div>
+
+          <div>
+            <p className="mb-2 text-micro font-semibold uppercase tracking-wide text-accent">Stage B — Three guiding decisions</p>
+            <StageGuiding />
+          </div>
+
+          <div>
+            <p className="mb-2 text-micro font-semibold uppercase tracking-wide text-accent">Stage C — Build sequence + first move</p>
+            <StageSequence />
+          </div>
+
+          <div>
+            <p className="mb-2 text-micro font-semibold uppercase tracking-wide text-accent">Stage D — Trade-off allocation</p>
+            <StageAllocate />
+          </div>
+
+          <div>
+            <p className="mb-2 text-micro font-semibold uppercase tracking-wide text-accent">Stage E — Governance & the call you make now</p>
+            <StageGovernance />
+          </div>
+
+          <AnswerKey block={ANSWER_KEY} />
         </div>
 
         <LivePanel
-          title={EXPORT.docHeading}
-          summary={`${6 - r2.orphanedBlocks.length}/6 blocks connected · ${r2.elementsComplete ? "proposal complete" : "proposal in progress"}`}
+          title="Verdeon Management Proposal"
+          summary={`${[r2.stageAComplete, r2.stageBComplete, r2.stageCComplete, r2.stageDComplete, r2.stageEComplete].filter(Boolean).length}/5 stages complete`}
         >
           <ReportPanel />
         </LivePanel>
       </div>
+
+      <ExportBar />
     </section>
   );
 }

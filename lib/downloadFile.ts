@@ -87,3 +87,20 @@ export function exportFilename(
   const lvl = levels.map((l) => `l${l}`).join("");
   return `${taskNumber}-${who}-day${CASE.day}-${lvl}task${taskNumber}`;
 }
+
+/**
+ * Explicit-slug variant for a route whose build brief hands over the literal
+ * filename per task rather than one derivable from `exportFilename`'s
+ * formula. Day 16 Route 1 is exactly this case: its brief names
+ * `1-muchson-day16-l1task1` and `1-muchson-day16-l2task2` verbatim — both
+ * leading with `1` (each is the one export of its own material-then-task
+ * pair) while the slug still advances to `l2task2` for the second pair,
+ * which the `{taskNumber}-…-{levels}task{taskNumber}` formula above cannot
+ * produce (it would force the trailing number to match the leading one).
+ * Kept as a separate, explicit function rather than bending the shared
+ * formula to fit one route's literal spec.
+ */
+export function exportFilenameExplicit(name: string, day: number, leadingIndex: number, taskSlug: string): string {
+  const who = slugify(name) || "learner";
+  return `${leadingIndex}-${who}-day${day}-${taskSlug}`;
+}

@@ -6,20 +6,16 @@ import { BRIEF_REFS, ENGAGEMENT, NAME_FIELD, R1, materialRefs } from "@/lib/rout
 import { useRoute1, domId } from "./useRoute1";
 
 /**
- * The case and the learner's name, stated once for the whole route.
- *
- * The task runs on this one engagement, so it is never re-introduced mid-page
- * (CLAUDE.md #12) — the task section restates only the initial situation as
- * chips, not the company. The name is collected here and is what the export
- * filename is built from.
+ * The case and the learner's name, stated once for the whole route — both
+ * pairs run on this one engagement, so it is never re-introduced mid-page.
+ * The name is collected here and feeds both Task 1's and Task 2's export
+ * filenames.
  */
 export function CaseBrief() {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-line bg-mist p-5">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">
-          {ENGAGEMENT.heading}
-        </p>
+        <p className="text-micro font-semibold uppercase tracking-wide text-ash">{ENGAGEMENT.heading}</p>
         <p className="mt-1.5 max-w-prose text-body text-ash">{ENGAGEMENT.brief}</p>
         <p className="mt-2 max-w-prose text-body font-semibold text-ink">{ENGAGEMENT.mandate}</p>
         <p className="mt-2 max-w-prose text-caption text-ash">{ENGAGEMENT.deliverable}</p>
@@ -39,7 +35,7 @@ export function CaseBrief() {
   );
 }
 
-/** Learner name — prompted once, persisted, and what the export filename is built from. */
+/** Learner name — prompted once, persisted, and what both export filenames are built from. */
 function NameField() {
   const hydrated = useHydrated();
   const setNote = useProgress((s) => s.setNote);

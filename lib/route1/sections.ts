@@ -1,40 +1,32 @@
 /**
- * Route 1's material: nine micro-cards, C1–C9, all of it read before any task
- * (CLAUDE.md §12: "no material between the parts" — L2's four cards continue
- * the same continuous block rather than sitting between Task 1 and Task 2).
- *
- * C1–C5 teach Level 1's diagnosis vocabulary; C6–C9 step the perspective up
- * from junior analyst to senior consultant for Level 2's prioritisation. Each
- * card stays 3–5 sentences plus one live diagram — "read less, do more" — and
- * everything either task asks for is introduced in one of the nine.
- *
- * The ids, labels and anchor ids live above the content so the mini-nav, the
- * MaterialRefs chips on the task, and the material itself can never disagree
- * about what a card is called.
+ * Route 1's material, in two short blocks read immediately before the task
+ * that uses them — not one continuous block (CLAUDE.md §12 is written for a
+ * merged single-export route; this route deliberately reverts to the
+ * pre-§12, two-pair shape because the build brief calls for two separate
+ * exports, one per task). Material 1 (M1–M4) teaches only what Task 1's
+ * diagnosis needs; Material 2 (M5–M7) teaches only what Task 2's
+ * prioritisation needs. Continuous numbering across both blocks mirrors the
+ * C1–C9 convention from prior days — the codes still read as one sequence,
+ * they are just split across two pages of the same scroll.
  */
 
 export type MaterialSectionId =
-  | "novelty"
-  | "aiLoad"
-  | "circular"
-  | "lenses"
-  | "viability"
-  | "uncertainty"
-  | "dimensions"
-  | "enablerVsPoint"
-  | "attractiveWeak";
+  | "dataVsManagement"
+  | "metricLayers"
+  | "sixAreas"
+  | "effectiveVsStructural"
+  | "pdcaLoop"
+  | "tradeoffTriangle"
+  | "threeLines";
 
-export const SECTION_ORDER: MaterialSectionId[] = [
-  "novelty",
-  "aiLoad",
-  "circular",
-  "lenses",
-  "viability",
-  "uncertainty",
-  "dimensions",
-  "enablerVsPoint",
-  "attractiveWeak",
+export const MATERIAL1_ORDER: MaterialSectionId[] = [
+  "dataVsManagement",
+  "metricLayers",
+  "sixAreas",
+  "effectiveVsStructural",
 ];
+
+export const MATERIAL2_ORDER: MaterialSectionId[] = ["pdcaLoop", "tradeoffTriangle", "threeLines"];
 
 /** DOM anchor a MaterialRefs chip or the mini-nav scrolls to. */
 export function materialAnchorId(id: MaterialSectionId): string {
@@ -42,28 +34,24 @@ export function materialAnchorId(id: MaterialSectionId): string {
 }
 
 export const MATERIAL_LABELS: Record<MaterialSectionId, string> = {
-  novelty: "C1 · Novelty is not innovation",
-  aiLoad: "C2 · AI: promise and burden",
-  circular: "C3 · Circular vs linear IT",
-  lenses: "C4 · The 7 assessment lenses",
-  viability: "C5 · Attractive vs viable",
-  uncertainty: "C6 · Deciding under uncertainty",
-  dimensions: "C7 · The 7 assessment dimensions",
-  enablerVsPoint: "C8 · Enabler vs point-solution",
-  attractiveWeak: "C9 · Attractive-but-weak",
+  dataVsManagement: "M1 · Data collected ≠ managed",
+  metricLayers: "M2 · The three metric layers",
+  sixAreas: "M3 · The six areas",
+  effectiveVsStructural: "M4 · Effective vs merely informative",
+  pdcaLoop: "M5 · Continuous optimisation (PDCA)",
+  tradeoffTriangle: "M6 · Measurability, value, control",
+  threeLines: "M7 · The three candidate lines",
 };
 
 /** Short label for the sticky mini-nav dots. */
 export const MATERIAL_NAV: Record<MaterialSectionId, { code: string; label: string }> = {
-  novelty: { code: "C1", label: "Novelty is not innovation" },
-  aiLoad: { code: "C2", label: "AI: promise and burden" },
-  circular: { code: "C3", label: "Circular vs linear IT" },
-  lenses: { code: "C4", label: "The 7 assessment lenses" },
-  viability: { code: "C5", label: "Attractive vs viable" },
-  uncertainty: { code: "C6", label: "Deciding under uncertainty" },
-  dimensions: { code: "C7", label: "The 7 assessment dimensions" },
-  enablerVsPoint: { code: "C8", label: "Enabler vs point-solution" },
-  attractiveWeak: { code: "C9", label: "Attractive-but-weak" },
+  dataVsManagement: { code: "M1", label: "Data collected ≠ managed" },
+  metricLayers: { code: "M2", label: "The three metric layers" },
+  sixAreas: { code: "M3", label: "The six areas" },
+  effectiveVsStructural: { code: "M4", label: "Effective vs informative" },
+  pdcaLoop: { code: "M5", label: "Continuous optimisation" },
+  tradeoffTriangle: { code: "M6", label: "Measurability, value, control" },
+  threeLines: { code: "M7", label: "The three candidate lines" },
 };
 
 /** Chips for a task step: which material cards it draws on. */

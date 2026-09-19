@@ -14,11 +14,14 @@ import { Reveal } from "@/components/ui/Reveal";
 export function MicroCard({
   card,
   anchorId,
+  total,
   children,
 }: {
   card: MicroCardData;
   /** DOM id the mini-nav and MaterialRefs chips scroll to. */
   anchorId: string;
+  /** How many cards are in this card's own material block — the "of N" in the kicker. */
+  total: number;
   /** The card's live diagram and its micro-interaction. */
   children: React.ReactNode;
 }) {
@@ -33,7 +36,7 @@ export function MicroCard({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <p className="text-micro font-semibold uppercase tracking-wide text-accent">
-                {card.code} · Card {card.n} of 5
+                {card.code} · Card {card.n} of {total}
               </p>
               <span className="rounded-full border border-line px-2 py-0.5 text-micro text-ash">
                 ~{card.minutes} min

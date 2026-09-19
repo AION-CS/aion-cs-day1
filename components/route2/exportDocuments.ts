@@ -1,28 +1,32 @@
-import { BLOCKS, ENGAGEMENT, EXPORT, FIRST_MEASURE_OPTIONS, HORIZONS, connectionKey } from "@/lib/route2";
+import { ENGAGEMENT, EXPORT, GUIDING_DECISIONS, LAYERS, RELEVANCE_REASONS, ROLES, SEQUENCE_POSITIONS, roleById } from "@/lib/route2";
 import { CASE } from "@/lib/routes";
 import type { Route2State } from "./useRoute2";
 
-/**
- * The route's single export: one print-ready HTML report sent straight to the
- * browser's print dialog — "Save as PDF" is the export (see
- * lib/downloadFile.ts `printHtmlDocument`). No JSON, no PDF library.
- */
-
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+/** One print-ready HTML export — "Save as PDF" is the export, no PDF library. */
 export function buildProposalHtml(r2: Route2State): string {
   const date = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const firstMeasureLabel = r2.firstMeasure ? FIRST_MEASURE_OPTIONS.find((o) => o.id === r2.firstMeasure)!.label : "Not picked";
 
-  const connectionRows = r2.connections
-    .map(([a, b]) => `<li>${esc(BLOCKS.find((x) => x.id === a)!.label)} &harr; ${esc(BLOCKS.find((x) => x.id === b)!.label)}</li>`)
+  const reasonRows = r2.selectedReasons.map((id) => `<li>${esc(RELEVANCE_REASONS.find((r) => r.id === id)!.text)}</li>`).join("");
+
+  const guidingRows = r2.selectedGuiding
+    .map((id) => {
+      const d = GUIDING_DECISIONS.find((g) => g.id === id)!;
+      return `<li><strong>${esc(d.text)}</strong><div class="muted">${esc(r2.guidingJustifications[id] || "—")}</div></li>`;
+    })
     .join("");
 
-  const guidingRows = r2.guidingDecisions.map((g) => `<li>${esc(g || "—")}</li>`).join("");
+  const sequenceRows = SEQUENCE_POSITIONS.map((pos) => {
+    const layer = LAYERS.find((l) => r2.sequence[l.id] === pos);
+    return `<li>${layer ? esc(layer.name) : "—"}</li>`;
+  }).join("");
 
-  const horizonRows = HORIZONS.map((band) => {
-    const count = Object.values(r2.horizons).filter((h) => h === band.id).length;
-    return `<tr><td>${esc(band.label)}</td><td class="nowrap">${count} of 6</td></tr>`;
+  const allocationRows = r2.allocationRanked.map((f) => `<tr><td>${esc(f.name)}</td><td class="nowrap">${r2.allocation[f.id]}</td></tr>`).join("");
+
+  const governanceRows = ROLES.map((role) => {
+    const held = r2.byRole(role.id);
+    return `<tr><td>${esc(role.name)}</td><td>${held.length ? esc(held.map((h) => h.name).join(", ")) : "<em>none</em>"}</td></tr>`;
   }).join("");
 
   return `<!doctype html>
@@ -41,16 +45,19 @@ export function buildProposalHtml(r2: Route2State): string {
   .kicker { margin: 0 0 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
             font-weight: 700; color: #0E7A5A; }
   h1 { margin: 0 0 4px; font-size: 27px; line-height: 1.2; }
-  h2 { margin: 22px 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
-       color: #5E6670; border-top: 1px solid #E2E5E9; padding-top: 14px; }
+  h2 { margin: 24px 0 10px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+       color: #5E6670; border-top: 1px solid #E2E5E9; padding-top: 16px; }
+  ol, ul { margin: 6px 0 0; padding-left: 20px; font-size: 13px; }
+  ul li, ol li { margin-bottom: 6px; }
   .meta { margin: 0; color: #5E6670; font-size: 13px; }
-  p.body-text { margin: 4px 0 0; font-size: 14px; }
-  ul, ol { margin: 6px 0 0; padding-left: 20px; font-size: 13px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
-  td { vertical-align: top; padding: 6px 10px 6px 0; border-bottom: 1px solid #EEF1F3; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+       color: #5E6670; border-bottom: 1px solid #E2E5E9; padding: 8px 10px 8px 0; font-weight: 700; }
+  td { vertical-align: top; padding: 9px 10px 9px 0; border-bottom: 1px solid #EEF1F3; }
+  .muted { color: #5E6670; font-size: 12px; font-style: italic; }
   .nowrap { white-space: nowrap; }
   .summary { margin-top: 10px; padding: 14px 16px; border-radius: 10px; background: #EEF1F3; }
-  .summary strong { display: block; font-size: 16px; }
+  .closing { margin-top: 10px; padding: 14px 16px; border-radius: 10px; border: 1px solid #E2E5E9; }
   footer { margin-top: 32px; border-top: 1px solid #E2E5E9; padding-top: 14px;
            color: #5E6670; font-size: 11px; }
   @media (max-width: 560px) {
@@ -60,6 +67,7 @@ export function buildProposalHtml(r2: Route2State): string {
   @media print {
     body { background: #fff; padding: 0; }
     .sheet { border: 0; border-radius: 0; padding: 0; max-width: none; }
+    table { break-inside: avoid; }
     @page { margin: 16mm; }
   }
 </style>
@@ -68,44 +76,36 @@ export function buildProposalHtml(r2: Route2State): string {
 <div class="sheet">
   <p class="kicker">AION Green IT · Day ${CASE.day} · Route 2 · Level 3</p>
   <h1>${esc(EXPORT.docHeading)}</h1>
-  <p class="meta">${esc(r2.name.trim() || "learner")} · ${esc(date)} · Case: ${esc(ENGAGEMENT.company)} · Role: ${esc(ENGAGEMENT.role)}</p>
-
-  <h2>Decision architecture</h2>
-  ${r2.connections.length ? `<ul>${connectionRows}</ul>` : `<p class="body-text"><em>No connections.</em></p>`}
-  ${r2.orphanedBlocks.length ? `<p class="body-text">${r2.orphanedBlocks.length} block(s) orphaned.</p>` : ""}
+  <p class="meta">${esc(r2.name.trim() || "learner")} · ${esc(date)} · Case: ${esc(ENGAGEMENT.company)}</p>
 
   <h2>1. Strategic relevance</h2>
-  <p class="body-text">${esc(r2.element1) || "<em>Not written.</em>"}</p>
+  <p>Lens: <strong>${r2.roleLens ? esc(roleById(r2.roleLens).name) : "— not picked"}</strong></p>
+  <ul>${reasonRows}</ul>
+  <p class="muted">${esc(r2.relevanceJustification || "—")}</p>
 
-  <h2>2. Three guiding decisions</h2>
-  <ol>${guidingRows}</ol>
+  <h2>2. Three guiding decisions for the next 12 months</h2>
+  <ul>${guidingRows}</ul>
 
-  <h2>3. Decision logic</h2>
-  <p class="body-text">${esc(r2.element3) || "<em>Not written.</em>"}</p>
+  <h2>3. Build sequence</h2>
+  <ol>${sequenceRows}</ol>
+  <p class="muted">First move — ${esc(r2.firstMove || "—")}</p>
 
-  <h2>4. Central trade-offs</h2>
-  <p class="body-text">${esc(r2.element4) || "<em>Not written.</em>"}</p>
+  <h2>4. Trade-off priority allocation</h2>
+  <table><thead><tr><th>Factor</th><th>Points</th></tr></thead><tbody>${allocationRows}</tbody></table>
 
-  <h2>5. First prioritised line of measures + why</h2>
-  <p class="body-text"><strong>${esc(firstMeasureLabel)}</strong></p>
-  <p class="body-text">${esc(r2.element5Why) || "<em>Not written.</em>"}</p>
+  <h2>5. Governance & responsibility matches</h2>
+  <table><thead><tr><th>Role</th><th>Responsibilities</th></tr></thead><tbody>${governanceRows}</tbody></table>
 
-  <h2>6. Roles, responsibilities, approval, review</h2>
-  <p class="body-text">${esc(r2.element6) || "<em>Not written.</em>"}</p>
-
-  <h2>7. The decision to take now</h2>
-  <p class="body-text">${esc(r2.element7) || "<em>Not written.</em>"}</p>
-
-  <h2>Time-horizon split</h2>
-  <table><tbody>${horizonRows}</tbody></table>
+  <h2>6. The decision to take now</h2>
+  <div class="closing"><strong>Decision — </strong>${esc(r2.nowDecision || "—")}</div>
+  <div class="closing"><strong>Risk of waiting — </strong>${esc(r2.riskOfWaiting || "—")}</div>
 
   <div class="summary">
-    <strong>${r2.connections.length} connections · ${6 - r2.orphanedBlocks.length} of 6 blocks connected · ${6 - r2.unclassifiedMeasures.length} of 6 measures classified.</strong>
+    <strong>Verdeon Digital Governance Group Management Proposal — complete.</strong>
   </div>
 
   <footer>
-    AION Green IT — Day ${CASE.day}, Route 2 (Management Decision), Level 3.
-    ${esc(ENGAGEMENT.company)} is a fictional case for training use. Prepared by the learner named above.
+    AION Green IT — Day ${CASE.day}, Route 2 (Management Decision), Level 3. ${esc(ENGAGEMENT.company)} is a fictional case for training use. Prepared by the learner named above.
   </footer>
 </div>
 </body>

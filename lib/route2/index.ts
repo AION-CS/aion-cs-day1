@@ -1,65 +1,54 @@
 /**
- * Route 2 — the NovaCircular Technologies engagement, Level 3.
- *
- * Four micro-cards of material (ending in a read-only CircularMind worked
- * example), then one task — a two-stage builder: connect six blocks into a
- * decision architecture, then write the seven-element management proposal
- * beside a live-assembling document — then one export (CLAUDE.md §12).
- *
- * Everything that would otherwise be said twice lives here and only here: the
- * company, the role, the learner's name field, and the export contract.
+ * Route 2 — Level 3, standalone: the Verdeon Digital Governance Group
+ * management proposal. One material block, one task, one export.
  */
-
-import type { MaterialSectionId } from "./sections";
 
 export * from "./sections";
 export * from "./material";
-export * from "./task3";
+export * from "./task";
 
-/** Reused across both routes — the same person's name, entered once per route but the same key, per NAME_FIELD's own instruction. */
 export const LEARNER_NAME_KEY = "learner:name";
 
-// ---------------------------------------------------------------------------
-// Store key map — every key this route writes.
-// ---------------------------------------------------------------------------
 export const R2 = {
   name: LEARNER_NAME_KEY,
 
-  /** One boolean per canonical block-pair key (lib/route2/task3.ts `connectionKey`). */
-  connection: (pairKey: string) => `r2:t3:conn:${pairKey}`,
-  firstMeasure: "r2:t3:firstmeasure",
-  element1: "r2:t3:element1",
-  guidingDecision: (i: number) => `r2:t3:guiding:${i}`,
-  element3: "r2:t3:element3",
-  element4: "r2:t3:element4",
-  element5Why: "r2:t3:element5why",
-  element6: "r2:t3:element6",
-  element7: "r2:t3:element7",
-  horizon: (measureId: string) => `r2:t3:horizon:${measureId}`,
-  /** Stringified count of "Check my proposal" runs. */
-  checkCount: "r2:t3:check",
+  roleLens: "r2:roleLens",
+  reason: (reasonId: string) => `r2:reason:${reasonId}`,
+  relevanceJustification: "r2:relevanceJustification",
+
+  guiding: (decisionId: string) => `r2:guiding:${decisionId}`,
+  guidingJustification: (decisionId: string) => `r2:guidingJustification:${decisionId}`,
+
+  sequence: (layerId: string) => `r2:sequence:${layerId}`,
+  firstMove: "r2:firstMove",
+  checkCountSeq: "r2:checkCountSeq",
+
+  allocation: (factorId: string) => `r2:allocation:${factorId}`,
+
+  responsibilityRole: (responsibilityId: string) => `r2:respRole:${responsibilityId}`,
+  checkCountResp: (responsibilityId: string) => `r2:checkCountResp:${responsibilityId}`,
+  nowDecision: "r2:nowDecision",
+  riskOfWaiting: "r2:riskOfWaiting",
 } as const;
 
 /** Prefixes resetSection() must sweep to clear every compound key this route writes. */
-export const R2_KEY_PREFIXES = ["r2:t3:"];
+export const R2_KEY_PREFIXES = ["r2:"];
 
 export const PAGE_INTRO = {
   tag: "ROUTE 2 — MANAGEMENT DECISION",
-  title: "From Initiatives to a Decision Architecture",
-  body: "Module 11, Level 3. A pile of sensible initiatives is not a strategy — an AI pilot here, a take-back scheme there, each defensible alone, can still add up to symbolic politics and rebound at portfolio scale. Four cards below teach the senior move: one integrated assessment framework, with real governance and named time horizons, that every future initiative routes through before it scales. Then you build one for NovaCircular Technologies — not a list of ideas, a decision architecture.",
+  title: "From Metrics to a Management Decision",
+  body: "Module 12, Level 3. KPIs, carbon monitoring and reporting only matter once they are reframed as leadership instruments rather than documentation. Four short cards give you that vocabulary — staging a model in layers, the senior five-factor trade-off, and how different roles prioritise differently — then you build the decision-ready management proposal for Verdeon Digital Governance Group: not a list of metrics, but a decision architecture, defended despite an incomplete picture.",
 } as const;
 
-/** Stated once, above the task, and never re-introduced mid-page. */
 export const ENGAGEMENT = {
-  company: "NovaCircular Technologies",
-  role: "Head of innovation strategy",
+  company: "Verdeon Digital Governance Group",
+  role: "Head of IT governance / CIO, sustainability, or controlling — your choice of lens",
   heading: "The engagement",
   brief:
-    "NovaCircular Technologies wants to use AI in a targeted way and strengthen circular principles in IT — but every topic so far has been prioritised by how attractive it looks, not by any shared logic.",
+    "Verdeon Digital Governance Group already runs real Green IT measures, but there is no consistent KPI system, no practicable carbon logic, no effective review process, and no clear ownership. IT, sustainability, controlling, finance, and management all want different things from the same data.",
   mandate:
-    "Build the decision architecture that channels every future AI, circular, or investment decision through the same criteria and governance — then turn it into a proposal management can act on, including the one decision that cannot wait for complete data.",
-  deliverable:
-    "You leave with one document: a NovaCircular Technologies Management Proposal — a connected decision architecture plus all seven required proposal elements.",
+    "Budget is limited but management wants visible, credible progress. External reporting requirements are rising. There is a real risk the system becomes too complex to run. Recommend a decision-ready management proposal — a decision architecture, not a metrics list — despite the incomplete picture.",
+  deliverable: "You leave with one document: the Verdeon Digital Governance Group Management Proposal.",
 } as const;
 
 export const NAME_FIELD = {
@@ -68,17 +57,10 @@ export const NAME_FIELD = {
   placeholder: "e.g. Jane Muller",
 } as const;
 
-/**
- * One export for the whole route: a print-ready HTML report sent straight to
- * the browser's print dialog — "Save as PDF" is the export
- * (lib/downloadFile.ts `printHtmlDocument`). Filename: `1-{name}-day15-l3task1`.
- */
+/** One export for the whole task. Filename: `1-{name}-day16-l3task1`. */
 export const EXPORT = {
   filenameLevels: [3],
   filenameTask: 1,
-  docHeading: "NovaCircular Technologies Management Proposal",
+  docHeading: "Verdeon Digital Governance Group — Management Proposal",
   buttonLabel: "Export as PDF",
 } as const;
-
-/** Material chips shown on the case brief. */
-export const BRIEF_REFS: MaterialSectionId[] = ["architecture", "governance"];

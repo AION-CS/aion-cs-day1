@@ -1,22 +1,10 @@
 /**
- * Route 1 — the FutureGrid Technologies engagement, Level 1 + Level 2.
- *
- * Nine micro-cards of material (C1–C9), then one task on one continuous
- * scroll — Part 1 Diagnose (Task 1) → inline handover → Part 2 Decide
- * (Task 2) — then one export (CLAUDE.md §12).
- *
- * **Export-naming note.** The Level 2 build prompt names a second, standalone
- * export id (`1-{name}-day15-l2task1`), independent from Level 1's
- * (`1-{name}-day15-l1task1`). The established codebase convention —
- * CLAUDE.md §12 ("one export bar, one deliverable, one missing list spanning
- * the whole task") and Day 14 Route 1's own precedent for a merged L1+L2
- * route — is **one export per route**, so this route now exports a single
- * PDF covering both parts as `1-{name}-day15-l1l2task1`, not two files.
- * Flagged here per that prompt's own instruction to surface the discrepancy
- * rather than pick silently (see also README.md).
- *
- * Everything that would otherwise be said twice lives here and only here: the
- * company, the role, the learner's name field, and the export contract.
+ * Route 1 — Clarity Digital Services, Level 1 (diagnose) and Level 2
+ * (prioritise). Two short material-then-task pairs, each with its own
+ * export (see task1.ts / task2.ts for why this route reverts to the
+ * pre-§12, two-export shape rather than CLAUDE.md §12's merged single
+ * export). Everything that would otherwise be said twice — the company,
+ * the learner's name field, the case brief — lives here and only here.
  */
 
 import type { MaterialSectionId } from "./sections";
@@ -34,23 +22,27 @@ export const LEARNER_NAME_KEY = "learner:name";
 export const R1 = {
   name: LEARNER_NAME_KEY,
 
-  // -- Task 1 (Level 1 — Diagnose) -------------------------------------------
-  /** Q1 — the load answer for one initiative. */
-  load: (initiativeId: string) => `r1:t1:load:${initiativeId}`,
-  /** Q2 — the structure answer for one initiative. */
-  structure: (initiativeId: string) => `r1:t1:structure:${initiativeId}`,
-  lens: (initiativeId: string) => `r1:t1:lens:${initiativeId}`,
-  rationale: (initiativeId: string) => `r1:t1:why:${initiativeId}`,
-  /** Stringified count of "Check my reasoning" runs covering this initiative — exported for grading. */
-  checkCount: (initiativeId: string) => `r1:t1:check:${initiativeId}`,
-  /** The closing free-text question. */
-  closing: "r1:t1:closing",
-  /** Which of the seven lens chips in C4 have been opened — drives a soft nudge only. */
-  lensesSeen: "r1:c4:lenses",
+  // -- Task 1 ------------------------------------------------------------
+  /** Stage A — the primary area a signal card is placed in. */
+  area: (signalId: string) => `r1:t1:area:${signalId}`,
+  /** Stage A — an optional second area tag. */
+  areaSecondary: (signalId: string) => `r1:t1:area2:${signalId}`,
+  /** Stringified count of "Check" runs on one signal card. */
+  checkCount: (signalId: string) => `r1:t1:check:${signalId}`,
+  /** The one required improvement-approach note, per area. */
+  approach: (areaId: string) => `r1:t1:approach:${areaId}`,
 
-  // -- Task 2 (Level 2 — Decide) ---------------------------------------------
-  /** Phase 1 — one Low/Medium/High level per (option, dimension) pair. */
-  score: (optionId: string, dimensionId: string) => `r1:t2:score:${optionId}:${dimensionId}`,
+  /** Stage B — the qualifying yes/no answer per candidate metric. */
+  effectiveness: (metricId: string) => `r1:t1:eff:${metricId}`,
+  checkCountB: (metricId: string) => `r1:t1:checkb:${metricId}`,
+
+  /** Stage C — the short-term/structural lane per item. */
+  horizon: (itemId: string) => `r1:t1:horizon:${itemId}`,
+  checkCountC: (itemId: string) => `r1:t1:checkc:${itemId}`,
+
+  // -- Task 2 --------------------------------------------------------------
+  /** Phase 1 — one Low/Medium/High level per (option, criterion) pair. */
+  score: (optionId: string, criterionId: string) => `r1:t2:score:${optionId}:${criterionId}`,
   /** Phase 2 — the single priority pick (option id). */
   priority: "r1:t2:priority",
   justification: "r1:t2:justification",
@@ -58,30 +50,28 @@ export const R1 = {
   risk: (index: number) => `r1:t2:risk:${index}`,
   /** Stringified count of "Check my reasoning" runs on the priority decision. */
   checkCount2: "r1:t2:check",
-  /** Which of the seven dimension chips in C7 have been opened — drives a soft nudge only. */
-  dimensionsSeen: "r1:c7:dimensions",
 } as const;
 
 /** Prefixes resetSection() must sweep to clear every compound key this route writes. */
-export const R1_KEY_PREFIXES = ["r1:t1:", "r1:t2:", "r1:c4:", "r1:c7:"];
+export const R1_KEY_PREFIXES = ["r1:t1:", "r1:t2:"];
 
 export const PAGE_INTRO = {
-  tag: "ROUTE 1 — ASSESS & DECIDE",
-  title: "Innovations for the Sustainable IT of Tomorrow",
-  body: "Module 11. New technology is not automatically sustainable technology: AI can cut energy and add compute at the same time, a circular model can be the right direction and still be hard to run, and an initiative can be genuinely exciting while reducing nothing at all. Nine short cards below give you the vocabulary and the decision rules. Then you use them twice on FutureGrid Technologies: first diagnosing six planned initiatives one by one, then stepping up to prioritise whole lines of measures under a limited budget and incomplete data.",
+  tag: "ROUTE 1 — KPIS, OPTIMISATION & MONITORING",
+  title: "Capturing & Visualising Sustainability Targets",
+  body: "Module 12. Many organisations measure a great deal and manage very little: a figure can be accurate, even impressive, and still change nothing because it was never wired to a target, an owner and a decision. Two short pairs of material and task below give you that vocabulary and then put it to work — first diagnosing why Clarity Digital Services' metrics don't yet steer anything, then prioritising which single line of measures to build first, under real budget and data constraints.",
 } as const;
 
-/** Stated once, above the task, and never re-introduced mid-page. */
+/** Stated once, above both pairs, and never re-introduced mid-page. */
 export const ENGAGEMENT = {
-  company: "FutureGrid Technologies",
-  role: "Innovation assessment analyst, then senior consultant",
+  company: "Clarity Digital Services",
+  role: "Metrics & reporting analyst",
   heading: "The engagement",
   brief:
-    "FutureGrid Technologies is planning six innovation initiatives at once — AI, data services, procurement, hardware and a new customer offering. Management is enthusiastic about all of them, and no integrated way of judging them exists yet.",
+    "Clarity Digital Services has already introduced several Green IT measures — more efficient device procurement, longer usage cycles, first data-centre optimisations, and rules for resource use. Management now wants a dashboard and a reporting system that make progress visible.",
   mandate:
-    "Part 1: assess, not approve — say which of the six initiatives are genuine sustainability opportunities, which are risks, and which are mixed. Part 2: step up a level — with only one line of measures fundable first, prioritise and defend a choice under incomplete data.",
+    "Today, only scattered individual figures exist, with no clear management logic. Task 1: diagnose why the data isn't yet steering anything, and sketch a first improvement per area. Task 2: step up a level — with only one line of measures fundable first, prioritise and defend a choice under incomplete data.",
   deliverable:
-    "You leave with one document: a FutureGrid Technologies Innovation Diagnosis & Priority, covering the initiative-level diagnosis and the portfolio-level priority decision.",
+    "You leave with two short documents: the Clarity Digital Services Metrics Diagnosis (Task 1) and the Priority Line Decision (Task 2).",
 } as const;
 
 export const NAME_FIELD = {
@@ -90,24 +80,5 @@ export const NAME_FIELD = {
   placeholder: "e.g. Jane Muller",
 } as const;
 
-/**
- * One export for the whole route: a print-ready HTML report sent straight to
- * the browser's print dialog — "Save as PDF" is the export
- * (lib/downloadFile.ts `printHtmlDocument`). Filename:
- * `1-{name}-day15-l1l2task1` (see the export-naming note above).
- */
-export const EXPORT = {
-  filenameLevels: [1, 2],
-  filenameTask: 1,
-  docHeading: "FutureGrid Technologies Innovation Diagnosis & Priority",
-  buttonLabel: "Export as PDF",
-} as const;
-
 /** Material chips shown on the case brief. */
-export const BRIEF_REFS: MaterialSectionId[] = ["lenses", "viability"];
-
-/** The handover panel between Part 1 (Diagnose) and Part 2 (Decide). */
-export const HANDOVER = {
-  heading: "From one initiative to a whole portfolio",
-  body: "You just diagnosed six initiatives one at a time. Now zoom out: FutureGrid can only fund one central line of measures first. The same reasoning — net effect, structure, attractive versus viable — still applies, but the decision is bigger, the data is thinner, and you have to defend it before all the numbers exist.",
-} as const;
+export const BRIEF_REFS: MaterialSectionId[] = ["dataVsManagement", "sixAreas"];

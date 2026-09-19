@@ -3,45 +3,60 @@
 import { useProgress, useHydrated } from "@/lib/store";
 import type { MissingItem } from "@/components/ui/MissingList";
 import {
-  BLOCKS,
-  CANDIDATE_MEASURES,
-  GUIDING_DECISION_FIELDS,
-  HORIZONS,
+  ALLOCATION_TOTAL,
+  CANONICAL_ORDER,
+  FACTORS,
+  GUIDING_DECISIONS,
+  GUIDING_PICK_COUNT,
+  LAYERS,
   R2,
-  checkProposal,
-  connectionKey,
-  type BlockId,
-  type Check3Result,
-  type FirstMeasureId,
-  type Horizon,
+  RELEVANCE_REASONS,
+  RELEVANCE_PICK_COUNT,
+  RESPONSIBILITIES,
+  ROLES,
+  SEQUENCE_CLUE,
+  responsibilityById,
+  roleById,
+  type FactorId,
+  type LayerId,
+  type ResponsibilityId,
+  type RoleId,
+  type SequencePosition,
 } from "@/lib/route2";
 
 /** DOM ids the missing-item list scrolls to and flashes. */
 export const domId = {
   name: "r2-name",
   task: "task",
-  canvas: "r2-canvas",
-  blockNode: (id: BlockId) => `r2-block-${id}`,
-  firstMeasure: "r2-first-measure",
-  element1: "r2-element-1",
-  guiding: (i: number) => `r2-guiding-${i}`,
-  element3: "r2-element-3",
-  element4: "r2-element-4",
-  element5Why: "r2-element-5-why",
-  element6: "r2-element-6",
-  element7: "r2-element-7",
-  horizonBoard: "r2-horizons",
-  horizonItem: (id: string) => `r2-horizon-${id}`,
+
+  roleLens: "r2-role-lens",
+  reasons: "r2-reasons",
+  relevanceJustification: "r2-relevance-justification",
+
+  guidingPicker: "r2-guiding-picker",
+  guidingJustification: (id: string) => `r2-guiding-justification-${id}`,
+
+  sequenceBoard: "r2-sequence-board",
+  firstMove: "r2-first-move",
+
+  allocator: "r2-allocator",
+
+  governanceBoard: "r2-governance-board",
+  nowDecision: "r2-now-decision",
+  riskOfWaiting: "r2-risk-of-waiting",
+
   export: "r2-export",
 };
 
-const isFirstMeasure = (v: string | undefined): v is FirstMeasureId => v === "framework" || v === "ai" || v === "circular";
-const isHorizon = (v: string | undefined): v is Horizon => v === "short" || v === "medium" || v === "structural";
+const isRoleId = (v: string | undefined): v is RoleId => !!v && ROLES.some((r) => r.id === v);
 
-/**
- * Joins the shared progress store to Route 2's whole task, one hook — one
- * `missing` list, one definition of done (CLAUDE.md §12).
- */
+export type CheckResult = { holds: true } | { holds: false; clue: string; tier: "soft" | "sharp" };
+
+/** DOM ids for the sequence board's three position slots. */
+export const positionSlotId = (pos: SequencePosition) => `r2-position-${pos}`;
+export const layerCardId = (layerId: string) => `r2-layer-${layerId}`;
+export const responsibilityCardId = (id: string) => `r2-resp-${id}`;
+
 export function useRoute2() {
   const hydrated = useHydrated();
   const notes = useProgress((s) => s.notes);
@@ -50,95 +65,143 @@ export function useRoute2() {
 
   const name = notes[R2.name] ?? "";
 
-  // -- Stage 1: canvas connections --------------------------------------------
-  const pairs: [BlockId, BlockId][] = [];
-  for (let i = 0; i < BLOCKS.length; i++) {
-    for (let j = i + 1; j < BLOCKS.length; j++) {
-      pairs.push([BLOCKS[i].id, BLOCKS[j].id]);
-    }
+  // -- Stage A -----------------------------------------------------------
+  const rawRoleLens = choices[R2.roleLens];
+  const roleLens = isRoleId(rawRoleLens) ? rawRoleLens : null;
+  const selectedReasons = RELEVANCE_REASONS.filter((r) => checks[R2.reason(r.id)]).map((r) => r.id);
+  const relevanceJustification = (notes[R2.relevanceJustification] ?? "").trim();
+  const stageAComplete = !!roleLens && selectedReasons.length === RELEVANCE_PICK_COUNT && !!relevanceJustification;
+
+  // -- Stage B -------------------------------------------------------------
+  const selectedGuiding = GUIDING_DECISIONS.filter((d) => checks[R2.guiding(d.id)]).map((d) => d.id);
+  const guidingJustifications: Record<string, string> = {};
+  for (const d of GUIDING_DECISIONS) guidingJustifications[d.id] = (notes[R2.guidingJustification(d.id)] ?? "").trim();
+  const stageBComplete =
+    selectedGuiding.length === GUIDING_PICK_COUNT && selectedGuiding.every((id) => guidingJustifications[id].length > 0);
+
+  // -- Stage C ---------------------------------------------------------------
+  const sequence: Record<LayerId, SequencePosition | null> = {} as any;
+  for (const l of LAYERS) {
+    const raw = choices[R2.sequence(l.id)];
+    const n = Number(raw);
+    sequence[l.id] = raw && [1, 2, 3].includes(n) ? (n as SequencePosition) : null;
   }
-  const connections = pairs.filter(([a, b]) => !!checks[R2.connection(connectionKey(a, b))]);
-  const isConnected = (a: BlockId, b: BlockId) => !!checks[R2.connection(connectionKey(a, b))];
-  const degree = (id: BlockId) => connections.filter(([a, b]) => a === id || b === id).length;
-  const orphanedBlocks = BLOCKS.filter((b) => degree(b.id) === 0);
+  const sequencedCount = LAYERS.filter((l) => sequence[l.id] !== null).length;
+  const sequenceComplete = sequencedCount === LAYERS.length;
+  const firstMove = (notes[R2.firstMove] ?? "").trim();
+  const checkCountSeq = Number(notes[R2.checkCountSeq] ?? "0") || 0;
+  const stageCComplete = sequenceComplete && !!firstMove;
 
-  // -- Stage 2: first-measure + proposal elements ------------------------------
-  const rawFirstMeasure = choices[R2.firstMeasure];
-  const firstMeasure = isFirstMeasure(rawFirstMeasure) ? rawFirstMeasure : null;
-  const element1 = (notes[R2.element1] ?? "").trim();
-  const guidingDecisions = GUIDING_DECISION_FIELDS.map((f) => (notes[R2.guidingDecision(f.id)] ?? "").trim());
-  const element3 = (notes[R2.element3] ?? "").trim();
-  const element4 = (notes[R2.element4] ?? "").trim();
-  const element5Why = (notes[R2.element5Why] ?? "").trim();
-  const element6 = (notes[R2.element6] ?? "").trim();
-  const element7 = (notes[R2.element7] ?? "").trim();
+  const checkSequence = (checkCountAfter: number): CheckResult => {
+    const tier: "soft" | "sharp" = checkCountAfter >= 2 ? "sharp" : "soft";
+    const matches = LAYERS.every((l) => sequence[l.id] === CANONICAL_ORDER[l.id]);
+    if (matches) return { holds: true };
+    return { holds: false, clue: SEQUENCE_CLUE[tier], tier };
+  };
+  const lastSeqCheck = sequenceComplete ? checkSequence(checkCountSeq) : null;
 
-  const horizons: Record<string, Horizon | null> = {};
-  for (const m of CANDIDATE_MEASURES) {
-    const raw = choices[R2.horizon(m.id)];
-    horizons[m.id] = isHorizon(raw) ? raw : null;
+  // -- Stage D -----------------------------------------------------------
+  const allocation: Record<FactorId, number> = {} as any;
+  for (const f of FACTORS) allocation[f.id] = Number(notes[R2.allocation(f.id)] ?? "0") || 0;
+  const allocationTotal = FACTORS.reduce((sum, f) => sum + allocation[f.id], 0);
+  const stageDComplete = allocationTotal === ALLOCATION_TOTAL;
+  const allocationRanked = [...FACTORS].sort((a, b) => allocation[b.id] - allocation[a.id]);
+
+  // -- Stage E ---------------------------------------------------------------
+  const responsibilityRole: Record<ResponsibilityId, RoleId | null> = {} as any;
+  const respCheckCount: Record<ResponsibilityId, number> = {} as any;
+  for (const r of RESPONSIBILITIES) {
+    const raw = choices[R2.responsibilityRole(r.id)];
+    responsibilityRole[r.id] = isRoleId(raw) ? raw : null;
+    respCheckCount[r.id] = Number(notes[R2.checkCountResp(r.id)] ?? "0") || 0;
   }
-  const unclassifiedMeasures = CANDIDATE_MEASURES.filter((m) => !horizons[m.id]);
+  const byRole = (role: RoleId) => RESPONSIBILITIES.filter((r) => responsibilityRole[r.id] === role);
+  const unassignedResponsibilities = RESPONSIBILITIES.filter((r) => !responsibilityRole[r.id]);
+  const assignedCount = RESPONSIBILITIES.length - unassignedResponsibilities.length;
 
-  const checkCount = Number(notes[R2.checkCount] ?? "0") || 0;
-  const lastCheck: Check3Result = checkProposal({
-    decisionLogicText: element3,
-    firstMeasure,
-    horizons,
-    checkCountAfter: checkCount,
-  });
+  const checkResponsibility = (id: ResponsibilityId, checkCountAfter: number): CheckResult => {
+    const resp = responsibilityById(id);
+    const placed = responsibilityRole[id];
+    if (!placed) return { holds: true };
+    const tier: "soft" | "sharp" = checkCountAfter >= 2 ? "sharp" : "soft";
+    if (placed === resp.expected) return { holds: true };
+    return { holds: false, clue: resp.clue[tier], tier };
+  };
 
-  // -- Missing list -------------------------------------------------------------
+  const nowDecision = (notes[R2.nowDecision] ?? "").trim();
+  const riskOfWaiting = (notes[R2.riskOfWaiting] ?? "").trim();
+  const stageEComplete = assignedCount === RESPONSIBILITIES.length && !!nowDecision && !!riskOfWaiting;
+
+  // -- Missing list ----------------------------------------------------------
   const missing: MissingItem[] = [];
   if (!name.trim()) missing.push({ id: domId.name, label: "Your name — needed to label the export" });
 
-  if (orphanedBlocks.length > 0) {
-    missing.push({
-      id: domId.canvas,
-      label: `${orphanedBlocks.length} canvas block${orphanedBlocks.length === 1 ? "" : "s"} orphaned`,
-    });
+  if (!roleLens) missing.push({ id: domId.roleLens, label: "Stage A — pick a role lens" });
+  if (selectedReasons.length !== RELEVANCE_PICK_COUNT) {
+    missing.push({ id: domId.reasons, label: `Stage A — pick exactly ${RELEVANCE_PICK_COUNT} reasons (currently ${selectedReasons.length})` });
   }
-  if (!firstMeasure) missing.push({ id: domId.firstMeasure, label: "First-measure not selected" });
-  if (!element1) missing.push({ id: domId.element1, label: "Element 1 (strategic relevance) empty" });
-  guidingDecisions.forEach((g, i) => {
-    if (!g) missing.push({ id: domId.guiding(i), label: `Guiding decision ${i + 1} empty` });
-  });
-  if (!element3) missing.push({ id: domId.element3, label: "Element 3 (decision logic) empty" });
-  if (!element4) missing.push({ id: domId.element4, label: "Element 4 (central trade-offs) empty" });
-  if (!element5Why) missing.push({ id: domId.element5Why, label: "Element 5 (why this first) empty" });
-  if (!element6) missing.push({ id: domId.element6, label: "Element 6 (roles, responsibilities, approval, review) empty" });
-  if (!element7) missing.push({ id: domId.element7, label: "Element 7 (the decision to take now) empty" });
-  if (unclassifiedMeasures.length > 0) {
-    missing.push({ id: domId.horizonBoard, label: `${unclassifiedMeasures.length} measure${unclassifiedMeasures.length === 1 ? "" : "s"} unclassified` });
+  if (!relevanceJustification) missing.push({ id: domId.relevanceJustification, label: "Stage A — justification is empty" });
+
+  if (selectedGuiding.length !== GUIDING_PICK_COUNT) {
+    missing.push({ id: domId.guidingPicker, label: `Stage B — pick exactly ${GUIDING_PICK_COUNT} guiding decisions (currently ${selectedGuiding.length})` });
+  }
+  for (const id of selectedGuiding) {
+    if (!guidingJustifications[id]) {
+      missing.push({ id: domId.guidingJustification(id), label: `Stage B — justification for "${GUIDING_DECISIONS.find((d) => d.id === id)!.text.slice(0, 40)}…" is empty` });
+    }
   }
 
-  const elementsComplete =
-    !!element1 && guidingDecisions.every((g) => g.length > 0) && !!element3 && !!element4 && !!element5Why && !!element6 && !!element7;
+  for (const l of LAYERS) {
+    if (sequence[l.id] === null) missing.push({ id: domId.sequenceBoard, label: `Stage C — ${l.name} not placed in the sequence yet` });
+  }
+  if (!firstMove) missing.push({ id: domId.firstMove, label: "Stage C — no concrete first move written yet" });
+
+  if (allocationTotal !== ALLOCATION_TOTAL) {
+    missing.push({ id: domId.allocator, label: `Stage D — allocation totals ${allocationTotal}, needs to total exactly 100` });
+  }
+
+  for (const r of unassignedResponsibilities) {
+    missing.push({ id: domId.governanceBoard, label: `Stage E — "${r.name}" not assigned to a role yet` });
+  }
+  if (!nowDecision) missing.push({ id: domId.nowDecision, label: "Stage E — the decision to take now is empty" });
+  if (!riskOfWaiting) missing.push({ id: domId.riskOfWaiting, label: "Stage E — the risk of waiting is empty" });
 
   return {
     hydrated,
     name,
 
-    // Stage 1
-    connections,
-    isConnected,
-    degree,
-    orphanedBlocks,
+    roleLens,
+    selectedReasons,
+    relevanceJustification,
+    stageAComplete,
 
-    // Stage 2
-    firstMeasure,
-    element1,
-    guidingDecisions,
-    element3,
-    element4,
-    element5Why,
-    element6,
-    element7,
-    horizons,
-    unclassifiedMeasures,
-    checkCount,
-    lastCheck,
-    elementsComplete,
+    selectedGuiding,
+    guidingJustifications,
+    stageBComplete,
+
+    sequence,
+    sequencedCount,
+    sequenceComplete,
+    firstMove,
+    checkCountSeq,
+    checkSequence,
+    lastSeqCheck,
+    stageCComplete,
+
+    allocation,
+    allocationTotal,
+    allocationRanked,
+    stageDComplete,
+
+    responsibilityRole,
+    byRole,
+    unassignedResponsibilities,
+    assignedCount,
+    respCheckCount,
+    checkResponsibility,
+    nowDecision,
+    riskOfWaiting,
+    stageEComplete,
 
     missing,
     allComplete: missing.length === 0,
@@ -146,4 +209,4 @@ export function useRoute2() {
 }
 
 export type Route2State = ReturnType<typeof useRoute2>;
-export const HORIZON_OPTIONS = HORIZONS;
+export { roleById };

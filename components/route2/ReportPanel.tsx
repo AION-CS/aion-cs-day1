@@ -1,28 +1,18 @@
 "use client";
 
 import { useHydrated } from "@/lib/store";
-import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
-import { BLOCKS, ENGAGEMENT, EXPORT, FIRST_MEASURE_OPTIONS, HORIZONS, connectionKey } from "@/lib/route2";
-import { useRoute2, domId } from "./useRoute2";
+import { ENGAGEMENT, EXPORT, GUIDING_DECISIONS, LAYERS, RELEVANCE_REASONS, ROLES, SEQUENCE_POSITIONS, roleById } from "@/lib/route2";
+import { useRoute2 } from "./useRoute2";
 
-/** The date line. Client-only, so the static export stays stable. */
 export function useReportDate() {
   const hydrated = useHydrated();
-  return hydrated
-    ? new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
-    : "";
+  return hydrated ? new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "";
 }
 
-/**
- * The NovaCircular Management Proposal, live: the connected canvas rendered
- * compactly, then the seven elements and the horizon split. Every section's
- * Edit button scrolls to and flashes the field it mirrors — the report views
- * the learner's answers, never a second copy of them.
- */
+/** The live memo — assembles into the deliverable in the brief's own six-part structure. */
 export function ReportPanel() {
   const r2 = useRoute2();
   const date = useReportDate();
-  const firstMeasureLabel = r2.firstMeasure ? FIRST_MEASURE_OPTIONS.find((o) => o.id === r2.firstMeasure)!.label : null;
 
   return (
     <div className="rounded-2xl border border-line bg-paper p-5">
@@ -32,104 +22,82 @@ export function ReportPanel() {
         {date ? ` · ${date}` : ""} · Case: {ENGAGEMENT.company}
       </p>
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-4 space-y-4 text-micro">
         <div>
-          <div className="flex items-center justify-between">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">Decision architecture</p>
-            <button
-              type="button"
-              onClick={() => scrollToAndFlash(domId.canvas, "ref")}
-              className="text-micro font-semibold text-accent underline decoration-dotted underline-offset-2 hover:text-accentHi"
-            >
-              Edit
-            </button>
-          </div>
-          {r2.connections.length === 0 ? (
-            <p className="mt-1 text-micro italic text-ash">No connections yet.</p>
+          <p className="font-semibold uppercase tracking-wide text-ash">1. Strategic relevance</p>
+          <p className="mt-1 text-ink">Lens: {r2.roleLens ? roleById(r2.roleLens).name : "— not picked"}</p>
+          {r2.selectedReasons.length > 0 && (
+            <ul className="mt-1 list-disc space-y-0.5 pl-4 text-ink">
+              {r2.selectedReasons.map((id) => (
+                <li key={id}>{RELEVANCE_REASONS.find((r) => r.id === id)!.text}</li>
+              ))}
+            </ul>
+          )}
+          {r2.relevanceJustification && <p className="mt-1 italic text-ink">&ldquo;{r2.relevanceJustification}&rdquo;</p>}
+        </div>
+
+        <div className="border-t border-line pt-3">
+          <p className="font-semibold uppercase tracking-wide text-ash">2. Guiding decisions</p>
+          {r2.selectedGuiding.length === 0 ? (
+            <p className="mt-1 italic text-ash">None picked yet.</p>
           ) : (
-            <ul className="mt-1.5 space-y-0.5">
-              {r2.connections.map(([a, b]) => (
-                <li key={connectionKey(a, b)} className="text-micro text-ink">
-                  {BLOCKS.find((x) => x.id === a)!.label} ↔ {BLOCKS.find((x) => x.id === b)!.label}
+            <ul className="mt-1 space-y-1.5">
+              {r2.selectedGuiding.map((id) => (
+                <li key={id} className="text-ink">
+                  <span className="font-semibold">{GUIDING_DECISIONS.find((d) => d.id === id)!.text}</span>
+                  {r2.guidingJustifications[id] && <span className="block italic text-ash">&ldquo;{r2.guidingJustifications[id]}&rdquo;</span>}
                 </li>
               ))}
             </ul>
           )}
-          {r2.orphanedBlocks.length > 0 && (
-            <p className="mt-1 text-micro text-danger">{r2.orphanedBlocks.length} block(s) still orphaned.</p>
-          )}
         </div>
 
-        <Row label="1. Strategic relevance" value={r2.element1} onEdit={() => scrollToAndFlash(domId.element1, "ref")} />
+        <div className="border-t border-line pt-3">
+          <p className="font-semibold uppercase tracking-wide text-ash">3. Build sequence</p>
+          <ol className="mt-1 list-decimal space-y-0.5 pl-4 text-ink">
+            {SEQUENCE_POSITIONS.map((pos) => {
+              const layer = LAYERS.find((l) => r2.sequence[l.id] === pos);
+              return <li key={pos}>{layer ? layer.name : "—"}</li>;
+            })}
+          </ol>
+          {r2.firstMove && <p className="mt-1 italic text-ink">First move — &ldquo;{r2.firstMove}&rdquo;</p>}
+        </div>
 
-        <div>
-          <div className="flex items-center justify-between">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">2. Guiding decisions</p>
-            <button type="button" onClick={() => scrollToAndFlash(domId.guiding(0), "ref")} className="text-micro font-semibold text-accent underline decoration-dotted underline-offset-2 hover:text-accentHi">
-              Edit
-            </button>
-          </div>
-          {r2.guidingDecisions.every((g) => !g) ? (
-            <p className="mt-1 text-micro italic text-ash">Not written yet.</p>
-          ) : (
-            <ol className="mt-1 list-decimal space-y-0.5 pl-4">
-              {r2.guidingDecisions.map((g, i) => (
-                <li key={i} className="text-micro text-ink">
-                  {g || <span className="italic text-ash">—</span>}
+        <div className="border-t border-line pt-3">
+          <p className="font-semibold uppercase tracking-wide text-ash">4. Trade-off allocation</p>
+          {r2.allocationTotal === 100 ? (
+            <ol className="mt-1 list-decimal space-y-0.5 pl-4 text-ink">
+              {r2.allocationRanked.map((f) => (
+                <li key={f.id}>
+                  {f.name} — {r2.allocation[f.id]}
                 </li>
               ))}
             </ol>
+          ) : (
+            <p className="mt-1 italic text-ash">Total: {r2.allocationTotal}/100 — not yet complete.</p>
           )}
         </div>
 
-        <Row label="3. Decision logic" value={r2.element3} onEdit={() => scrollToAndFlash(domId.element3, "ref")} />
-        <Row label="4. Central trade-offs" value={r2.element4} onEdit={() => scrollToAndFlash(domId.element4, "ref")} />
-
-        <div>
-          <div className="flex items-center justify-between">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">5. First measure + why</p>
-            <button type="button" onClick={() => scrollToAndFlash(domId.firstMeasure, "ref")} className="text-micro font-semibold text-accent underline decoration-dotted underline-offset-2 hover:text-accentHi">
-              Edit
-            </button>
-          </div>
-          <p className="mt-1 text-micro text-ink">{firstMeasureLabel ?? <span className="italic text-ash">Not picked yet.</span>}</p>
-          {r2.element5Why && <p className="mt-0.5 text-micro italic text-ink">&ldquo;{r2.element5Why}&rdquo;</p>}
+        <div className="border-t border-line pt-3">
+          <p className="font-semibold uppercase tracking-wide text-ash">5. Governance</p>
+          <ul className="mt-1 space-y-0.5 text-ink">
+            {ROLES.map((role) => {
+              const held = r2.byRole(role.id);
+              return (
+                <li key={role.id}>
+                  <span className="font-semibold">{role.short}</span> — {held.length === 0 ? "no responsibility assigned" : held.map((h) => h.name).join(", ")}
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
-        <Row label="6. Roles & governance" value={r2.element6} onEdit={() => scrollToAndFlash(domId.element6, "ref")} />
-        <Row label="7. Decide now" value={r2.element7} onEdit={() => scrollToAndFlash(domId.element7, "ref")} />
-
-        <div>
-          <div className="flex items-center justify-between">
-            <p className="text-micro font-semibold uppercase tracking-wide text-ash">Time-horizon split</p>
-            <button type="button" onClick={() => scrollToAndFlash(domId.horizonBoard, "ref")} className="text-micro font-semibold text-accent underline decoration-dotted underline-offset-2 hover:text-accentHi">
-              Edit
-            </button>
-          </div>
-          <div className="mt-1 grid grid-cols-3 gap-1.5 text-center">
-            {HORIZONS.map((band) => (
-              <div key={band.id} className="rounded-lg border border-line bg-canvas p-1.5">
-                <p className="text-micro font-semibold text-ink">{Object.values(r2.horizons).filter((h) => h === band.id).length}</p>
-                <p className="text-[10px] text-ash">{band.label}</p>
-              </div>
-            ))}
-          </div>
+        <div className="border-t border-line pt-3">
+          <p className="font-semibold uppercase tracking-wide text-ash">6. The call now</p>
+          {r2.nowDecision && <p className="mt-1 italic text-ink">Decision — &ldquo;{r2.nowDecision}&rdquo;</p>}
+          {r2.riskOfWaiting && <p className="mt-1 italic text-ink">Risk of waiting — &ldquo;{r2.riskOfWaiting}&rdquo;</p>}
         </div>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value, onEdit }: { label: string; value: string; onEdit: () => void }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between">
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">{label}</p>
-        <button type="button" onClick={onEdit} className="text-micro font-semibold text-accent underline decoration-dotted underline-offset-2 hover:text-accentHi">
-          Edit
-        </button>
-      </div>
-      {value ? <p className="mt-1 text-micro text-ink">{value}</p> : <p className="mt-1 text-micro italic text-ash">Not written yet.</p>}
     </div>
   );
 }

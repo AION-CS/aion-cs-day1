@@ -4,10 +4,10 @@ import { useProgress } from "@/lib/store";
 import { MentorFillButton } from "@/components/ui/MentorFillButton";
 import { AnswerKeyButton } from "@/components/ui/AnswerKeyButton";
 import {
-  DIMENSIONS,
+  AREAS,
+  CRITERIA,
   FOLLOWUP_FIELDS,
-  INITIATIVES,
-  LENSES,
+  HORIZON_ITEMS,
   OPTION_LINES,
   R1,
   RISK_FIELDS,
@@ -16,52 +16,45 @@ import {
   SAMPLE_PRIORITY,
   SAMPLE_RISKS,
   SAMPLE_SCORES,
+  SIGNALS,
+  STAGE_B_METRICS,
 } from "@/lib/route1";
 
 /**
- * The route's mentor bar: one demo auto-fill plus the answer keys, both behind
- * the shared passcode (CLAUDE.md §7). Deliberately visually minor — a
- * convenience gate against accidental clicks, not a security boundary.
- *
- * One fill, everything across both parts: Part 1's diagnostic answers, lens,
- * rationale and closing question, plus Part 2's seven-dimension scores for
- * all three lines, the priority pick, justification, follow-ups and risks —
- * so a mentor can demo the finished export in one click. Every sample comes
- * from lib/route1/task1.ts and task2.ts rather than a second copy that could
- * drift from the answer keys.
+ * The route's mentor bar: one demo auto-fill (fills both tasks, so a
+ * reviewer can exercise both exports in one click) plus the answer keys,
+ * both behind the shared passcode (CLAUDE.md §7).
  */
 export function MentorTools() {
   const setNote = useProgress((s) => s.setNote);
   const choose = useProgress((s) => s.choose);
-  const markSeen = useProgress((s) => s.markSeen);
 
   const fill = () => {
     setNote(R1.name, "Muchson");
 
-    for (const initiative of INITIATIVES) {
-      choose(R1.load(initiative.id), initiative.expectedLoad);
-      choose(R1.structure(initiative.id), initiative.expectedStructure);
-      choose(R1.lens(initiative.id), initiative.acceptedLenses[0]);
-      setNote(R1.rationale(initiative.id), initiative.sampleRationale);
+    // Task 1, Stage A
+    for (const signal of SIGNALS) {
+      choose(R1.area(signal.id), signal.primaryArea);
+      if (signal.secondaryArea) choose(R1.areaSecondary(signal.id), signal.secondaryArea);
+    }
+    for (const area of AREAS) {
+      setNote(R1.approach(area.id), SAMPLE_APPROACH[area.id]);
     }
 
-    setNote(
-      R1.closing,
-      "Initiative 4 (device refresh on the classic market cycle) and initiative 6 (the “AI everywhere” pilot). Both are easy to sell — one is familiar and simple to budget, the other looks innovative — but neither reduces anything measurably: the refresh cycle discards serviceable hardware and pulls in fresh embodied footprint, and the pilot adds continuous compute with no benefit target anywhere behind it.",
-    );
+    // Task 1, Stage B
+    for (const m of STAGE_B_METRICS) choose(R1.effectiveness(m.id), m.expected);
 
-    for (const lens of LENSES) markSeen(R1.lensesSeen, lens.id);
+    // Task 1, Stage C
+    for (const h of HORIZON_ITEMS) choose(R1.horizon(h.id), h.expected);
 
+    // Task 2
     for (const option of OPTION_LINES) {
-      for (const dim of DIMENSIONS) {
-        choose(R1.score(option.id, dim.id), SAMPLE_SCORES[option.id][dim.id]);
-      }
+      for (const c of CRITERIA) choose(R1.score(option.id, c.id), SAMPLE_SCORES[option.id][c.id]);
     }
     choose(R1.priority, SAMPLE_PRIORITY);
     setNote(R1.justification, SAMPLE_JUSTIFICATION);
     FOLLOWUP_FIELDS.forEach((f, i) => setNote(R1.followUp(i), SAMPLE_FOLLOWUPS[i]));
     RISK_FIELDS.forEach((r, i) => setNote(R1.risk(i), SAMPLE_RISKS[i]));
-    for (const dim of DIMENSIONS) markSeen(R1.dimensionsSeen, dim.id);
   };
 
   return (
@@ -71,3 +64,12 @@ export function MentorTools() {
     </div>
   );
 }
+
+const SAMPLE_APPROACH: Record<string, string> = {
+  metricQuality: "Agree one shared PUE boundary definition across sites and publish it to every reporting team.",
+  dataAvailability: "Start capturing device service-life and reuse data consistently, starting with the three largest sites.",
+  reporting: "Redesign the monthly slide to show target-vs-actual, not totals alone.",
+  managementRelevance: "Attach a named target and owner to the three figures management already reviews most often.",
+  carbonMonitoring: "Draft a first-pass Scope 1/2/3 allocation covering infrastructure, devices and cloud, even if provisional.",
+  responsibilities: "Name one accountable owner for the CO₂ figure end-to-end, from capture to reporting.",
+};

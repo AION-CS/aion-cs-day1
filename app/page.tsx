@@ -22,14 +22,14 @@ export default function DayLanding() {
         </p>
         <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
         <p className="mt-4 text-body text-ash">
-          Module 11. New technology is not automatically sustainable technology. AI can cut energy and add compute at
-          the same time; a circular model can be exactly the right direction and still be hard to run; and an
-          initiative can be genuinely exciting while reducing nothing at all. Route 1 is deliberately short on reading
-          and long on doing: nine micro-cards give you the vocabulary and the decision rules, and you apply them
-          twice on FutureGrid Technologies — first diagnosing six planned initiatives one by one, then stepping up to
-          prioritise whole lines of measures under a limited budget and incomplete data. Route 2 steps up again: at
-          NovaCircular Technologies you connect six building blocks into one decision architecture and turn it into a
-          management proposal, including the one decision to make now despite incomplete information.
+          Module 12. Many organisations measure a great deal and manage very little: a figure can be accurate, even
+          impressive, and still change nothing because it was never wired to a target, an owner and a decision.
+          Route 1 is two short pairs of material and task: first the vocabulary and six-area diagnostic for why
+          Clarity Digital Services' metrics don't yet steer anything, then the trade-offs behind prioritising which
+          single line of measures to build first, under real budget and data constraints. Route 2 steps up to the
+          management view: at Verdeon Digital Governance Group you reframe KPIs, carbon monitoring and reporting as
+          leadership instruments rather than documentation, and build the decision-ready management proposal that
+          puts them to work — including the one call to make now, despite an incomplete picture.
         </p>
       </div>
 

@@ -2,328 +2,285 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import { Slider } from "@/components/ui/Slider";
+import { Icon } from "@/components/icons/LineIcons";
+import { LAYERS, ROLES } from "@/lib/route2";
 
-/**
- * The four D1–D4 diagrams. Every one is a live widget with exactly one
- * micro-interaction — inline SVG plus CSS transitions, no charting or
- * animation library (CLAUDE.md §9).
- */
+/** The four D1–D4 diagrams — inline SVG, one micro-interaction each (CLAUDE.md §9). */
 
 // ---------------------------------------------------------------------------
-// D1 — Scattered initiatives vs routed through one framework
+// D1 — Documentation pile vs steering wheel
 // ---------------------------------------------------------------------------
 
-const NODE_POSITIONS = [
-  { x: 40, y: 30 },
-  { x: 100, y: 20 },
-  { x: 30, y: 90 },
-  { x: 95, y: 100 },
-  { x: 55, y: 140 },
-];
-
-export function ScatteredVsRouted() {
-  const [routed, setRouted] = useState(false);
-  const hubX = 220;
-  const hubY = 85;
+export function LeadershipInstrumentToggle() {
+  const [mode, setMode] = useState<"documentation" | "steering">("documentation");
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {[false, true].map((v) => (
+        {(["documentation", "steering"] as const).map((m) => (
           <button
-            key={String(v)}
+            key={m}
             type="button"
-            onClick={() => setRouted(v)}
-            aria-pressed={routed === v}
+            onClick={() => setMode(m)}
+            aria-pressed={mode === m}
             className={clsx(
               "rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors duration-150",
-              routed === v ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+              mode === m ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
             )}
           >
-            {v ? "Routed through one framework" : "Scattered initiatives"}
+            {m === "documentation" ? "Documentation pile" : "Steering wheel"}
           </button>
         ))}
       </div>
 
       <svg
-        viewBox="0 0 340 170"
-        preserveAspectRatio="xMidYMid meet"
-        className="mx-auto h-auto w-full max-w-lg"
-        role="img"
-        aria-label={routed ? "Five initiatives routed through one assessment framework" : "Five initiatives scattered, unconnected"}
-      >
-        {routed && (
-          <>
-            <circle cx={hubX} cy={hubY} r="26" className="fill-accentSoft stroke-accent anim-scale-in" strokeWidth="1.6" />
-            <text x={hubX} y={hubY - 2} textAnchor="middle" className="fill-accent text-[9px] font-semibold">
-              Assessment
-            </text>
-            <text x={hubX} y={hubY + 9} textAnchor="middle" className="fill-accent text-[9px] font-semibold">
-              framework
-            </text>
-          </>
-        )}
-
-        {NODE_POSITIONS.map((p, i) => {
-          const targetX = routed ? hubX - 26 * Math.cos(((i - 2) * Math.PI) / 6) : p.x;
-          const targetY = routed ? hubY + 34 * Math.sin(((i - 2) * Math.PI) / 6) : p.y;
-          return (
-            <g key={i} style={{ transition: "transform .5s ease" }} transform={`translate(${targetX - p.x}, ${targetY - p.y})`}>
-              {routed && (
-                <line
-                  x1={p.x}
-                  y1={p.y}
-                  x2={hubX}
-                  y2={hubY}
-                  stroke="currentColor"
-                  className="text-accent/50"
-                  strokeWidth="1.4"
-                  style={{ transition: "opacity .3s ease" }}
-                />
-              )}
-              <circle cx={p.x} cy={p.y} r="16" className={routed ? "fill-paper stroke-accent" : "fill-mist stroke-ash"} strokeWidth="1.5" />
-              <text x={p.x} y={p.y + 3} textAnchor="middle" className={clsx("text-[9px] font-semibold", routed ? "fill-accent" : "fill-ash")}>
-                {i + 1}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      <p className="rounded-xl border border-line bg-paper p-3 text-caption text-ink">
-        {routed
-          ? "Every initiative now runs through the same criteria before it scales — one coherent portfolio, not five separate bets."
-          : "Five sensible initiatives, five separate sponsors, five separate justifications. Nothing here compares one against another."}
-      </p>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// D2 — Assessment funnel: which filter stops a weak initiative
-// ---------------------------------------------------------------------------
-
-type FilterId = "benefit" | "resource" | "viability" | "controllability";
-
-const FILTERS: { id: FilterId; label: string }[] = [
-  { id: "benefit", label: "Benefit" },
-  { id: "resource", label: "Resource/load" },
-  { id: "viability", label: "Strategic viability" },
-  { id: "controllability", label: "Controllability" },
-];
-
-const FUNNEL_DEMOS: { id: string; label: string; stoppedBy: FilterId | null }[] = [
-  { id: "ai", label: "AI pilot with no measured benefit target", stoppedBy: "benefit" },
-  { id: "circular", label: "Circular scheme that is itself resource-heavy to launch", stoppedBy: "resource" },
-  { id: "oneoff", label: "Promising pilot with no path to run at full scale", stoppedBy: "viability" },
-  { id: "vendor", label: "Third-party platform we cannot modify or audit", stoppedBy: "controllability" },
-  { id: "framework", label: "The assessment framework itself, piloted with 3 initiatives", stoppedBy: null },
-];
-
-export function AssessmentFunnel() {
-  const [selected, setSelected] = useState(FUNNEL_DEMOS[0].id);
-  const demo = FUNNEL_DEMOS.find((d) => d.id === selected)!;
-  const stopIndex = demo.stoppedBy ? FILTERS.findIndex((f) => f.id === demo.stoppedBy) : FILTERS.length;
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Drop a demo initiative into the funnel</p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {FUNNEL_DEMOS.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              onClick={() => setSelected(d.id)}
-              aria-pressed={selected === d.id}
-              className={clsx(
-                "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-                selected === d.id ? "border-accent bg-accentSoft text-accent" : "border-line text-ash hover:border-ash",
-              )}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <svg
-        viewBox="0 0 340 210"
+        viewBox="0 0 320 160"
         preserveAspectRatio="xMidYMid meet"
         className="mx-auto h-auto w-full max-w-md"
         role="img"
-        aria-label={demo.stoppedBy ? `Stopped by the ${FILTERS.find((f) => f.id === demo.stoppedBy)!.label} filter` : "Passed every filter — prioritised"}
+        aria-label={mode === "documentation" ? "A pile of reports stacking up, nothing moves." : "The same data turning a decision, like a steering wheel."}
       >
-        <path d="M20 14 H320 L200 90 V150 L140 170 V90 Z" fill="none" stroke="currentColor" className="text-line" strokeWidth="1.6" />
-        <text x="170" y="8" textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
-          many initiatives in
-        </text>
-
-        {FILTERS.map((f, i) => {
-          const y = 40 + i * 24;
-          const passed = i < stopIndex;
-          const isStop = i === stopIndex;
-          return (
-            <g key={f.id}>
-              <line x1={40 + i * 8} y1={y} x2={300 - i * 8} y2={y} stroke="currentColor" className={isStop ? "text-danger" : "text-line"} strokeWidth={isStop ? 2.2 : 1.2} />
-              <rect x={220} y={y - 9} width="108" height="18" rx="6" className={isStop ? "fill-danger/10 stroke-danger" : passed ? "fill-accentSoft stroke-accent" : "fill-paper stroke-line"} strokeWidth="1.2" />
-              <text x={274} y={y + 3.5} textAnchor="middle" className={clsx("text-[8.5px] font-semibold", isStop ? "fill-danger" : passed ? "fill-accent" : "fill-ash")}>
-                {f.label}
-              </text>
-            </g>
-          );
-        })}
-
-        <circle
-          key={selected}
-          cx="170"
-          cy="26"
-          r="7"
-          className={demo.stoppedBy ? "fill-danger anim-pop" : "fill-accent anim-pop"}
-          style={{
-            transform: `translateY(${demo.stoppedBy ? 40 + stopIndex * 24 - 26 : 178}px)`,
-            transition: "transform 0.8s ease",
-          }}
-        />
-
-        <text x="170" y="200" textAnchor="middle" className="fill-ash text-[9px] font-semibold uppercase tracking-wide">
-          few prioritised decisions out
-        </text>
+        {mode === "documentation" ? (
+          <g>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <rect key={i} x={130 - i * 3} y={128 - i * 16} width="120" height="14" rx="3" className={i === 4 ? "fill-accentSoft stroke-accent" : "fill-paper stroke-line"} strokeWidth="1.2" />
+            ))}
+            <text x="160" y="150" textAnchor="middle" className="fill-ash text-[11px] font-semibold">
+              Reports keep stacking — nothing moves
+            </text>
+          </g>
+        ) : (
+          <g>
+            <circle cx="110" cy="70" r="34" fill="none" stroke="currentColor" className="text-accent" strokeWidth="6" />
+            <circle cx="110" cy="70" r="8" className="fill-accent" />
+            <path d="M110 36 v14 M110 90 v14 M76 70 h14 M130 70 h14" stroke="currentColor" className="text-accent" strokeWidth="4" strokeLinecap="round" />
+            <path d="M148 70 H200" stroke="currentColor" className="text-accent" strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                <path d="M0 0 L8 4 L0 8 Z" className="fill-accent" />
+              </marker>
+            </defs>
+            <rect x="204" y="46" width="100" height="48" rx="8" className="fill-accentSoft stroke-accent" strokeWidth="1.4" />
+            <text x="254" y="66" textAnchor="middle" className="fill-accent text-[11px] font-semibold">
+              A decision
+            </text>
+            <text x="254" y="80" textAnchor="middle" className="fill-accent text-[11px] font-semibold">
+              actually turns
+            </text>
+            <text x="160" y="130" textAnchor="middle" className="fill-ash text-[11px] font-semibold">
+              The same data — wired to a decision
+            </text>
+          </g>
+        )}
       </svg>
 
-      <p className={clsx("rounded-xl border p-3 text-caption", demo.stoppedBy ? "border-danger/30 bg-danger/5 text-ink" : "border-accent/30 bg-accentSoft text-ink")}>
-        {demo.stoppedBy
-          ? `Stopped by the ${FILTERS.find((f) => f.id === demo.stoppedBy)!.label} filter.`
-          : "Passes every filter — this is what a prioritised decision looks like."}
+      <p className="text-caption text-ink">
+        {mode === "documentation"
+          ? "A perfect dashboard nobody acts on is documentation, not management — however accurate every figure in the pile is."
+          : "The instrument only counts as management once something on the other end actually turns because of it."}
       </p>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// D3 — Governance loop: propose → assess → approve/park → review
+// D2 — The staircase
 // ---------------------------------------------------------------------------
 
-const LOOP_STAGES = [
-  { id: "propose", label: "Propose", role: "Initiative sponsor", question: "What is being asked for, and what benefit is claimed?", pos: { x: 90, y: 30 } },
-  { id: "assess", label: "Assess", role: "Assessment framework owner", question: "Does it clear all four D2 criteria?", pos: { x: 250, y: 30 } },
-  { id: "approve", label: "Approve / park", role: "Portfolio or steering committee", question: "Given the portfolio, does this get funded now?", pos: { x: 250, y: 140 } },
-  { id: "review", label: "Review", role: "Management review (D3)", question: "Did it deliver, and does anything change for next time?", pos: { x: 90, y: 140 } },
-] as const;
+const STEP_NOTE: Record<string, string> = {
+  shortTerm: "Pick core KPIs, define a pragmatic carbon baseline, assign owners. No governance required to start.",
+  mediumTerm: "A proper dashboard, review cycles, richer emissions data — built on what the short-term stage captured.",
+  structural: "KPIs and carbon monitoring embedded permanently in governance and management reviews.",
+};
 
-export function GovernanceLoop() {
-  const [openId, setOpenId] = useState<string>(LOOP_STAGES[0].id);
-  const open = LOOP_STAGES.find((s) => s.id === openId)!;
+export function LayeredStaircase() {
+  const [openId, setOpenId] = useState<string>("shortTerm");
+  const open = LAYERS.find((l) => l.id === openId)!;
 
   return (
     <div className="space-y-4">
-      <svg viewBox="0 0 340 170" preserveAspectRatio="xMidYMid meet" className="mx-auto h-auto w-full max-w-md" role="img" aria-label="A governed loop: propose, assess, approve or park, review">
-        <path d="M90 46 H250" stroke="currentColor" className="text-line" strokeWidth="1.6" />
-        <path d="M250 46 V124" stroke="currentColor" className="text-line" strokeWidth="1.6" />
-        <path d="M250 140 H90" stroke="currentColor" className="text-line" strokeWidth="1.6" />
-        <path d="M90 124 V46" stroke="currentColor" className="text-line" strokeWidth="1.6" />
-        {LOOP_STAGES.map((s) => {
-          const on = openId === s.id;
+      <svg
+        viewBox="0 0 320 160"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto h-auto w-full max-w-md"
+        role="img"
+        aria-label="A three-step staircase: short-term, medium-term, structural."
+      >
+        {LAYERS.map((l, i) => {
+          const on = openId === l.id;
+          const stepW = 90;
+          const x = 20 + i * stepW;
+          const h = 30 + i * 34;
+          const y = 148 - h;
           return (
-            <g key={s.id} className="cursor-pointer" onClick={() => setOpenId(s.id)}>
-              <circle cx={s.pos.x} cy={s.pos.y} r="24" className={on ? "fill-accent" : "fill-paper stroke-line"} strokeWidth="1.6" />
-              <text x={s.pos.x} y={s.pos.y + 3.5} textAnchor="middle" className={clsx("text-[9.5px] font-semibold", on ? "fill-paper" : "fill-ink")}>
-                {s.label}
+            <g key={l.id} className="cursor-pointer" onClick={() => setOpenId(l.id)}>
+              <rect x={x} y={y} width={stepW - 8} height={h} rx="6" className={on ? "fill-accent" : "fill-mist stroke-line"} strokeWidth="1" style={{ transition: "fill .2s ease" }} />
+              <text x={x + (stepW - 8) / 2} y={y - 8} textAnchor="middle" className="fill-ink text-[10px] font-semibold">
+                {l.name}
               </text>
             </g>
           );
         })}
       </svg>
 
-      <div>
-        <p className="text-micro font-semibold uppercase tracking-wide text-ash">Click each stage</p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {LOOP_STAGES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setOpenId(s.id)}
-              aria-pressed={openId === s.id}
-              className={clsx(
-                "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
-                openId === s.id ? "border-accent bg-accentSoft text-accent" : "border-line text-ash hover:border-ash",
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {LAYERS.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => setOpenId(l.id)}
+            aria-pressed={openId === l.id}
+            className={clsx(
+              "rounded-full border px-2.5 py-1 text-micro font-semibold transition-colors duration-150",
+              openId === l.id ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+            )}
+          >
+            {l.name}
+          </button>
+        ))}
       </div>
 
       <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
         <p className="text-caption text-ink">
-          <span className="font-semibold text-accent">{open.role} — </span>
-          {open.question}
+          <span className="font-semibold text-accent">{open.name} — </span>
+          {STEP_NOTE[open.id]}
         </p>
       </div>
+      <p className="text-micro text-ash">
+        TerraMetrics IT Operations GmbH used exactly this staged pattern rather than chasing perfect data first.
+      </p>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// D4 — Time horizons: short / medium / structural
+// D3 — The five-factor pentagon
 // ---------------------------------------------------------------------------
 
-const HORIZON_BANDS = [
-  { id: 0, label: "Short-term (now)", examples: ["Define assessment criteria", "Create transparency", "First prioritisation"] },
-  { id: 1, label: "Medium-term (6–18 mo)", examples: ["Pilot selected AI/circularity initiatives", "Build first take-back / refurbishment loops"] },
-  { id: 2, label: "Structural (ongoing)", examples: ["Anchor in portfolio decisions", "Anchor in governance", "Anchor in management reviews"] },
-];
+const PENTAGON_LABELS = ["Accuracy", "Effort", "Comparability", "External", "Usability"];
 
-export function TimeHorizonBands() {
-  const [band, setBand] = useState(0);
-  const current = HORIZON_BANDS[band];
+type Profile = Record<string, number>; // 0-5 per label index, as string keys "0".."4"
+
+const PROFILES: Record<string, { label: string; values: number[]; note: string }> = {
+  accuracy: {
+    label: "Accuracy-first",
+    values: [5, 1, 3, 3, 2],
+    note: "Pulling hard toward Accuracy pulls Effort down fast — a precise figure that's expensive to keep producing.",
+  },
+  external: {
+    label: "External-first",
+    values: [4, 2, 4, 5, 1],
+    note: "Optimising for external disclosure often costs Operational usability the most — auditable is not the same as actionable day to day.",
+  },
+  usability: {
+    label: "Usability-first",
+    values: [2, 4, 3, 2, 5],
+    note: "A figure operations can act on daily usually trades away some Accuracy and External polish.",
+  },
+};
+
+function pentagonPoint(i: number, value: number, cx: number, cy: number, rMax: number) {
+  const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+  const r = (value / 5) * rMax;
+  return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)] as const;
+}
+
+export function TradeoffPentagon() {
+  const [profileId, setProfileId] = useState<string>("accuracy");
+  const profile = PROFILES[profileId];
+  const cx = 160;
+  const cy = 90;
+  const rMax = 60;
+
+  const points = profile.values.map((v, i) => pentagonPoint(i, v, cx, cy, rMax));
+  const pointsAttr = points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
 
   return (
     <div className="space-y-4">
-      <Slider
-        id="d4-horizon"
-        label="Slide across the timeline"
-        instruction="Each band's examples highlight below."
-        value={band + 1}
-        onChange={(v) => setBand(v - 1)}
-        min={1}
-        max={3}
-        lowLabel="Now"
-        highLabel="Structural"
-        valueLabels={{ 1: "Short-term", 2: "Medium-term", 3: "Structural" }}
-      />
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(PROFILES).map(([id, p]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setProfileId(id)}
+            aria-pressed={profileId === id}
+            className={clsx(
+              "rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors duration-150",
+              profileId === id ? "border-accent bg-accentSoft text-accent" : "border-line bg-paper text-ash hover:border-ash",
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
 
-      <div className="grid gap-2 sm:grid-cols-3">
-        {HORIZON_BANDS.map((b) => {
-          const on = b.id === band;
+      <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet" className="mx-auto h-auto w-full max-w-sm" role="img" aria-label={`A five-point pentagon showing the ${profile.label} trade-off.`}>
+        {[1, 2, 3, 4, 5].map((ring) => (
+          <polygon
+            key={ring}
+            points={Array.from({ length: 5 }, (_, i) => pentagonPoint(i, ring, cx, cy, rMax)).map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")}
+            className="fill-none stroke-line"
+            strokeWidth="1"
+          />
+        ))}
+        {PENTAGON_LABELS.map((label, i) => {
+          const [x, y] = pentagonPoint(i, 6.1, cx, cy, rMax);
+          return (
+            <text key={label} x={x} y={y} textAnchor="middle" className="fill-ash text-[10px] font-semibold">
+              {label}
+            </text>
+          );
+        })}
+        <polygon key={profileId} points={pointsAttr} className="anim-pop fill-accent/15 stroke-accent" strokeWidth="2.2" />
+        {points.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r="3.4" className="fill-accent" />
+        ))}
+      </svg>
+
+      <div key={profileId} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
+        <p className="text-caption text-ink">{profile.note}</p>
+      </div>
+      <p className="text-micro text-ash">No profile fills the pentagon — pulling one point out always pulls another one in.</p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D4 — Four role chips
+// ---------------------------------------------------------------------------
+
+export function RoleChips() {
+  const [openId, setOpenId] = useState<string>("cio");
+  const open = ROLES.find((r) => r.id === openId)!;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2">
+        {ROLES.map((r) => {
+          const on = openId === r.id;
           return (
             <button
-              key={b.id}
+              key={r.id}
               type="button"
-              onClick={() => setBand(b.id)}
+              onClick={() => setOpenId(r.id)}
               aria-pressed={on}
               className={clsx(
-                "rounded-xl border p-3 text-left transition-colors duration-150",
-                on ? "border-accent bg-accentSoft" : "border-line bg-paper hover:border-ash",
+                "flex items-center gap-2 rounded-xl border p-3 text-left transition-colors duration-150",
+                on ? "border-accent bg-accent text-paper" : "border-line bg-paper text-ink hover:border-ash",
               )}
             >
-              <p className={clsx("text-caption font-semibold", on ? "text-accent" : "text-ink")}>{b.label}</p>
+              <Icon name={r.icon} className="h-5 w-5 shrink-0" />
+              <span className="text-caption font-semibold">{r.short}</span>
             </button>
           );
         })}
       </div>
 
-      <div key={current.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
-        <p className="text-micro font-semibold uppercase tracking-wide text-accent">{current.label} — examples</p>
-        <ul className="mt-1.5 space-y-1">
-          {current.examples.map((e) => (
-            <li key={e} className="text-caption text-ink">
-              {e}
-            </li>
-          ))}
-        </ul>
+      <div key={open.id} className="reveal-in rounded-xl border border-accent/30 bg-accentSoft p-3">
+        <p className="text-caption text-ink">
+          <span className="font-semibold text-accent">{open.name} — </span>
+          {open.mandate}
+        </p>
       </div>
     </div>
   );
