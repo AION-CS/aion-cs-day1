@@ -1,5 +1,5 @@
 {
-  "name": "aion-greenit-day16",
+  "name": "aion-cs-day1",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -32,3 +32,4 @@
     "postcss": "8.5.26"
   }
 }
+

@@ -1,53 +1,67 @@
 "use client";
 
 import { useState } from "react";
-import { Redo, Undo } from "@/components/icons/LineIcons";
+import type { KeyboardEvent } from "react";
 
 /**
- * Visible undo/redo for a placement exercise (CLAUDE.md #5), paired with the
- * keyboard handler in lib/undoShortcuts.ts. The buttons stay clickable at a
- * stack boundary and say so, rather than going dead.
+ * Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl+Y for one placement exercise.
+ * Attached to the exercise's own wrapper, and ignored while typing in a text
+ * field, where the browser's own text undo is the one meant.
  */
+export function undoRedoKeyHandler(onUndo: () => void, onRedo: () => void) {
+  return (e: KeyboardEvent<HTMLElement>) => {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const t = e.target as HTMLElement;
+    if (t.closest("textarea, [contenteditable='true'], input:not([type='radio']):not([type='checkbox'])")) return;
+    const k = e.key.toLowerCase();
+    if (k === "z" && !e.shiftKey) {
+      e.preventDefault();
+      onUndo();
+    } else if ((k === "z" && e.shiftKey) || k === "y") {
+      e.preventDefault();
+      onRedo();
+    }
+  };
+}
+
+/** Visible undo/redo. Still clickable at a stack boundary — it says so instead of going dead. */
 export function UndoRedoControls({
   onUndo,
   onRedo,
-  canUndo,
-  canRedo,
+  undoCount,
+  redoCount,
 }: {
   onUndo: () => void;
   onRedo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
+  undoCount: number;
+  redoCount: number;
 }) {
-  const [noop, setNoop] = useState<string | null>(null);
-
-  const flash = (text: string) => {
-    setNoop(text);
-    window.setTimeout(() => setNoop(null), 1400);
+  const [note, setNote] = useState<string | null>(null);
+  const say = (t: string) => {
+    setNote(t);
+    window.setTimeout(() => setNote(null), 1400);
   };
-
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <span aria-live="polite" className="text-micro text-ash">
-        {noop}
-      </span>
+    <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
-        onClick={() => (canUndo ? onUndo() : flash("Nothing to undo yet."))}
+        onClick={() => (undoCount ? onUndo() : say("Nothing to undo yet."))}
         aria-keyshortcuts="Control+Z Meta+Z"
-        className="inline-flex items-center gap-1 rounded-lg border border-line bg-paper px-2 py-1 text-micro font-semibold text-ash transition-colors duration-150 hover:text-ink"
+        className="btn-ghost btn-sm"
       >
-        <Undo className="h-3.5 w-3.5" /> Undo
+        ↶ Undo <span className="tnum text-ash">({undoCount})</span>
       </button>
       <button
         type="button"
-        onClick={() => (canRedo ? onRedo() : flash("Nothing to redo."))}
-        aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z"
-        className="inline-flex items-center gap-1 rounded-lg border border-line bg-paper px-2 py-1 text-micro font-semibold text-ash transition-colors duration-150 hover:text-ink"
+        onClick={() => (redoCount ? onRedo() : say("Nothing to redo."))}
+        aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+        className="btn-ghost btn-sm"
       >
-        <Redo className="h-3.5 w-3.5" /> Redo
+        ↷ Redo <span className="tnum text-ash">({redoCount})</span>
       </button>
-      <span className="hidden text-micro text-ash sm:inline">Ctrl/⌘+Z · Ctrl/⌘+Shift+Z</span>
+      <span aria-live="polite" className="min-w-[8rem] text-micro text-ash">
+        {note ?? <span className="hidden sm:inline">Ctrl/⌘+Z · Ctrl/⌘+Shift+Z</span>}
+      </span>
     </div>
   );
 }

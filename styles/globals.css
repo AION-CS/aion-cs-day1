@@ -3,532 +3,145 @@
 @tailwind utilities;
 
 :root {
-  --backdrop: rgba(22, 25, 29, 0.55);
+  --ink: #1f2328;
+  --ash: #59606a;
+  --paper: #fffefa;
+  --canvas: #f3efe4;
+  --line: #d8d1bf;
+  --accent: #8a5a0b;
+  --gold: #d99a2b;
+  --signal: #0f6b6b;
+  --rust: #a4472a;
+  --nav-h: 48px;
 }
 
 @layer base {
   html {
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-family: system-ui, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
   }
-
   body {
     @apply bg-canvas text-ink;
-    font-size: 16px;
-    line-height: 25px;
+    font-size: 15.5px;
+    line-height: 24px;
     -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+    overflow-x: hidden;
   }
-
-  h1 {
-    @apply text-h1;
-  }
-  h2 {
-    @apply text-h2;
-  }
-  h3 {
-    @apply text-h3;
-  }
-
-  /* Every clickable surface gets a visible focus ring in the accent. */
+  h1 { @apply text-h1; }
+  h2 { @apply text-h2; }
+  h3 { @apply text-h3; }
   :focus-visible {
-    outline: 2px solid theme("colors.accent");
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
+  /* Anchors land below the sticky top bar and section rail. */
+  [id] { scroll-margin-top: 112px; }
 }
 
 @layer components {
-  .card {
-    @apply rounded-2xl border border-line bg-paper shadow-sm;
+  .card { @apply rounded-xl border border-line bg-paper shadow-sm; }
+  .smallcaps { @apply text-micro font-semibold uppercase text-ash; }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-body font-semibold transition-colors duration-150;
+  }
+  .btn-primary { @apply btn bg-accent text-paper hover:bg-accentHi; }
+  .btn-ghost { @apply btn border border-line bg-paper text-ink hover:border-ash; }
+  .btn-sm { @apply rounded-md px-3 py-1.5 text-caption; }
+  @media (max-width: 767px) {
+    .btn-sm { min-height: 40px; }
   }
 
-  /* The one accent button. */
-  .btn-accent {
-    @apply rounded-xl bg-accent px-4 py-2.5 text-body font-semibold text-paper transition-colors duration-200 hover:bg-accentHi disabled:cursor-not-allowed disabled:bg-line disabled:text-ash;
+  /* Small chips keep their look but get a ≥40px tap area on touch screens. */
+  .tap-chip { position: relative; }
+  .tap-chip::after { content: ""; position: absolute; left: 0; right: 0; top: -10px; bottom: -10px; }
+
+  .field {
+    @apply w-full rounded-lg border border-line bg-paper px-3 py-2 text-body text-ink placeholder:text-ash/60;
+  }
+  .field:hover { @apply border-ash/60; }
+
+  .pill {
+    @apply inline-flex items-center rounded-full border px-2 py-0.5 text-micro font-bold uppercase;
+  }
+  .pill-obj { @apply pill border-signal/50 bg-signalSoft text-signal; }
+  .pill-jdg { @apply pill border-accent/50 bg-accentSoft text-accent; }
+
+  /* A "stamp" state, e.g. FILED. */
+  .stamp {
+    @apply inline-block -rotate-3 rounded border-2 border-signal px-2 py-0.5 text-caption font-black uppercase tracking-widest text-signal;
   }
 
-  .btn-ghost {
-    @apply rounded-xl border border-line bg-paper px-4 py-2.5 text-body font-semibold text-ink transition-colors duration-200 hover:border-ash;
-  }
+  /* Amber outline for a cell flagged by a check — never red, never a tick. */
+  .is-flagged { outline: 2.5px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
 }
 
-/* --- Motion ---------------------------------------------------------------
- * A tight motion budget: a single fade-up on scroll, a card hover scale, the
- * bar-chart width transition, and the drag lift. Nothing else animates.
- */
+/* --- Motion vocabulary (CSS only, nothing longer than 600 ms except the flash) --- */
 
-/* Fade-up on scroll: hidden until IntersectionObserver adds .is-visible. */
-.fade-up {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-.fade-up.is-visible {
-  opacity: 1;
-  transform: none;
-}
+@keyframes drawIn { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.anim-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: drawIn 0.6s ease-out forwards; }
 
-/* Faint pulse for the recurring Procurement node in the Level 2 motif. */
-@keyframes motifPulse {
-  0%,
-  100% {
-    opacity: 0.75;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-}
-.motif-pulse {
-  animation: motifPulse 2.4s ease-in-out infinite;
-}
+@keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.anim-grow-y { transform-box: fill-box; transform-origin: bottom; animation: growUp 0.45s ease-out both; }
+@keyframes growRight { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.anim-grow-x { transform-box: fill-box; transform-origin: left; animation: growRight 0.5s ease-out both; }
 
-/* Level 3 material-card diagram animations, played on card open. */
-@keyframes drawLine {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-.anim-draw {
-  stroke-dasharray: 600;
-  stroke-dashoffset: 600;
-  animation: drawLine 0.85s ease forwards;
-}
-@keyframes scaleIn {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-.anim-scale-in {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: scaleIn 0.6s ease forwards;
-}
-@keyframes dashSpin {
-  to {
-    stroke-dashoffset: -100;
-  }
-}
-.anim-dash-loop {
-  stroke-dasharray: 6 6;
-  animation: dashSpin 4s linear infinite;
-}
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.stagger { opacity: 0; animation: fadeSlide 0.4s ease-out forwards; animation-delay: calc(var(--i, 0) * 60ms); }
+.fade-in { animation: fadeSlide 0.3s ease-out both; }
 
-@keyframes revealIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.reveal-in {
-  animation: revealIn 0.22s ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal-in {
-    animation: none;
-  }
-}
+@keyframes pulseRing { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.anim-pulse { animation: pulseRing 1.6s ease-in-out infinite; }
 
-/* A signal card being dragged (native DnD ghost aside, we also dim the source). */
-.is-dragging {
-  opacity: 0.45;
-}
-
-/* Certification Trust Checker: a click-to-flip card (front label, back detail). */
-.flip-card {
-  perspective: 1200px;
-}
-.flip-card-inner {
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
-}
-.flip-card-inner.is-flipped {
-  transform: rotateY(180deg);
-}
-.flip-card-face {
-  backface-visibility: hidden;
-}
-.flip-card-face-back {
-  position: absolute;
-  inset: 0;
-  transform: rotateY(180deg);
-}
-
-/* One-shot pop for a discrete timeline event (device discarded / replaced). */
-@keyframes popIn {
-  0% {
-    transform: scale(0.4);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.15);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-.anim-pop {
-  animation: popIn 0.4s ease-out;
-}
-
-/* Draws the eye to a section a "still needed" link just scrolled to. */
 @keyframes flashWarn {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(178, 59, 59, 0);
-    background-color: transparent;
-  }
-  25% {
-    box-shadow: 0 0 0 4px rgba(178, 59, 59, 0.35);
-    background-color: rgba(178, 59, 59, 0.06);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(164, 71, 42, 0); background-color: transparent; }
+  20% { box-shadow: 0 0 0 4px rgba(164, 71, 42, 0.45); background-color: rgba(164, 71, 42, 0.07); }
+  70% { box-shadow: 0 0 0 4px rgba(164, 71, 42, 0.3); background-color: rgba(164, 71, 42, 0.05); }
 }
-.anim-flash-warn {
-  animation: flashWarn 1.2s ease-in-out;
-  border-radius: theme("borderRadius.2xl");
-}
+.anim-flash-warn { animation: flashWarn 1.2s ease-in-out; border-radius: 10px; }
 
-/* Same idea in the accent, for a material reference chip: arriving somewhere
-   you asked to go is not a warning, so it must not read like the red one. */
 @keyframes flashRef {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(14, 122, 90, 0);
-    background-color: transparent;
-  }
-  25% {
-    box-shadow: 0 0 0 4px rgba(14, 122, 90, 0.35);
-    background-color: rgba(14, 122, 90, 0.06);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(138, 90, 11, 0); }
+  20% { box-shadow: 0 0 0 4px rgba(217, 154, 43, 0.6); }
+  70% { box-shadow: 0 0 0 4px rgba(217, 154, 43, 0.35); }
 }
-.anim-flash-ref {
-  animation: flashRef 1.2s ease-in-out;
-  border-radius: theme("borderRadius.2xl");
-}
+.anim-flash-ref { animation: flashRef 1.2s ease-in-out; border-radius: 10px; }
 
-/* --- Day 11 flow diagram -------------------------------------------------
- * A subtle pulsing dotted line travelling along an active edge, marking data
- * in motion. Pure CSS keyframes over an inline SVG path — no animation library
- * (stack rule #9). Drawn as a second path on top of the static edge, so the
- * edge itself stays visible when motion is reduced.
- */
-@keyframes flowDash {
-  0% {
-    stroke-dashoffset: 28;
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.85;
-  }
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 0.25;
-  }
-}
-.anim-flow {
-  stroke-dasharray: 3 11;
-  stroke-linecap: round;
-  animation: flowDash 2.4s linear infinite;
-}
+.is-dragging { opacity: 0.4; }
+.is-drop-target { outline: 2px dashed var(--accent); outline-offset: 2px; background-color: theme("colors.accentSoft"); }
 
-/* An un-inspected hotspot pin breathes until the learner opens it. */
-@keyframes pinPulse {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.18);
-  }
-}
-.anim-pin-pulse {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: pinPulse 2.2s ease-in-out infinite;
-}
+/* Range slider in the brand tokens. */
+.range-accent { -webkit-appearance: none; appearance: none; height: 36px; background: transparent; cursor: pointer; width: 100%; }
+.range-accent::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: theme("colors.mist"); border: 1px solid theme("colors.line"); }
+.range-accent::-moz-range-track { height: 6px; border-radius: 999px; background: theme("colors.mist"); border: 1px solid theme("colors.line"); }
+.range-accent::-webkit-slider-thumb { -webkit-appearance: none; margin-top: -8px; height: 20px; width: 20px; border-radius: 999px; background: var(--accent); border: 2px solid var(--paper); box-shadow: 0 1px 3px rgba(31, 35, 40, 0.3); }
+.range-accent::-moz-range-thumb { height: 18px; width: 18px; border-radius: 999px; background: var(--accent); border: 2px solid var(--paper); }
 
-/* A drop bin the learner is currently dragging a symptom card over. */
-.is-drop-target {
-  border-color: theme("colors.accent");
-  background-color: theme("colors.accentSoft");
-  box-shadow: theme("boxShadow.lift");
-}
+/* Hover affordances on SVG hit areas always have a focus/tap equivalent; this is the shared state. */
+.hit { cursor: pointer; }
+.hit:hover .hit-shape, .hit:focus-visible .hit-shape { stroke: var(--accent); stroke-width: 2.6; }
+.hit:focus-visible { outline: none; }
+.hit:focus-visible .hit-shape { stroke: var(--accent); stroke-width: 3; }
 
-/* --- Native range slider, wearing the brand tokens ------------------------
- * Track and thumb can only be painted through vendor pseudo-elements, which
- * Tailwind cannot reach without a plugin — so the slider's own paint lives
- * here while everything around it stays utility classes. No UI library.
- */
-.range-accent {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 22px;
-  background: transparent;
-  cursor: pointer;
-}
-.range-accent::-webkit-slider-runnable-track {
-  height: 6px;
-  border-radius: 999px;
-  background: theme("colors.mist");
-  border: 1px solid theme("colors.line");
-}
-.range-accent::-moz-range-track {
-  height: 6px;
-  border-radius: 999px;
-  background: theme("colors.mist");
-  border: 1px solid theme("colors.line");
-}
-.range-accent::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  margin-top: -6px;
-  height: 18px;
-  width: 18px;
-  border-radius: 999px;
-  background: theme("colors.accent");
-  border: 2px solid theme("colors.paper");
-  box-shadow: 0 1px 3px rgba(22, 25, 29, 0.25);
-  transition: transform 0.12s ease;
-}
-.range-accent::-moz-range-thumb {
-  height: 16px;
-  width: 16px;
-  border-radius: 999px;
-  background: theme("colors.accent");
-  border: 2px solid theme("colors.paper");
-  box-shadow: 0 1px 3px rgba(22, 25, 29, 0.25);
-}
-.range-accent:active::-webkit-slider-thumb {
-  transform: scale(1.12);
-}
-/* Value 0 is "not set", not a prediction — the thumb reads as muted until the
-   learner actually commits to a number. */
-.range-unset::-webkit-slider-thumb {
-  background: theme("colors.line");
-  border-color: theme("colors.paper");
-}
-.range-unset::-moz-range-thumb {
-  background: theme("colors.line");
-  border-color: theme("colors.paper");
-}
-
-/* No-op feedback when Undo/Redo is clicked at a stack boundary — still clickable, just nothing to do. */
-@keyframes shakeNoop {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-3px);
-  }
-  75% {
-    transform: translateX(3px);
-  }
-}
-.anim-shake-noop {
-  animation: shakeNoop 0.3s ease-in-out;
-}
-
-/* The live memo preview reads as a document, not as more app chrome (§12). */
-.memo-doc {
-  background: #fffdf8;
-  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
-}
-.memo-doc p,
-.memo-doc li,
-.memo-doc span {
-  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
-}
-
-/* --- Day 12 ---------------------------------------------------------------
- * Signal Board: the connector that draws itself from the intake rail to a
- * zone (~600 ms), the card token landing with a pulse, and a ring marking the
- * zone it landed in. Utilisation Gap: the shaded area revealed on scroll.
- * Pure CSS keyframes over inline SVG — no animation library (CLAUDE.md #9).
- */
-@keyframes connectorDraw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-.anim-connector {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: connectorDraw 0.6s ease-out forwards;
-}
-@keyframes landPulse {
-  0% {
-    transform: scale(0.3);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.3);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-.anim-land {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: landPulse 0.45s ease-out 0.5s both;
-}
-@keyframes zoneRing {
-  0% {
-    opacity: 0.9;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.12);
-  }
-}
-.anim-zone-ring {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: zoneRing 0.8s ease-out 0.5s both;
-}
-.gap-reveal {
-  opacity: 0;
-  clip-path: inset(0 100% 0 0);
-  transition: opacity 0.6s ease-out, clip-path 1.2s ease-out;
-}
-.gap-reveal.is-in {
-  opacity: 1;
-  clip-path: inset(0 0 0 0);
-}
+.tnum { font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: reduce) {
-  .anim-land,
-  .anim-zone-ring {
-    animation-delay: 0s !important;
-  }
-  .gap-reveal {
-    opacity: 1;
-    clip-path: none;
-  }
-}
-
-/* --- Day 15 ---------------------------------------------------------------
- * C1's travelling dot takes the same journey down whichever branch of the
- * novelty/impact fork is selected, so the two read as alternatives rather than
- * as a sequence. The translations are in user units and match the 360x180
- * viewBox and elbow coordinates in components/route1/MaterialDiagrams.tsx —
- * change one and the other has to move with it.
- */
-@keyframes travelUp {
-  0% {
-    transform: translate(0px, 0px);
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  35% {
-    transform: translate(60px, -45px);
-  }
-  88% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(210px, -45px);
-    opacity: 0;
-  }
-}
-.anim-travel-up {
-  animation: travelUp 2.6s ease-in-out infinite;
-}
-
-@keyframes travelDown {
-  0% {
-    transform: translate(0px, 0px);
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  35% {
-    transform: translate(60px, 45px);
-  }
-  88% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(210px, 45px);
-    opacity: 0;
-  }
-}
-.anim-travel-down {
-  animation: travelDown 2.6s ease-in-out infinite;
-}
-
-/* C5: the balance between attractive-now and viable-long-term never settles. */
-@keyframes seesaw {
-  0%,
-  100% {
-    transform: rotate(-2.5deg);
-  }
-  50% {
-    transform: rotate(2.5deg);
-  }
-}
-.anim-seesaw {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: seesaw 5s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  /* Never leave fade-up content invisible when motion is disabled. */
-  .fade-up {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto; }
+  .stagger { opacity: 1; animation: none; }
+  .anim-draw { stroke-dashoffset: 0; animation: none; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* --- Print: Diagnostic Note only -----------------------------------------
- * `.print-note` is display:none on screen and the only thing that appears in
- * a print job; everything else collapses (print:hidden on chrome + page).
- */
-.print-note {
-  display: none;
+  /* The navigation flash is a state, not movement: keep it visible as a static outline until JS removes the class. */
+  .anim-flash-warn { animation: none !important; outline: 3px solid var(--rust); outline-offset: 2px; }
+  .anim-flash-ref { animation: none !important; outline: 3px solid var(--gold); outline-offset: 2px; }
 }
 
 @media print {
-  body {
-    background: #fff;
-  }
-  .print-note {
-    display: block;
-  }
-  @page {
-    margin: 16mm;
-  }
+  body { background: #fff; }
 }

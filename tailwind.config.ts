@@ -1,61 +1,55 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Day 6 tokens, shared across all three routes. A neutral corporate base —
- * charcoal, white and grey — with a single reserved accent (deep corporate
- * green) used ONLY for interactive/actionable surfaces: buttons, active drag
- * state, chart bars, progress fills. Nothing decorative uses the accent.
+ * Retention Lab tokens — a case file and a ledger. Paper-and-ink neutrals; one
+ * amber accent (attention / selection), one teal signal (structure / an OK
+ * state, never "correct"), one rust (warning). Colours are never the only
+ * channel: every state that uses one also carries a label or a pattern.
  */
 const config: Config = {
-  content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./lib/**/*.{ts,tsx}",
-  ],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}", "./data/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        // Neutral base
-        ink: "#16191D", // charcoal — primary text, dark surfaces' text
-        slate: "#1E232A", // dark charcoal — top bar / footer ground
-        slateHi: "#2A313A", // raised dark surface
-        ash: "#5E6670", // muted grey — secondary text
-        paper: "#FFFFFF", // cards / raised light surfaces
-        canvas: "#F5F6F7", // page ground
-        mist: "#EEF1F3", // subtle grey fill (inbox, table stripes)
-        line: "#E2E5E9", // hairline borders
+        ink: "#1F2328",
+        slate: "#23272D",
+        slateHi: "#333A43",
+        ash: "#59606A",
+        paper: "#FFFEFA",
+        canvas: "#F3EFE4",
+        mist: "#ECE6D6",
+        line: "#D8D1BF",
 
-        // The one accent — interactive only
-        accent: "#0E7A5A",
-        accentHi: "#0A5E45",
-        accentSoft: "#E7F2EC",
+        accent: "#8A5A0B", // amber, deep enough for AA text and button fills
+        accentHi: "#6E4708",
+        gold: "#D99A2B", // amber for graphics
+        accentSoft: "#FBF0D6",
 
-        // Reserved semantics
-        danger: "#B23B3B",
-        warn: "#B87514",
+        signal: "#0F6B6B", // teal — structure, an OK-state
+        signalSoft: "#DFEEEB",
+
+        rust: "#A4472A", // warning
+        rustSoft: "#F6E3DB",
       },
       fontFamily: {
-        sans: ["Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+        sans: ["system-ui", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+        serif: ["Georgia", "Cambria", "Times New Roman", "serif"],
       },
       fontSize: {
-        display: ["40px", { lineHeight: "48px", fontWeight: "600", letterSpacing: "-0.01em" }],
-        h1: ["32px", { lineHeight: "40px", fontWeight: "600", letterSpacing: "-0.01em" }],
-        h2: ["24px", { lineHeight: "32px", fontWeight: "600" }],
-        h3: ["18px", { lineHeight: "26px", fontWeight: "600" }],
-        body: ["16px", { lineHeight: "25px" }],
-        caption: ["13px", { lineHeight: "18px" }],
-        micro: ["11px", { lineHeight: "15px", letterSpacing: "0.04em" }],
-        readout: ["18px", { lineHeight: "24px", fontWeight: "600" }],
+        display: ["38px", { lineHeight: "44px", fontWeight: "600", letterSpacing: "-0.01em" }],
+        h1: ["30px", { lineHeight: "38px", fontWeight: "600", letterSpacing: "-0.01em" }],
+        h2: ["22px", { lineHeight: "30px", fontWeight: "600" }],
+        h3: ["17px", { lineHeight: "24px", fontWeight: "600" }],
+        body: ["15.5px", { lineHeight: "24px" }],
+        caption: ["13px", { lineHeight: "19px" }],
+        micro: ["11px", { lineHeight: "15px", letterSpacing: "0.05em" }],
       },
       boxShadow: {
-        sm: "0 1px 2px rgba(22,25,29,0.06)",
-        md: "0 4px 14px rgba(22,25,29,0.08)",
-        lg: "0 16px 40px rgba(22,25,29,0.16)",
-        lift: "0 12px 28px rgba(14,122,90,0.22)", // drag pick-up
+        sm: "0 1px 2px rgba(31,35,40,0.06)",
+        md: "0 4px 14px rgba(31,35,40,0.08)",
+        lg: "0 16px 40px rgba(31,35,40,0.16)",
       },
-      maxWidth: {
-        prose: "48rem",
-      },
+      maxWidth: { prose: "46rem" },
     },
   },
   plugins: [],

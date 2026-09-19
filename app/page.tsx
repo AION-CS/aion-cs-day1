@@ -1,111 +1,63 @@
-"use client";
-
 import Link from "next/link";
-import { CASE, ROUTES, levelLabel } from "@/lib/routes";
-import { useRouteUnlocked } from "@/lib/routeGating";
-import { LeafMark } from "@/components/chrome/Icons";
-import { ArrowRight, Lock } from "@/components/icons/LineIcons";
+import { COURSE, ROUTES } from "@/lib/routes";
 
-export default function DayLanding() {
-  const unlockedByN: Record<number, boolean> = {
-    1: useRouteUnlocked(1),
-    2: useRouteUnlocked(2),
-  };
-
+export default function Home() {
   return (
-    <div className="py-12">
-      {/* Hero */}
-      <div className="max-w-prose">
-        <p className="mb-2 flex items-center gap-2 text-micro font-semibold uppercase tracking-wide text-accent">
-          <LeafMark className="h-4 w-4" />
-          {CASE.module}
-        </p>
-        <h1 className="text-display text-ink">{CASE.moduleTitle}</h1>
-        <p className="mt-4 text-body text-ash">
-          Module 12. Many organisations measure a great deal and manage very little: a figure can be accurate, even
-          impressive, and still change nothing because it was never wired to a target, an owner and a decision.
-          Route 1 is two short pairs of material and task: first the vocabulary and six-area diagnostic for why
-          Clarity Digital Services' metrics don't yet steer anything, then the trade-offs behind prioritising which
-          single line of measures to build first, under real budget and data constraints. Route 2 steps up to the
-          management view: at Verdeon Digital Governance Group you reframe KPIs, carbon monitoring and reporting as
-          leadership instruments rather than documentation, and build the decision-ready management proposal that
-          puts them to work — including the one call to make now, despite an incomplete picture.
-        </p>
-      </div>
+    <div className="space-y-8 pt-6">
+      <header className="space-y-2">
+        <p className="smallcaps text-accent">{COURSE.module}</p>
+        <h1 className="text-display">{COURSE.site}</h1>
+        <p className="max-w-prose text-body text-ash">{COURSE.title}. Study on your own, work two documents from a real-looking case file, and export them.</p>
+      </header>
 
-      {/* Route cards */}
-      <div className="mt-10 grid gap-5 lg:grid-cols-2">
-        {ROUTES.map((rt) => {
-          const reachable = rt.available;
-          const recommendedFirst = reachable && rt.n > 1 && !unlockedByN[rt.n];
-
-          const inner = (
-            <>
-              <div className="flex items-center justify-between">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-readout font-semibold text-paper">
-                  {rt.n}
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full border border-line px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-ash">
-                    {levelLabel(rt.levels)} · ~{rt.minutes} min
-                  </span>
-                  {reachable ? (
-                    <span className="rounded-full bg-accentSoft px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-accent">
-                      Available
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-ash">
-                      <Lock className="h-3.5 w-3.5" /> Not built
-                    </span>
-                  )}
-                </div>
+      <section aria-labelledby="routes-h" className="space-y-3">
+        <h2 id="routes-h" className="sr-only">
+          Routes
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          {ROUTES.map((r) => (
+            <Link key={r.n} href={r.href} className="card group block space-y-3 p-5 transition-shadow hover:shadow-md">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="smallcaps text-accent">Route {r.n}</span>
+                <span className="text-micro font-semibold uppercase text-ash">{r.levels}</span>
               </div>
-
-              <p className="mt-4 text-micro font-semibold uppercase tracking-wide text-ash">
-                {rt.tag}
-              </p>
-              <h2 className="mt-1 text-h2 text-ink">{rt.cardTitle}</h2>
-              <p className="mt-2 flex-1 text-body text-ash">{rt.cardBlurb}</p>
-
-              {recommendedFirst && (
-                <p className="mt-2 text-micro text-ash">
-                  Recommended: finish Route {rt.n - 1} first — you can still open this anytime.
-                </p>
+              <h3 className="text-h2">{r.title}</h3>
+              <p className="text-caption text-ash">{r.blurb}</p>
+              {r.built ? (
+                <table className="w-full text-caption">
+                  <caption className="sr-only">Time plan for Route {r.n}</caption>
+                  <tbody>
+                    {r.plan.map((p) => (
+                      <tr key={p.label} className="border-t border-line">
+                        <td className="py-1.5">{p.label}</td>
+                        <td className="tnum py-1.5 text-right text-ash">{p.minutes} min</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t-2 border-ink font-semibold">
+                      <td className="py-1.5">Total</td>
+                      <td className="tnum py-1.5 text-right">{r.plan.reduce((s, p) => s + p.minutes, 0)} min</td>
+                    </tr>
+                  </tbody>
+                </table>
+              ) : (
+                <p className="rounded-md bg-mist px-3 py-2 text-caption text-ash">Not built yet. The page opens and holds a placeholder.</p>
               )}
-
-              <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
-                <span className="text-caption text-ash">
-                  Deliverable:{" "}
-                  <span className="font-semibold text-ink">{rt.deliverable}</span>
-                </span>
-                {reachable ? (
-                  <span className="inline-flex items-center gap-1.5 text-caption font-semibold text-accent">
-                    Open <ArrowRight className="h-4 w-4" />
-                  </span>
-                ) : (
-                  <span className="text-caption text-ash">Not yet</span>
-                )}
-              </div>
-            </>
-          );
-
-          const cls = "flex h-full flex-col rounded-2xl border bg-paper p-6 shadow-sm";
-
-          return reachable ? (
-            <Link
-              key={rt.slug}
-              href={rt.href}
-              className={`${cls} border-line transition-all duration-150 hover:-translate-y-0.5 hover:border-accent hover:shadow-md`}
-            >
-              {inner}
+              <span className="inline-block text-caption font-semibold text-accent group-hover:underline">Open Route {r.n} →</span>
             </Link>
-          ) : (
-            <div key={rt.slug} className={`${cls} border-dashed border-line opacity-80`}>
-              {inner}
-            </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="how-h" className="card space-y-2 p-5">
+        <h2 id="how-h" className="text-h3">
+          How this site works
+        </h2>
+        <ol className="list-decimal space-y-1 pl-5 text-body">
+          <li>Study, then task, then export: each level ends as a working document, not a quiz score.</li>
+          <li>Nothing is locked. Every section and route stays open, and a suggested order is only a suggestion.</li>
+          <li>The app shows consequences, not verdicts. It marks something only when you press a Check button, and then it gives a question, not the answer.</li>
+        </ol>
+      </section>
     </div>
   );
 }

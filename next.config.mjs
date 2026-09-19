@@ -1,17 +1,17 @@
 /** @type {import('next').NextConfig} */
+
+// Optional sub-folder hosting, e.g. NEXT_PUBLIC_BASE_PATH=/retention-lab-day1
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const nextConfig = {
   reactStrictMode: true,
 
-  // The whole app is a single prerendered page, so it ships as a plain static
-  // site. The host needs no Next.js runtime — the `out/` directory can be
-  // served by anything, and Vercel picks it up as a static deployment.
+  // A plain static site: the host needs no Next.js runtime, and once loaded the
+  // site works offline (no external fonts, CDNs or fetches).
   output: "export",
-
-  // Static export has no image optimiser; this app ships no raster art anyway.
   images: { unoptimized: true },
-
-  // Serve /path/ consistently in dev and on the host.
   trailingSlash: true,
+  ...(basePath ? { basePath, assetPrefix: basePath } : {}),
 };
 
 export default nextConfig;

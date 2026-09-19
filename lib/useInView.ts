@@ -2,14 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/**
- * Fires once, when the element first scrolls into view. Moved out of Day 11's
- * MaterialDiagrams so every diagram that reveals on scroll shares one copy.
- */
-export function useInView<T extends Element>(threshold = 0.35) {
-  const ref = useRef<T | null>(null);
+/** True once the element has scrolled into view (and stays true) — starts CSS draw-in animations on time. */
+export function useInView<T extends Element>(threshold = 0.25): [React.RefObject<T>, boolean] {
+  const ref = useRef<T>(null);
   const [seen, setSeen] = useState(false);
-
   useEffect(() => {
     const el = ref.current;
     if (!el || seen) return;
@@ -19,13 +15,15 @@ export function useInView<T extends Element>(threshold = 0.35) {
     }
     const io = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) if (e.isIntersecting) setSeen(true);
+        if (entries.some((e) => e.isIntersecting)) {
+          setSeen(true);
+          io.disconnect();
+        }
       },
       { threshold },
     );
     io.observe(el);
     return () => io.disconnect();
   }, [seen, threshold]);
-
-  return { ref, seen };
+  return [ref, seen];
 }

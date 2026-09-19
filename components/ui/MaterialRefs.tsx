@@ -1,38 +1,28 @@
 "use client";
 
-import { scrollToAndFlash } from "@/lib/scrollToAndFlash";
-import { OPEN_MATERIAL_EVENT } from "@/components/ui/ReadMore";
-import { BookOpen } from "@/components/icons/LineIcons";
-
-export type MaterialRef = { anchorId: string; label: string };
+import { scrollToAndFlash } from "@/lib/flash";
+import { MATERIAL_BY_ID, materialAnchorId } from "@/data/materialIndex";
+import type { MaterialId } from "@/data/materialIndex";
 
 /**
- * "Where this comes from" chips under a task step. Each one scrolls to the
- * material section it cites and flashes it in the accent — never the red
- * missing-item flash, because arriving somewhere you asked to go isn't a
- * warning. Standard #11b: no task step should leave a learner guessing which
- * part of the material it draws on.
+ * "Draws on" chips under a task step. Each scrolls to the material card the
+ * step's reasoning was taught in and flashes it in the amber accent — never the
+ * rust missing-item flash: arriving somewhere you asked to go is not a warning.
  */
-export function MaterialRefs({ refs, lead = "Based on" }: { refs: MaterialRef[]; lead?: string }) {
+export function MaterialRefs({ refs, lead = "Draws on" }: { refs: MaterialId[]; lead?: string }) {
   if (refs.length === 0) return null;
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 text-micro text-ash">
-        <BookOpen className="h-3.5 w-3.5" />
-        {lead}:
-      </span>
-      {refs.map((r) => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="text-micro font-semibold uppercase text-ash">{lead}</span>
+      {refs.map((id) => (
         <button
-          key={r.anchorId}
+          key={id}
           type="button"
-          onClick={() => {
-            // The decision rules sit behind the card's Read more — open it first, then scroll once the layout settles.
-            window.dispatchEvent(new CustomEvent(OPEN_MATERIAL_EVENT, { detail: r.anchorId }));
-            window.setTimeout(() => scrollToAndFlash(r.anchorId, "ref"), 60);
-          }}
-          className="rounded-full border border-accent/35 bg-accentSoft px-2.5 py-0.5 text-micro font-medium text-accent transition-colors duration-150 hover:border-accent hover:text-accentHi"
+          onClick={() => scrollToAndFlash(materialAnchorId(id), "ref")}
+          title={MATERIAL_BY_ID[id].title}
+          className="tap-chip rounded-full border border-accent/40 bg-accentSoft px-2.5 py-0.5 text-micro font-semibold text-accent transition-colors hover:border-accent hover:text-accentHi"
         >
-          {r.label}
+          {id} · {MATERIAL_BY_ID[id].title.length > 34 ? `${MATERIAL_BY_ID[id].title.slice(0, 32)}…` : MATERIAL_BY_ID[id].title}
         </button>
       ))}
     </div>
