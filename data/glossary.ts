@@ -6,12 +6,16 @@
  *
  * `match` lists every way the term is written. An all-capitals match ("CLV") is
  * matched exactly, so "ice" or "ale" in ordinary words never turns into a link.
+ * Set `exactCase` when an ordinary word must only link in its capitalised form
+ * (for example "Leads", so "leads to" is never a link).
  */
 export type GlossEntry = {
   id: string;
   /** Heading of the explanation. */
   title: string;
   match: string[];
+  /** Link only when the text is written exactly as in `match`. */
+  exactCase?: boolean;
   /** The explanation, in the simplest words. */
   plain: string;
   example?: string;
@@ -676,7 +680,7 @@ const isAcronym = (s: string) => s === s.toUpperCase() && /[A-Z]/.test(s);
 /** lowercase written form → its entry, and whether that form must be matched exactly. */
 export const GLOSS_LOOKUP = new Map<string, { entry: GlossEntry; exact: string | null }>();
 for (const g of GLOSSARY) {
-  for (const m of g.match) GLOSS_LOOKUP.set(m.toLowerCase(), { entry: g, exact: isAcronym(m) ? m : null });
+  for (const m of g.match) GLOSS_LOOKUP.set(m.toLowerCase(), { entry: g, exact: g.exactCase || isAcronym(m) ? m : null });
 }
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
