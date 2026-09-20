@@ -33,10 +33,9 @@ const shortLabel = (s: string) => s.split(" (")[0];
 export type MissingEntry = { id: string; label: string };
 
 export function participantMissing(p: Persisted): MissingEntry[] {
-  const bad = !/^\d+$/.test(p.participant.no.trim()) || !p.participant.name.trim();
-  return bad
-    ? [{ id: IDS.participant, label: "Participant number and name are needed for the file name." }]
-    : [];
+  return p.participant.name.trim()
+    ? []
+    : [{ id: IDS.participant, label: "Your full name is needed for the file name." }];
 }
 
 /** Everything still missing from the Task 1 diagnostic note, each with the element to jump to. */

@@ -53,7 +53,7 @@ function header(title: string, level: string, p: Persisted): string {
 <dl class="meta">
   <dt>Course</dt><dd>${esc(COURSE)}</dd>
   <dt>Position</dt><dd>${esc(level)}</dd>
-  <dt>Participant</dt><dd>No. ${esc(p.participant.no.trim() || "—")} · ${esc(p.participant.name.trim() || "—")}</dd>
+  <dt>Participant</dt><dd>${esc(p.participant.name.trim() || "—")}</dd>
   <dt>Date</dt><dd>${esc(dateLabel())}</dd>
 </dl>`;
 }

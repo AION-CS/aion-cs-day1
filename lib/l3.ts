@@ -162,8 +162,8 @@ export function l3Missing(p: Persisted): MissingEntry[] {
   const r3 = p.route3;
   const board = computeBoard(r3.levers);
   const out: MissingEntry[] = [];
-  if (!/^\d+$/.test(p.participant.no.trim()) || !p.participant.name.trim()) {
-    out.push({ id: "participant-strip", label: "Participant number and name are needed for the file name." });
+  if (!p.participant.name.trim()) {
+    out.push({ id: "participant-strip", label: "Your full name is needed for the file name." });
   }
   out.push(...allocationMissing(r3, board));
   if (!r3.allocFiledAt) out.push({ id: IDS3.fileAlloc, label: "The allocation is not filed yet." });

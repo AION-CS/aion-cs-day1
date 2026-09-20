@@ -136,7 +136,7 @@ export function Task3() {
   const raciIssues = raciMissing(r3);
   const chips: ExecChips = execChips(r3.exec, r3);
   const nfCites = r3.notFunding.trim().length > 0 && notFundingCites(r3.notFunding, r3);
-  const fname = exportName(snapshot.participant.no, snapshot.participant.name, "l3-memo");
+  const fname = exportName(snapshot.participant.name, "l3-memo");
   const required = govRequired(r3);
 
   const doGCheck = () => {

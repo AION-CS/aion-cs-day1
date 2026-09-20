@@ -171,7 +171,7 @@ export function Task2() {
 
   const filed = l1.verdict.filedAt !== null;
   const missing = l2Missing(snapshot);
-  const fname = exportName(snapshot.participant.no, snapshot.participant.name, "l2-calculation");
+  const fname = exportName(snapshot.participant.name, "l2-calculation");
   const cited = citedFigures(l2.justification, l2);
   const tco = kesslerTco(l2.careOn && filed);
 

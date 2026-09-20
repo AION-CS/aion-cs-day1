@@ -44,7 +44,7 @@ export function Task1() {
   const [mapSel, setMapSel] = useState<RecordId | null>(null);
 
   const missing = l1Missing(snapshot);
-  const fname = exportName(snapshot.participant.no, snapshot.participant.name, "l1-diagnostic");
+  const fname = exportName(snapshot.participant.name, "l1-diagnostic");
 
   const onMapSelect = (id: string) => {
     setMapSel(id as RecordId);

@@ -50,7 +50,7 @@ the Kessler data. Task 3 quotes the Route 1 and 2 answers back through `store/se
 ## Mentor bar
 
 The first element on every page. Enter `muchson123` once and every model answer of Routes 1, 2 and 3 fills in (plus a
-participant number and name if empty), so each export downloads straight away — for checking the site without typing
+participant name if empty), so each export downloads straight away — for checking the site without typing
 through it. Client-side convenience gate, not security. Model answers: `data/mentorKey.ts`.
 
 ## Notes on deviations

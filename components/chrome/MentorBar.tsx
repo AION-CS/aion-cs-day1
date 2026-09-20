@@ -9,7 +9,7 @@ import { useStore } from "@/store/useStore";
 /**
  * The mentor bar — the very first thing on every page. A mentor enters the
  * passcode once, every model answer is filled in (Routes 1 and 2, plus a
- * participant number and name if empty), and the notes can be exported at once,
+ * participant name if empty), and the notes can be exported at once,
  * so a site can be checked without anyone typing through it.
  *
  * A convenience gate in client code: the passcode ships in plaintext, so this is

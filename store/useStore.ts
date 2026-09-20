@@ -90,7 +90,7 @@ export type Route3State = {
 };
 
 export type Persisted = {
-  participant: { no: string; name: string };
+  participant: { name: string };
   ui: { bannerDismissed: Record<string, boolean>; sectionsRead: Record<string, boolean> };
   l1: L1State;
   l2: L2State;
@@ -211,7 +211,7 @@ const emptyRoute3 = (): Route3State => ({
 });
 
 const emptyPersisted = (): Persisted => ({
-  participant: { no: "", name: "" },
+  participant: { name: "" },
   ui: { bannerDismissed: {}, sectionsRead: {} },
   l1: emptyL1(),
   l2: emptyL2(),
@@ -379,7 +379,7 @@ export const useStore = create<Persisted & Session & Actions>()(
       setFocusedFigure: (id) => set({ focusedFigure: id }),
       setMentorUnlocked: (v) => set({ mentorUnlocked: v }),
 
-      // Mentor autofill: every answer in Routes 1, 2 and 3, plus a participant number and
+      // Mentor autofill: every answer in Routes 1, 2 and 3, plus a participant
       // name if they are empty, so the note can be exported straight away.
       mentorFill: () =>
         set((s) => {
@@ -400,10 +400,7 @@ export const useStore = create<Persisted & Session & Actions>()(
           l2.q6Submitted = true;
           l2.q6Overclaim = isOverclaim(KEY_L2.q6);
           l2.explorerLayers = { onboarding: true, incident: true, ale: true };
-          const participant = {
-            no: s.participant.no.trim() ? s.participant.no : "99",
-            name: s.participant.name.trim() ? s.participant.name : "Mentor Check",
-          };
+          const participant = { name: s.participant.name.trim() ? s.participant.name : "Mentor Check" };
           const now = new Date().toISOString();
           const r3 = emptyRoute3();
           r3.levers = { ...KEY_L3.levers };
@@ -487,7 +484,7 @@ export const useStore = create<Persisted & Session & Actions>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
+      version: 3,
       skipHydration: true,
       storage: createJSONStorage(() => localStorage),
       // Session-only flags (mentor unlock, focus, reset counter) never persist.
@@ -498,10 +495,15 @@ export const useStore = create<Persisted & Session & Actions>()(
         l2: s.l2,
         route3: s.route3,
       }),
-      // v1 -> v2: Route 3 (Level 3) state was added. A stored blob without it gets the empty slice.
+      // v1 -> v2: Route 3 (Level 3) state was added. v2 -> v3: the typed participant number was dropped
+      // (the file number now comes from the route). Old blobs are brought to the current shape here.
       migrate: (persisted) => {
-        const p = (persisted ?? {}) as Partial<Persisted>;
-        return { ...p, route3: { ...emptyRoute3(), ...(p.route3 as Partial<Route3State> | undefined) } } as Persisted;
+        const p = (persisted ?? {}) as Partial<Persisted> & { participant?: { no?: string; name?: string } };
+        return {
+          ...p,
+          participant: { name: p.participant?.name ?? "" },
+          route3: { ...emptyRoute3(), ...(p.route3 as Partial<Route3State> | undefined) },
+        } as Persisted;
       },
       // A stored blob from an older shape must never leave a field undefined.
       merge: (persisted, current) => {
@@ -509,7 +511,7 @@ export const useStore = create<Persisted & Session & Actions>()(
         const base = emptyPersisted();
         return {
           ...current,
-          participant: { ...base.participant, ...p.participant },
+          participant: { name: p.participant?.name ?? base.participant.name },
           ui: {
             sectionsRead: { ...base.ui.sectionsRead, ...p.ui?.sectionsRead },
             // An older blob stored a single boolean here; anything that is not a map is dropped.
