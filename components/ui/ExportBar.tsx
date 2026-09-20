@@ -62,7 +62,7 @@ export function ExportBar({
         <summary className="cursor-pointer font-semibold text-ink">{previewTitle}</summary>
         {previewOpen && (
           <div className="mt-3 overflow-x-auto rounded-lg border border-line bg-paper p-4 md:p-6">
-            <style>{DOC_CSS}</style>
+            <style dangerouslySetInnerHTML={{ __html: DOC_CSS }} />
             <div className="doc" dangerouslySetInnerHTML={{ __html: buildBody() }} />
           </div>
         )}

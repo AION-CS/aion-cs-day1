@@ -29,6 +29,7 @@ import { formatEuro, parseAmount } from "@/lib/parseAmount";
 import { exportName } from "@/lib/slug";
 import { usePersisted } from "@/store/usePersisted";
 import { useStore } from "@/store/useStore";
+import { Gloss } from "@/lib/glossify";
 import type { Recommendation } from "@/store/useStore";
 
 const categoryLabel = (c: string | null) => (c ? BIN_LABEL[c as keyof typeof BIN_LABEL] : "—");
@@ -196,13 +197,13 @@ export function Task2() {
           <h3>The situation</h3>
           <span className="pill border-line bg-mist text-ash">Case assumption</span>
         </div>
-        <p className="text-body">
+        <p className="text-body"><Gloss>
           Kessler tenders (<em>Ausschreibung</em>, formal tender) a three-year Managed Security &amp; Operations service for the
           Azure environment TechSolutions built. Two offers arrive. Kessler&apos;s buying committee has four voices. You prepare
           the calculation note the account team takes into the committee meeting.{" "}
           <strong>Kessler&apos;s fee line for IT services is capped at €48,000 per year.</strong> One-off costs and hours booked
           by IT sit on other budget lines.
-        </p>
+        </Gloss></p>
       </div>
 
       {/* Block 2.1 */}

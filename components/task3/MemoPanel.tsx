@@ -16,7 +16,7 @@ function MemoDoc() {
         <p className="tnum text-caption text-ash">{done} of 6 blocks complete</p>
       </div>
       <div className="max-h-[calc(100vh-11rem)] overflow-auto p-3 text-[13px]">
-        <style>{DOC_CSS}</style>
+        <style dangerouslySetInnerHTML={{ __html: DOC_CSS }} />
         <div className="doc" dangerouslySetInnerHTML={{ __html: memoBody(p) }} />
       </div>
     </>

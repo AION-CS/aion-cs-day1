@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import clsx from "clsx";
+import { glossify } from "@/lib/glossify";
 
 /**
  * A labelled field. The instruction lives under the label and stays visible —
@@ -41,7 +42,7 @@ export function Field({
         {meta}
       </div>
       <p id={htmlFor ? `${htmlFor}-help` : undefined} className="text-caption text-ash">
-        {help}
+        {glossify(help)}
       </p>
       {children}
       {flagged && clue && (

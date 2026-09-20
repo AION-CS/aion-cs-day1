@@ -127,6 +127,24 @@
 
 .tnum { font-variant-numeric: tabular-nums; }
 
+/* A technical term that opens its plain-language explanation. */
+.gloss {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: help;
+  text-decoration: underline dotted var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.gloss:hover { color: var(--accent); }
+.gloss[aria-expanded="true"] { background: theme("colors.accentSoft"); color: var(--accent); }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .stagger { opacity: 1; animation: none; }

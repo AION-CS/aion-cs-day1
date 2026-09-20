@@ -20,6 +20,7 @@ import { exportName } from "@/lib/slug";
 import { scrollToAndFlash } from "@/lib/flash";
 import { usePersisted } from "@/store/usePersisted";
 import { useStore } from "@/store/useStore";
+import { Gloss } from "@/lib/glossify";
 
 const fmtMonth = (v: number) => (v === 0 ? "Month 0" : v > 0 ? `Month +${v}` : `Month −${Math.abs(v)}`);
 
@@ -65,14 +66,14 @@ export function Task1() {
           <h3>The case</h3>
           <span className="pill border-line bg-mist text-ash">Case assumption</span>
         </div>
-        <p className="text-body">
+        <p className="text-body"><Gloss>
           TechSolutions GmbH (Stuttgart region, about 40 staff) delivers cloud migration and security projects to
           Mittelstand (mid-sized companies) manufacturers; projects run €60–150k.{" "}
           <strong>Kessler Präzisionstechnik GmbH</strong> (about 320 staff): TechSolutions delivered a migration project
           (contract value <strong>€118,000</strong>). Go-live was at Month 0, hypercare closed at Month +1, and no
           follow-on order followed. At Month +11 Kessler issued a tender (<em>Ausschreibung</em>, formal tender) for a
           three-year service contract.
-        </p>
+        </Gloss></p>
       </div>
 
       <div className="card space-y-2 border-accent/30 bg-accentSoft p-4 md:p-5">

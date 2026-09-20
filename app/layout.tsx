@@ -6,6 +6,7 @@ import { Footer } from "@/components/chrome/Footer";
 import { ParticipantStrip } from "@/components/chrome/ParticipantStrip";
 import { StoreHydrator } from "@/components/chrome/StoreHydrator";
 import { MentorBar } from "@/components/chrome/MentorBar";
+import { GlossaryPanel } from "@/components/chrome/GlossaryPanel";
 
 export const metadata: Metadata = {
   title: `${COURSE.site} — ${COURSE.title}`,
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        <GlossaryPanel />
       </body>
     </html>
   );

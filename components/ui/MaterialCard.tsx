@@ -7,6 +7,7 @@ import type { MaterialId } from "@/data/materialIndex";
 import { REFERENCES } from "@/data/references";
 import type { RefKey } from "@/data/references";
 import { scrollToAndFlash } from "@/lib/flash";
+import { glossify } from "@/lib/glossify";
 import { useHydrated, useStore } from "@/store/useStore";
 
 /** A source chip: "Author Year". Click opens the block's References accordion and flashes the full citation. */
@@ -52,6 +53,11 @@ export function MaterialCard({
   const read = useStore((s) => !!s.ui.sectionsRead[id]);
   const toggleRead = useStore((s) => s.toggleRead);
   const isRead = hydrated && read;
+  // Technical terms become clickable once per card: the scan line first, then the body, then the rules.
+  const seen = new Set<string>();
+  const scanG = glossify(scan, seen);
+  const bodyG = glossify(children, seen);
+  const rulesG = reasoning?.map((r) => glossify(r, seen));
 
   return (
     <article id={materialAnchorId(id)} className={clsx("card p-4 md:p-6", isRead && "border-signal/40")}>
@@ -60,15 +66,15 @@ export function MaterialCard({
         <h3 className="min-w-0 flex-1">{meta.title}</h3>
         <span className="smallcaps whitespace-nowrap">{meta.minutes} min</span>
       </header>
-      <p className="mt-2 font-semibold text-ink">{scan}</p>
-      <div className="mt-4 space-y-4">{children}</div>
+      <p className="mt-2 font-semibold text-ink">{scanG}</p>
+      <div className="mt-4 space-y-4">{bodyG}</div>
 
       {reasoning && reasoning.length > 0 && (
         <div className="mt-5 rounded-lg border border-accent/30 bg-accentSoft p-3.5">
           <p className="smallcaps text-accent">How to decide when this comes up in the task</p>
           <ul className="mt-1.5 list-disc space-y-1 pl-5 text-caption text-ink">
-            {reasoning.map((r) => (
-              <li key={r}>{r}</li>
+            {reasoning.map((r, i) => (
+              <li key={r}>{rulesG?.[i] ?? r}</li>
             ))}
           </ul>
         </div>
@@ -107,6 +113,7 @@ export function DataTable({
   rows: ReactNode[][];
   caption?: string;
 }) {
+  const seen = new Set<string>();
   return (
     <div className="overflow-x-auto rounded-lg border border-line">
       <table className="w-full min-w-[34rem] border-collapse text-caption">
@@ -125,7 +132,7 @@ export function DataTable({
             <tr key={i} className="border-t border-line align-top">
               {r.map((c, j) => (
                 <td key={j} className={clsx("px-3 py-2", j === 0 && "font-semibold")}>
-                  {c}
+                  {glossify(c, seen)}
                 </td>
               ))}
             </tr>
@@ -146,7 +153,7 @@ export function Callout({ label, tone = "amber", children }: { label: string; to
   return (
     <div className={clsx("rounded-lg border p-3.5 text-caption", cls)}>
       <p className="smallcaps mb-1 text-ink">{label}</p>
-      <div className="space-y-1.5 text-ink">{children}</div>
+      <div className="space-y-1.5 text-ink">{glossify(children)}</div>
     </div>
   );
 }

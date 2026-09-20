@@ -10,6 +10,7 @@ import { LoyaltyMap } from "@/components/ui/LoyaltyMap";
 import { clueFor, flagsForMapping, loyaltyMarker } from "@/lib/mapping";
 import { IDS } from "@/lib/missing";
 import { useStore } from "@/store/useStore";
+import { glossify } from "@/lib/glossify";
 
 const CITES: CiteChoice[] = [...RECORDS.map((r) => r.id as CiteChoice), "case"];
 
@@ -42,7 +43,7 @@ function Row({ row }: { row: MapRow }) {
           {row.label}
         </p>
         <p id={`${row.id}-help`} className="mt-0.5 text-caption text-ash">
-          {row.help}
+          {glossify(row.help)}
         </p>
       </div>
 

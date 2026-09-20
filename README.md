@@ -37,7 +37,7 @@ components/chrome/    MentorBar, TopBar, ParticipantStrip, SectionRail, HashFlas
 components/ui/        MaterialCard, JourneyMap, TcoStack, MotiveMap, Calculator, ExportBar, MissingList, Field, AnswerBlock …
 components/materi/    one file per card group (A1–4, A5–8, B1–3, B4–7)
 components/task1|2|3/ the three tasks (task3: AllocationBoard, RaciGrid, MemoPanel)
-data/                 kesslerDossier, offers, motives, references, mentorKey, materialIndex
+data/                 kesslerDossier, offers, motives, references, glossary, mentorKey, materialIndex
 lib/                  parseAmount, safeCalc (no eval), slug, flash, checks, missing, exportDoc, svgModels, progress
 store/                useStore (slices), selectors (getL1Verdict, getL2Figures, getL2Recommendation)
 ```
@@ -46,6 +46,13 @@ store/                useStore (slices), selectors (getL1Verdict, getL2Figures, 
 
 `JourneyMap`, `TcoStack`, `MotiveMap` and `LoyaltyMap` take data by props: Materi uses generic/Alpenwerk data, the tasks use
 the Kessler data. Task 3 quotes the Route 1 and 2 answers back through `store/selectors.ts`.
+
+## Plain-language glossary
+
+Every technical term, abbreviation and German word in the material and the tasks is an entry in `data/glossary.ts`. In the
+text it is a dotted-underlined button (`lib/glossify.tsx`); a click opens one explanation card (`GlossaryPanel`) written for a
+non-expert. Cards, bullets, tables, callouts, captions and field help are glossified automatically; other prose is wrapped in
+`<Gloss>`. Rule: `../CLAUDE.md` #19.
 
 ## Mentor bar
 

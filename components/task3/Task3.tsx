@@ -32,6 +32,7 @@ import { useJumpTo } from "@/lib/useJumpTo";
 import { RECOMMENDATION_LABEL } from "@/store/selectors";
 import { usePersisted } from "@/store/usePersisted";
 import { useStore } from "@/store/useStore";
+import { Gloss } from "@/lib/glossify";
 
 function Chip({ lit, children }: { lit: boolean; children: React.ReactNode }) {
   return (
@@ -178,12 +179,12 @@ export function Task3() {
           <h3>The situation</h3>
           <span className="pill border-line bg-mist text-ash">Case assumption</span>
         </div>
-        <p className="text-body">
+        <p className="text-body"><Gloss>
           TechSolutions GmbH serves roughly 60 active customers. At the 70% one-off rate established in Materi A1, <strong>{POOL} are one-off</strong>:
           delivered once, with no standing account relationship. Competitive pressure is rising (NordByte IT&apos;s win at Kessler is one visible
           instance of a pattern, not proof of it). The Managing Director has approved a <strong>{formatEuro(CAP)}, six-month pilot program</strong> to
           raise retention across this one-off segment: enough to fund a real pilot, not enough to fund everything the program could use.
-        </p>
+        </Gloss></p>
         <p className="text-caption text-ash">
           You write this memo as <strong>Head of Sales / Chief Customer Officer</strong>. Addressee: the <strong>Geschäftsführer</strong> (managing director).
           The memo assembles beside the questions, in reading order, with the executive summary first even though you write it last.

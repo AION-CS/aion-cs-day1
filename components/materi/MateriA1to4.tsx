@@ -66,7 +66,7 @@ function RevenueCliff() {
           <label htmlFor={`${uid}-r`} className="text-caption font-semibold">
             Retention rate r: <span className="tnum">{r.toFixed(2)}</span>
           </label>
-          <p className="text-micro normal-case tracking-normal text-ash">m = €30,000 · i = 10% <span className="font-semibold">(Case assumption)</span>. Drag to explore; not graded.</p>
+          <p className="text-micro normal-case tracking-normal text-ash">m = yearly margin €30,000 · i = discount rate 10% <span className="font-semibold">(Case assumption)</span>. Drag r, the retention rate (the share of customers who stay each year). Not graded.</p>
           <input id={`${uid}-r`} type="range" min={0.7} max={0.95} step={0.01} value={r} onChange={(e) => setR(Number(e.target.value))} className="range-accent mt-1" />
         </div>
         <div className="text-right" aria-live="polite">
@@ -99,7 +99,7 @@ export function CardA1() {
         items={[
           <>Project business sells outcomes once: fixed scope, milestone invoices, acceptance (<em>Abnahme</em>), then revenue drops unless a follow-on exists. Case company <strong>TechSolutions GmbH</strong>: <strong>70% of customers are one-off</strong>.</>,
           <>The classic argument: <strong>Reichheld &amp; Sasser (1990)</strong> report that cutting defection by 5% raised profits by 85% in one bank&apos;s branch system, 50% in an insurance brokerage, 30% in an auto-service chain; MBNA halved a 10% defection rate and profits rose 125%.</>,
-          <>Simple lifetime-value model, <strong>Gupta &amp; Lehmann (2003)</strong>: <code>CLV = m · r / (1 + i − r)</code> (constant margin m, retention rate r, discount rate i, infinite horizon). At r = 0.80, CLV = €80,000; at r = 0.85, €102,000 (+27.5%).</>,
+          <>Simple customer lifetime value (CLV) model, <strong>Gupta &amp; Lehmann (2003)</strong>: <code>CLV = m · r / (1 + i − r)</code> (constant margin m, retention rate r, discount rate i, infinite horizon). In plain words: the total profit one customer brings you, from the yearly profit m, how many customers stay each year (r), and how much later money is worth less (i). At r = 0.80, CLV = €80,000; at r = 0.85, €102,000 (+27.5%).</>,
         ]}
       />
       <Callout label="Read it carefully" tone="rust">

@@ -2,13 +2,15 @@
 
 import type { ReactNode } from "react";
 import clsx from "clsx";
+import { glossify } from "@/lib/glossify";
 
 /** Short bullet list used inside cards. */
 export function Bul({ items }: { items: ReactNode[] }) {
+  const seen = new Set<string>();
   return (
     <ul className="list-disc space-y-1.5 pl-5 text-body">
       {items.map((it, i) => (
-        <li key={i}>{it}</li>
+        <li key={i}>{glossify(it, seen)}</li>
       ))}
     </ul>
   );
@@ -20,7 +22,7 @@ export function Diagram({ label, children, caption }: { label: string; children:
     <figure className="rounded-xl border border-line bg-canvas/50 p-3 md:p-4" aria-label={label}>
       <p className="smallcaps mb-2">{label}</p>
       {children}
-      {caption && <figcaption className="mt-2 text-caption text-ash">{caption}</figcaption>}
+      {caption && <figcaption className="mt-2 text-caption text-ash">{glossify(caption)}</figcaption>}
     </figure>
   );
 }
