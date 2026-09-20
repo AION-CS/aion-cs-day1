@@ -53,10 +53,13 @@ The first element on every page. Enter `muchson123` once and every model answer 
 participant number and name if empty), so each export downloads straight away — for checking the site without typing
 through it. Client-side convenience gate, not security. Model answers: `data/mentorKey.ts`.
 
-## Notes on deviations from the shared standards
+## Notes on deviations
 
-- Days 1–10 keep the three-route form (one route per level, material before its task), so there is one export per
-  route. `CLAUDE.md` §12 (merged route) applies from Day 11.
-- Routes are `/route-1/`, `/route-2/`, `/route-3/` as briefed, not `route-{n}-{slug}`.
+This day follows the shared rules in `../CLAUDE.md` (#12 three routes, #15 CS style, #18 precedence). Where the day's
+original prompt differed from a rule, the rule was followed:
+
+- Layout is the repo's (`app/`, `components/`, … at the root, Tailwind), not the `src/` + CSS Modules the prompt suggested.
+- Routes are `/route-1/`, `/route-2/`, `/route-3/` (one per level, one export each), not one long Route 1.
 - Task 2 quotes the Task 1 verdict from another route: pointers to it are soft links (they navigate to Route 1 and flash
-  the target), never a gate. Per-exercise answer keys are not part of this brief.
+  the target), never a gate. Per-exercise answer keys are not part of this day's prompt; the mentor bar fills everything.
+- The prompt's Route 3 test 3 ("G4 recomputes to 4 and G5 is 4") contradicts its own rules; the board computes 8 and 4.
