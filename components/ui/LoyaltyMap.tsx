@@ -84,7 +84,8 @@ export function LoyaltyMap({ marker }: { marker: LoyaltyMarker }) {
           </text>
         )}
       </svg>
-      <figcaption aria-live="polite" className="rounded-md bg-mist px-3 py-2 text-caption text-ink">
+      <figcaption aria-live="polite" className="insight rounded-md bg-mist px-3 py-2 text-caption text-ink">
+        <span className="smallcaps mr-1.5 text-ash">What this shows</span>
         Placed from your readings M2 and M3. {desc}
       </figcaption>
     </figure>

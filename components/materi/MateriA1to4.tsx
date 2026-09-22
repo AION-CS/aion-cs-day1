@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import { DataTable, MaterialCard, Callout } from "@/components/ui/MaterialCard";
-import { Bul, Diagram, Exploratory, Toggles } from "@/components/materi/kit";
+import { Bul, Diagram, Exploratory, Insight, Toggles } from "@/components/materi/kit";
 import { useInView } from "@/lib/useInView";
 import { useCountUp } from "@/lib/useCountUp";
 import { formatEuro } from "@/lib/parseAmount";
@@ -77,6 +77,13 @@ function RevenueCliff() {
           </p>
         </div>
       </div>
+      <Insight>
+        {r === 0.8
+          ? "This is the reference point (r = 0.80, CLV = €80,000). Drag the slider left or right to see how much a small change in retention rate moves this figure."
+          : r > 0.8
+            ? `Raising r from 0.80 to ${r.toFixed(2)} — a change of ${((r - 0.8) * 100).toFixed(0)} points — moved CLV by ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}%. Small gains in the share of customers who stay compound into much larger gains in value, because r sits in the denominator.`
+            : `Lowering r from 0.80 to ${r.toFixed(2)} — losing ${((0.8 - r) * 100).toFixed(0)} points of retention — cut CLV by ${delta.toFixed(1)}%. The same formula that rewards small gains punishes small losses just as steeply.`}
+      </Insight>
     </div>
   );
 }
@@ -152,13 +159,13 @@ function LoyaltyQuadrant() {
           <text y="5" textAnchor="middle" fontSize="12" fontWeight="700" fill="#FFFEFA">Z</text>
         </g>
       </svg>
-      <p aria-live="polite" className="rounded-md bg-mist px-3 py-2 text-caption">
+      <Insight>
         <strong>{QUADS[hover].label}.</strong> B2B IT example: {QUADS[hover].example}
-      </p>
+      </Insight>
       <div className="space-y-1.5">
         <p className="smallcaps">Scenario for customer Z <Exploratory /></p>
         <Toggles label="Scenario" value={scn} onChange={(id) => setScn(scn === id ? null : id)} options={Object.entries(SCENARIOS).map(([id, s]) => ({ id, label: s.label }))} />
-        <p aria-live="polite" className="min-h-[3rem] text-caption text-ash">{S ? `${S.text} (An illustration of how the two axes can separate, not a measured law.)` : "Choose a scenario to move the marker."}</p>
+        <Insight className="min-h-[3rem]">{S ? `${S.text} (An illustration of how the two axes can separate, not a measured law.)` : "Choose a scenario to move the marker."}</Insight>
       </div>
     </div>
   );
@@ -230,6 +237,12 @@ function ThreeRopes() {
     <div className="space-y-3">
       <Toggles label="Demo customer" value={who} onChange={(id) => { setWho(id); setFrayed([]); }} options={[{ id: "P", label: "Customer P" }, { id: "Q", label: "Customer Q" }]} />
       <p className="text-caption text-ash">{c.label}.</p>
+      <Insight>
+        {who === "P"
+          ? "Customer P is held mainly by the contract (strength 3 of 3) and the switching cost (strength 2); the relationship itself is weak (strength 1). Take the contract away and little remains."
+          : "Customer Q has no contract at all (strength 0) and only a middling switching cost (strength 2); what holds them is the relationship (strength 3). A rival's discount has to beat trust, not a signed agreement."}{" "}
+        The same fix would not work on both: a longer contract protects P but does nothing for Q, whose rope is emotional, not contractual.
+      </Insight>
       <svg viewBox="0 0 640 330" className="h-auto w-full" role="img" aria-labelledby={`${uid}-t ${uid}-d`}>
         <title id={`${uid}-t`}>Three ropes</title>
         <desc id={`${uid}-d`}>A customer node held by an emotional, an economic and a contractual rope. Rope thickness shows how strongly it holds; a frayed rope is thin and dashed.</desc>
@@ -253,9 +266,9 @@ function ThreeRopes() {
       <div className="space-y-1.5">
         <p className="smallcaps">Trigger <Exploratory /></p>
         <Toggles multi label="Triggers" value={frayed} onChange={toggle} options={ROPES.map((r) => ({ id: r, label: TRIGGERS[r] }))} />
-        <p aria-live="polite" className="text-caption text-ash">
+        <Insight>
           {holding.length === 0 ? "No rope holds firmly now." : `Still holding firmly: ${holding.join(", ")}.`} Each rope breaks under a different trigger, and a trigger on a rope that was already thin changes little.
-        </p>
+        </Insight>
       </div>
     </div>
   );
@@ -324,6 +337,15 @@ function SwitchingCurve() {
         ))}
         <text x={x(1)} y={y(9) - 12} textAnchor="middle" fontSize="12" fontWeight="700" fill="#1F2328">peak while delivering</text>
       </svg>
+      <Insight>
+        {on.includes("decay") && on.includes("hold")
+          ? "Both lines start together — switching cost peaks the same way during delivery no matter what happens later. They only split apart after go-live: renewed value holds the line up, its absence lets it decay."
+          : on.includes("decay")
+            ? "Without renewed value, switching cost falls back to near its starting level after go-live: the fresh integration and undocumented know-how that made switching costly during delivery fade once handover is done."
+            : on.includes("hold")
+              ? "With renewed value, switching cost stays high after go-live instead of decaying — because something (new features, deepened integration) keeps re-creating the cost of leaving."
+              : "Turn a line back on to compare what happens to switching cost after go-live, with and without renewed value."}
+      </Insight>
     </div>
   );
 }

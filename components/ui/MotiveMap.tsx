@@ -89,8 +89,9 @@ function CommitteeRing() {
           </button>
         ))}
       </div>
-      <figcaption aria-live="polite" className="rounded-lg border border-line bg-mist px-3 py-2 text-caption">
+      <figcaption aria-live="polite" className="insight rounded-lg border border-line bg-mist px-3 py-2 text-caption">
         <p className="font-semibold">
+          <span className="smallcaps mr-1.5 text-ash">What this shows</span>
           {role.name} <span className="font-normal text-ash">({role.gloss}) · {role.wind}</span>
         </p>
         <p className="mt-0.5">Typical question (illustrative): “{role.question}”</p>
@@ -101,6 +102,35 @@ function CommitteeRing() {
 
 function ConnectMap({ motives }: { motives: Record<RoleKey, MotiveId | null> }) {
   const uid = useId().replace(/:/g, "");
+  const chosen = KESSLER_ROLES.filter((r) => motives[r.key]);
+  const byMotive: Partial<Record<MotiveId, string[]>> = {};
+  chosen.forEach((r) => {
+    const m = motives[r.key]!;
+    (byMotive[m] ??= []).push(r.name);
+  });
+  const duplicates = (Object.entries(byMotive) as [MotiveId, string[]][]).filter(([, names]) => names.length > 1);
+  const emptyRoles = chosen.filter((r) => MOTIVE_FEATURE[motives[r.key]!].empty);
+  let caption: string;
+  if (chosen.length === 0) {
+    caption = "Choose a motive for each role below; this map draws a connector from the role to the offer feature tied to that motive.";
+  } else {
+    const parts: string[] = [];
+    if (duplicates.length > 0) {
+      parts.push(
+        duplicates.map(([m, names]) => `${names.join(" and ")} both point to ${MOTIVE_LABEL[m]}`).join("; ") +
+          " — worth asking whether they want the same thing, or just used similar words.",
+      );
+    }
+    if (emptyRoles.length > 0) {
+      parts.push(
+        `${emptyRoles.map((r) => r.name).join(", ")} ${emptyRoles.length > 1 ? "connect" : "connects"} to a dashed, empty node: neither offer has a feature for that motive. That is a real gap to name, not a drafting error.`,
+      );
+    }
+    if (parts.length === 0) {
+      parts.push("Every chosen motive has a matching feature in one of the offers, and no two roles point at the same one.");
+    }
+    caption = parts.join(" ");
+  }
   return (
     <figure>
       <svg viewBox={`0 0 ${MMAP.w} ${MMAP.h}`} className="h-auto w-full" role="img" aria-labelledby={`${uid}-t ${uid}-d`}>
@@ -165,6 +195,10 @@ function ConnectMap({ motives }: { motives: Record<RoleKey, MotiveId | null> }) 
           );
         })}
       </svg>
+      <figcaption aria-live="polite" className="insight mt-2 min-h-[2.5rem] rounded-md bg-mist px-3 py-2 text-caption text-ink">
+        <span className="smallcaps mr-1.5 text-ash">What this shows</span>
+        {caption}
+      </figcaption>
     </figure>
   );
 }

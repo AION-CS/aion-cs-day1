@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import clsx from "clsx";
 import { DataTable, MaterialCard, Callout } from "@/components/ui/MaterialCard";
-import { Bul, Diagram, Exploratory } from "@/components/materi/kit";
+import { Bul, Diagram, Exploratory, Insight } from "@/components/materi/kit";
 import { JourneyMap } from "@/components/ui/JourneyMap";
 import type { JPoint, JStage } from "@/components/ui/JourneyMap";
 import { BINS } from "@/data/kesslerDossier";
@@ -105,7 +105,11 @@ function Ladder() {
         <h4 className="font-semibold">{r.label}</h4>
         <p className="text-caption text-ash">{r.desc}</p>
         <p className="text-caption">Example (Alpenwerk GmbH, illustrative): <em>{r.ex}</em></p>
-        {r.id === "obs" && <p className="text-caption font-semibold text-signal">Only this rung survives without the speaker. Everything above it is interpretation.</p>}
+        <Insight>
+          {r.id === "obs"
+            ? "Only this rung survives without the speaker. Everything above it is interpretation — a claim that needs its own evidence before you can rely on it."
+            : `Climbing to "${r.label}" adds something the record itself does not say. Before acting on it, trace back down to rung 1 and ask what observable data actually supports it.`}
+        </Insight>
       </div>
     </div>
   );
@@ -138,10 +142,10 @@ function TryIt() {
               <button type="button" onClick={() => setShown((s) => ({ ...s, [i]: true }))} className="btn-ghost btn-sm min-h-[40px]">Reveal</button>
             </div>
             {shown[i] && (
-              <p className="fade-in rounded-md bg-mist px-3 py-2">
+              <Insight className="fade-in">
                 {tags[i] ? `You tagged ${tags[i] === "obs" ? "observation" : "interpretation"}. ` : ""}
                 It is an <strong>{t.answer === "obs" ? "observation" : "interpretation"}</strong>: {t.why}
-              </p>
+              </Insight>
             )}
           </li>
         ))}

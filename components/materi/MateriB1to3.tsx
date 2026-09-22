@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import clsx from "clsx";
 import { DataTable, MaterialCard, Callout } from "@/components/ui/MaterialCard";
-import { Bul, Diagram, Exploratory, Toggles } from "@/components/materi/kit";
+import { Bul, Diagram, Exploratory, Insight, Toggles } from "@/components/materi/kit";
 import { MotiveMap } from "@/components/ui/MotiveMap";
 import { GARTNER_SPLIT, MOTIVES } from "@/data/motives";
 import type { MotiveId } from "@/data/motives";
@@ -60,9 +60,9 @@ function DecisionScale() {
           </button>
         </div>
       </div>
-      <p aria-live="polite" className="text-caption text-ash">
+      <Insight>
         {right === left ? "The pans balance." : right > left ? "The loss side is heavier: the scale leans towards the more secure offer Y." : "The saving side is heavier: the scale leans towards the cheaper offer X."} The blocks are units for illustration, not euros. <Exploratory />
-      </p>
+      </Insight>
     </div>
   );
 }
@@ -135,6 +135,11 @@ function Donut() {
           </li>
         ))}
       </ul>
+      <Insight className="md:col-span-2">
+        {sel === 0
+          ? `"Meeting suppliers" is the only slice where you're in the room — and it's just ${GARTNER_SPLIT[0].pct}% of buying time. The other ${100 - GARTNER_SPLIT[0].pct}% (research, internal alignment) happens without you.`
+          : `"${GARTNER_SPLIT[sel].label}" takes up ${GARTNER_SPLIT[sel].pct}% of buying time, and no supplier is present for it. Only "Meeting suppliers" (${GARTNER_SPLIT[0].pct}%) is time you can see directly — the rest of the buying group's work stays invisible unless a contact tells you about it.`}
+      </Insight>
     </div>
   );
 }
@@ -176,6 +181,7 @@ const ARMS: Record<MotiveId, { x: number; y: number }> = {
   innovation: { x: 320, y: 294 },
   status: { x: 80, y: 170 },
 };
+const OPPOSITE: Record<MotiveId, MotiveId> = { security: "innovation", innovation: "security", efficiency: "status", status: "efficiency" };
 
 function Compass() {
   const uid = useId().replace(/:/g, "");
@@ -204,6 +210,9 @@ function Compass() {
         <circle cx="320" cy="170" r="16" fill="#1F2328" />
       </svg>
       <Toggles label="Motive" value={sel} onChange={setSel} options={MOTIVES.map((mo) => ({ id: mo.id, label: mo.label }))} />
+      <Insight>
+        {m.label} ({m.meaning.replace(/\.$/, "")}) sits opposite {MOTIVES.find((x) => x.id === OPPOSITE[sel])!.label} on the compass. The same buyer can voice both at different moments, which is why a motive is a hypothesis to test against what they say next, not a label you fix once.
+      </Insight>
       <div aria-live="polite" className="grid gap-3 rounded-lg border border-line bg-paper p-4 text-caption md:grid-cols-2">
         <div>
           <p className="smallcaps text-accent">{m.label} · {m.meaning}</p>

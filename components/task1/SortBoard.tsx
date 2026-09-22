@@ -8,6 +8,7 @@ import { flagsForSort } from "@/lib/checks";
 import { IDS } from "@/lib/missing";
 import { useStore } from "@/store/useStore";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
+import { Insight } from "@/components/materi/kit";
 
 /** A record token: ID + source + month. The full text lives in the record cards and the "selected record" strip. */
 function Chip({
@@ -71,6 +72,7 @@ export function SortBoard({ onSelectedChange }: { onSelectedChange?: (id: Record
   const [dragging, setDragging] = useState<RecordId | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const [lastCheck, setLastCheck] = useState<{ flagged: number; unplaced: number } | null>(null);
+  const [lastPlaced, setLastPlaced] = useState<{ id: RecordId; bin: Bin | null } | null>(null);
 
   const setSelected = (id: RecordId | null) => {
     setSelectedState(id);
@@ -80,6 +82,7 @@ export function SortBoard({ onSelectedChange }: { onSelectedChange?: (id: Record
   const place = (id: RecordId, bin: Bin | null) => {
     placeRecord(id, bin);
     setSelected(null);
+    setLastPlaced({ id, bin });
   };
 
   const unplaced = RECORDS.filter((r) => l1.placements[r.id] === null);
@@ -169,6 +172,10 @@ export function SortBoard({ onSelectedChange }: { onSelectedChange?: (id: Record
             <p className="mt-1 text-ink">{sel.text}</p>
             <p className="mt-1 text-ash">Record on file: {sel.onFile}</p>
           </div>
+        ) : lastPlaced ? (
+          <Insight>
+            Record {lastPlaced.id} {lastPlaced.bin ? `filed into "${BINS.find((b) => b.id === lastPlaced.bin)!.label}."` : "returned to the tray."} Select it again to move it, or select another record.
+          </Insight>
         ) : (
           <p className="text-caption text-ash">Select a record to read it here, then select a bin to file it.</p>
         )}

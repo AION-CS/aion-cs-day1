@@ -66,3 +66,16 @@ export function Toggles<T extends string>({
 export function Exploratory() {
   return <span className="pill border-line bg-mist text-ash">Exploratory · not graded</span>;
 }
+
+/**
+ * Always-visible, live-updating reading of what the control above just showed — not the raw
+ * value, but what it demonstrates. Place directly under the interactive element it explains.
+ */
+export function Insight({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <p aria-live="polite" className={clsx("insight rounded-md bg-mist px-3 py-2 text-caption text-ink", className)}>
+      <span className="smallcaps mr-1.5 text-ash">What this shows</span>
+      {children}
+    </p>
+  );
+}

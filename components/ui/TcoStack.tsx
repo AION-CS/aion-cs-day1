@@ -5,6 +5,7 @@ import type { TcoData } from "@/data/offers";
 import { cashTotals } from "@/data/offers";
 import { useCountUp } from "@/lib/useCountUp";
 import { formatEuro } from "@/lib/parseAmount";
+import { Insight } from "@/components/materi/kit";
 
 const W = 640;
 const X0 = 138;
@@ -71,6 +72,20 @@ export function TcoStack({
   const x = (v: number) => X0 + (v / data.max) * (X1 - X0);
   const H = TOP + data.bars.length * (BAR_H + GAP) + 26;
   const active = (l: TcoData["layers"][number]) => !!(l.alwaysOn || on[l.id]);
+  const barName = (i: number) => data.bars[i].label.split(" · ")[0];
+  const notes: string[] = [];
+  if (totals.length === 2) {
+    const diff = totals[0] - totals[1];
+    notes.push(
+      diff === 0
+        ? `${barName(0)} and ${barName(1)} now cost the same in cash terms, over the ${data.termLabel.toLowerCase()}.`
+        : `${barName(diff > 0 ? 1 : 0)} is now ${formatEuro(Math.abs(diff))} cheaper in cash terms than ${barName(diff > 0 ? 0 : 1)}, over the ${data.termLabel.toLowerCase()}.`,
+    );
+  }
+  const nonCashOn = data.layers.filter((l) => !l.cash && active(l));
+  if (nonCashOn.length > 0) {
+    notes.push(`${nonCashOn.map((l) => l.label).join(", ")} is shown on the chart but stays out of the cash total above — it is an expected value, not money actually spent.`);
+  }
 
   return (
     <figure className="space-y-3">
@@ -209,6 +224,7 @@ export function TcoStack({
           <Readout key={b.id} label={`${b.label.split(" · ")[0]} · cash total, ${data.termLabel.toLowerCase()}`} value={totals[i]} />
         ))}
       </div>
+      {notes.length > 0 && <Insight>{notes.join(" ")}</Insight>}
       {controls}
     </figure>
   );

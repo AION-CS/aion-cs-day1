@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import clsx from "clsx";
 import { DataTable, MaterialCard, Callout } from "@/components/ui/MaterialCard";
-import { Bul, Diagram, Exploratory, Toggles } from "@/components/materi/kit";
+import { Bul, Diagram, Exploratory, Insight, Toggles } from "@/components/materi/kit";
 import { useInView } from "@/lib/useInView";
 
 /* ------------------------------------------------------------------ C1 */
@@ -60,7 +60,12 @@ function DoorTest() {
               <span className="rounded bg-ink px-1.5 py-0.5 text-micro font-bold text-paper">{i + 1}</span>
               <span>
                 <span className="font-semibold">{d.label}</span>
-                {placed[d.id] && <span className="fade-in block text-ash">{d.why}</span>}
+                {placed[d.id] && (
+                  <span className="insight fade-in mt-1 block rounded-md bg-mist px-2 py-1 text-ash">
+                    <span className="smallcaps mr-1.5 text-ash">What this shows</span>
+                    {d.why}
+                  </span>
+                )}
               </span>
             </button>
           </li>
@@ -132,6 +137,11 @@ function InsideOutside() {
         <circle cx="520" cy="60" r="8" fill="#8A5A0B" stroke="#FFFEFA" strokeWidth="2" />
         <text x="526" y="52" fontSize="12" fontWeight="700" fill="#1F2328">Kessler, if fixed (n = 1)</text>
       </svg>
+      <Insight>
+        {outside
+          ? "Kessler's one good outcome sits in the far optimistic tail of the wide outside-view curve — most similar programs land well to the left of it. A single success this far out is not the typical result; it's the lucky one."
+          : "Hide the outside view and only Kessler's own story is left — one narrow, optimistic curve with nothing to compare it against. Show the outside view again to see where this one case actually sits among similar programs."}
+      </Insight>
     </div>
   );
 }
@@ -206,9 +216,9 @@ function ScoreVsCap() {
           </g>
         )}
       </svg>
-      <p aria-live="polite" className="text-caption text-ash">
+      <Insight>
         {showCost ? "The highest score is also the most expensive, and it is over the cap: not fundable, however well it scores." : "By score alone, Option 1 ranks first."} Generic, illustrative numbers.
-      </p>
+      </Insight>
     </div>
   );
 }

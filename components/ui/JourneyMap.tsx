@@ -109,9 +109,12 @@ export function JourneyMap({
   const H = axisY + 34 + chipsH;
 
   const sel = stages.find((s) => s.id === selStage);
+  const selPoint = points.find((p) => p.id === selectedPoint);
   const caption = sel
     ? `${sel.hover ?? sel.label}${formatAxis ? ` · ${formatAxis(sel.from)}${sel.to !== sel.from ? ` → ${formatAxis(sel.to)}` : ""}` : ""}`
-    : "Select a stage (tap, click or press Enter) to read its caption.";
+    : selPoint
+      ? `Record “${selPoint.label}”${formatAxis ? ` · ${formatAxis(selPoint.at)}` : ""} selected. Its position on the timeline is fixed by when it happened — that tells you nothing about what kind of evidence it is; read the record itself for that.`
+      : "Select a stage (tap, click or press Enter) to read its caption, or a record chip below the axis for when it happened.";
 
   return (
     <figure className="space-y-2" ref={ref}>
@@ -247,7 +250,8 @@ export function JourneyMap({
         })}
       </svg>
 
-      <figcaption aria-live="polite" className="min-h-[2.5rem] rounded-md bg-mist px-3 py-2 text-caption text-ink">
+      <figcaption aria-live="polite" className="insight min-h-[2.5rem] rounded-md bg-mist px-3 py-2 text-caption text-ink">
+        <span className="smallcaps mr-1.5 text-ash">What this shows</span>
         {caption}
       </figcaption>
 

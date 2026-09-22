@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import { DataTable, MaterialCard, Callout } from "@/components/ui/MaterialCard";
-import { Bul, Diagram } from "@/components/materi/kit";
+import { Bul, Diagram, Insight } from "@/components/materi/kit";
 import { TcoStack } from "@/components/ui/TcoStack";
 import { ALPENWERK_TCO } from "@/data/offers";
 
@@ -25,9 +25,9 @@ function CostExplorer() {
             <span className="font-semibold">Show the expected-loss formula (non-cash)</span>
           </label>
           {ale && (
-            <div className="fade-in rounded-lg border border-dashed border-rust bg-paper p-3 text-caption">
-              <p className="tnum font-semibold">ALE = SLE × ARO = €150,000 × 0.04 = €6,000 per year</p>
-              <p className="text-ash">An expected value, not a cash outlay: it sits on no budget line, so it never enters the cash bars above. Label every input measured or assumed.</p>
+            <div className="fade-in space-y-2">
+              <p className="tnum rounded-lg border border-dashed border-rust bg-paper p-3 text-caption font-semibold">ALE = SLE × ARO = €150,000 × 0.04 = €6,000 per year</p>
+              <Insight>An expected value, not a cash outlay: it sits on no budget line, so it never enters the cash bars above. Label every input measured or assumed.</Insight>
             </div>
           )}
         </div>

@@ -145,6 +145,9 @@
 .gloss:hover { color: var(--accent); }
 .gloss[aria-expanded="true"] { background: theme("colors.accentSoft"); color: var(--accent); }
 
+/* Always-visible "what this shows" reading under an interactive control. Same box everywhere so it is instantly recognisable. */
+.insight { border-left: 3px solid var(--accent); }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .stagger { opacity: 1; animation: none; }
