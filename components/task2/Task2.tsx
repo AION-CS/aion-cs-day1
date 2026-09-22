@@ -31,6 +31,8 @@ import { usePersisted } from "@/store/usePersisted";
 import { useStore } from "@/store/useStore";
 import { Gloss } from "@/lib/glossify";
 import type { Recommendation } from "@/store/useStore";
+import { AnswerKey } from "@/components/ui/AnswerKey";
+import { motiveKey, recommendationKey } from "@/lib/answerKey";
 
 const categoryLabel = (c: string | null) => (c ? BIN_LABEL[c as keyof typeof BIN_LABEL] : "—");
 
@@ -400,6 +402,7 @@ export function Task2() {
           ))}
         </div>
         <MotiveMap mode="connect" motives={l2.motives} />
+        <AnswerKey block={motiveKey()} />
       </AnswerBlock>
 
       {/* Block 2.5 */}
@@ -501,6 +504,7 @@ export function Task2() {
             aria-describedby="limits-help"
           />
         </Field>
+        <AnswerKey block={recommendationKey()} />
       </AnswerBlock>
 
       {/* Block 2.6 */}

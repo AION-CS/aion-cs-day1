@@ -10,6 +10,8 @@ import { IDS, verdictMissing } from "@/lib/missing";
 import { scrollToAndFlash } from "@/lib/flash";
 import { useStore } from "@/store/useStore";
 import { usePersisted } from "@/store/usePersisted";
+import { AnswerKey } from "@/components/ui/AnswerKey";
+import { verdictKey } from "@/lib/answerKey";
 
 const CATEGORIES: { id: VerdictCategory; label: string }[] = [
   { id: "price", label: "Price" },
@@ -139,6 +141,7 @@ export function VerdictBlock() {
           aria-describedby="v4-text-help"
         />
       </Field>
+      <AnswerKey block={verdictKey()} />
 
       <div id={IDS.fileNote} className="space-y-3 rounded-lg border border-line bg-mist/50 p-3">
         <div className="flex flex-wrap items-center gap-3">

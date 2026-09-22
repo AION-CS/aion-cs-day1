@@ -8,6 +8,8 @@ import { formatEuro } from "@/lib/parseAmount";
 import { useCountUp } from "@/lib/useCountUp";
 import { IDS3 } from "@/lib/l3";
 import { useStore } from "@/store/useStore";
+import { AnswerKey } from "@/components/ui/AnswerKey";
+import { allocationKey } from "@/lib/answerKey";
 
 const W = 640;
 const X0 = 20;
@@ -195,6 +197,7 @@ export function AllocationBoard() {
           <Meter label="Uncovered pool" value={board.uncovered} unit={`of ${POOL} accounts`} />
         </div>
       </div>
+      <AnswerKey block={allocationKey()} />
     </div>
   );
 }

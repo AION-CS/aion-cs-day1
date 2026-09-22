@@ -5,6 +5,8 @@ import { ACTIVITIES, CHIPS, CHIP_NAME, ROLES, raciProblems } from "@/data/raciMo
 import type { Chip } from "@/data/raciModel";
 import { IDS3 } from "@/lib/l3";
 import { useStore } from "@/store/useStore";
+import { AnswerKey } from "@/components/ui/AnswerKey";
+import { raciKey } from "@/lib/answerKey";
 
 /**
  * The RACI grid: 4 activities × 4 roles. Each cell holds one chip (R, A, C, I)
@@ -75,6 +77,7 @@ export function RaciGrid({ showProblems }: { showProblems: boolean }) {
       <p className="px-3 py-2 text-micro normal-case tracking-normal text-ash">
         R Responsible · A Accountable (exactly one per row) · C Consulted · I Informed. Press a pressed chip again to clear it.
       </p>
+      <AnswerKey block={raciKey()} />
     </div>
   );
 }

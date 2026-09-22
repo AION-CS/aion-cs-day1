@@ -11,6 +11,8 @@ import { clueFor, flagsForMapping, loyaltyMarker } from "@/lib/mapping";
 import { IDS } from "@/lib/missing";
 import { useStore } from "@/store/useStore";
 import { glossify } from "@/lib/glossify";
+import { AnswerKey } from "@/components/ui/AnswerKey";
+import { mapKey } from "@/lib/answerKey";
 
 const CITES: CiteChoice[] = [...RECORDS.map((r) => r.id as CiteChoice), "case"];
 
@@ -175,6 +177,7 @@ export function MapBlock() {
           </p>
         )}
       </div>
+      <AnswerKey block={mapKey()} />
 
       <div className="space-y-2">
         <h4 className="font-semibold">Loyalty map · Kessler</h4>

@@ -9,6 +9,8 @@ import { IDS } from "@/lib/missing";
 import { useStore } from "@/store/useStore";
 import { UndoRedoControls } from "@/components/ui/UndoRedoControls";
 import { Insight } from "@/components/materi/kit";
+import { AnswerKey } from "@/components/ui/AnswerKey";
+import { sortKey } from "@/lib/answerKey";
 
 /** A record token: ID + source + month. The full text lives in the record cards and the "selected record" strip. */
 function Chip({
@@ -260,6 +262,7 @@ export function SortBoard({ onSelectedChange }: { onSelectedChange?: (id: Record
           </ul>
         )}
       </div>
+      <AnswerKey block={sortKey()} />
     </div>
   );
 }
