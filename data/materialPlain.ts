@@ -117,7 +117,7 @@ export const MATERIAL_PLAIN: Record<MaterialId, PlainExplain> = {
   C5: {
     idea: "A plan only works if it is clear who does what. RACI is a simple table for that: Responsible (does the work), Accountable (the one person who answers for the result), Consulted (asked for input) and Informed (kept up to date). Every task gets exactly one Accountable person.",
     why: "If two people are Accountable, in practice nobody is. And a big commitment that is hard to undo is safer if you start with a small pilot, then scale up once the first results are in (real options thinking).",
-    picture: "In the example table every row has exactly one highlighted A. That is the rule to follow in Task 3's RACI grid.",
+    picture: "The example is a different company, Alpenwerk, replacing its IT ticketing tool. Click any cell, including the empty ones, to read why it holds that letter. Watch where the A sits: small operational choices stay with the team lead, while a big three-year contract or a vendor crisis goes up to the managing director. Below it, the four test questions and a table of what each Task 3 role typically decides, does, is asked about or is told.",
   },
   C6: {
     idea: "A short recipe for Task 3. Split the budget across the levers without going over the cap, read both scenarios, give every funded lever an owner and a date, and say what you left unfunded and what that costs.",

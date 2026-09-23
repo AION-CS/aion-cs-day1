@@ -15,6 +15,7 @@ import type { GId, LeverId, Levers, Position, Scenario } from "@/data/leverData"
 import { ACTIVITIES, ROLES, emptyRaci } from "@/data/raciModel";
 import type { ActivityId, Chip, RaciGridState, RoleId } from "@/data/raciModel";
 import { MAP_ROW_IDS } from "@/data/mapping";
+import { FIGURE_BUILDERS, gBuilders, modelParts } from "@/lib/calcBuilder";
 import type { Bucket, CiteChoice, MapRowId } from "@/data/mapping";
 
 export const STORAGE_KEY = "cs-d1-v1";
@@ -68,6 +69,10 @@ export type L2State = {
   checks: number;
   flagged: FigureId[];
   clueShown: Record<string, boolean>;
+  /** The formula builder's parts under each figure, keyed "F3.intRate". */
+  parts: Record<string, string>;
+  /** Part keys flagged by the last check. */
+  partFlags: string[];
 };
 
 export type GovRow = { decision: string; owner: string; date: string };
@@ -87,6 +92,10 @@ export type Route3State = {
   /** G1–G6 flagged by the last check. */
   flagged: string[];
   clueShown: Record<string, boolean>;
+  /** The formula builder's parts under G1, G4, G5 and G6, keyed "G1.l2". */
+  parts: Record<string, string>;
+  /** Part keys flagged by the last check. */
+  partFlags: string[];
 };
 
 export type Persisted = {
@@ -126,7 +135,8 @@ type Actions = {
   setLayer: (id: keyof ExplorerLayers, value: boolean) => void;
   setCare: (value: boolean) => void;
   setFillin: (id: FigureId, value: string) => void;
-  checkFigures: (flagged: FigureId[]) => void;
+  checkFigures: (flagged: FigureId[], partFlags: string[]) => void;
+  setL2Part: (key: string, value: string) => void;
   showL2Clue: (id: string) => void;
   chooseMotive: (role: RoleKey, motive: MotiveId | null) => void;
   setRecommendation: (r: Recommendation) => void;
@@ -143,7 +153,8 @@ type Actions = {
   setLever: (id: LeverId, position: Position) => void;
   setScenario: (s: Scenario) => void;
   setG: (id: GId, value: string) => void;
-  checkG: (flagged: string[]) => void;
+  checkG: (flagged: string[], partFlags: string[]) => void;
+  setL3Part: (key: string, value: string) => void;
   showL3Clue: (id: string) => void;
   fileAllocation: () => void;
   setRaciChip: (activity: ActivityId, role: RoleId, chip: Chip | null) => void;
@@ -189,6 +200,8 @@ const emptyL2 = (): L2State => ({
   checks: 0,
   flagged: [],
   clueShown: {},
+  parts: {},
+  partFlags: [],
 });
 
 const emptyGov = (): GovRow[] => Array.from({ length: 4 }, () => ({ decision: "", owner: "", date: "" }));
@@ -208,6 +221,8 @@ const emptyRoute3 = (): Route3State => ({
   checks: 0,
   flagged: [],
   clueShown: {},
+  parts: {},
+  partFlags: [],
 });
 
 const emptyPersisted = (): Persisted => ({
@@ -363,8 +378,12 @@ export const useStore = create<Persisted & Session & Actions>()(
             flagged: s.l2.flagged.filter((f) => f !== id),
           },
         })),
-      checkFigures: (flagged) =>
-        set((s) => ({ l2: { ...s.l2, checks: s.l2.checks + 1, flagged, clueShown: {} } })),
+      checkFigures: (flagged, partFlags) =>
+        set((s) => ({ l2: { ...s.l2, checks: s.l2.checks + 1, flagged, partFlags, clueShown: {} } })),
+      setL2Part: (key, value) =>
+        set((s) => ({
+          l2: { ...s.l2, parts: { ...s.l2.parts, [key]: value }, partFlags: s.l2.partFlags.filter((f) => f !== key) },
+        })),
       showL2Clue: (id) => set((s) => ({ l2: { ...s.l2, clueShown: { ...s.l2.clueShown, [id]: true } } })),
       chooseMotive: (role, motive) =>
         set((s) => ({ l2: { ...s.l2, motives: { ...s.l2.motives, [role]: motive } } })),
@@ -392,6 +411,7 @@ export const useStore = create<Persisted & Session & Actions>()(
           };
           const l2 = emptyL2();
           l2.fillins = { ...KEY_L2.fillins };
+          l2.parts = modelParts(FIGURE_BUILDERS);
           l2.motives = { ...KEY_L2.motives };
           l2.recommendation = KEY_L2.recommendation;
           l2.justification = KEY_L2.justification;
@@ -406,6 +426,7 @@ export const useStore = create<Persisted & Session & Actions>()(
           r3.levers = { ...KEY_L3.levers };
           r3.scenariosViewed = { statusQuo: true, priceWar: true };
           r3.fillins = { ...KEY_L3.fillins };
+          r3.parts = modelParts(gBuilders(KEY_L3.levers));
           for (const a of ACTIVITIES) for (const r of ROLES) r3.raci[a.id][r.id] = KEY_L3.raci[a.id][r.id] ?? null;
           r3.allocFiledAt = now;
           r3.raciFiledAt = now;
@@ -424,6 +445,7 @@ export const useStore = create<Persisted & Session & Actions>()(
             levers: { ...s.route3.levers, [id]: position },
             // a lever change changes what the board reads, so earlier G flags no longer apply
             flagged: [],
+            partFlags: [],
             clueShown: {},
           },
         })),
@@ -439,8 +461,12 @@ export const useStore = create<Persisted & Session & Actions>()(
             flagged: s.route3.flagged.filter((f) => f !== id),
           },
         })),
-      checkG: (flagged) =>
-        set((s) => ({ route3: { ...s.route3, checks: s.route3.checks + 1, flagged, clueShown: {} } })),
+      checkG: (flagged, partFlags) =>
+        set((s) => ({ route3: { ...s.route3, checks: s.route3.checks + 1, flagged, partFlags, clueShown: {} } })),
+      setL3Part: (key, value) =>
+        set((s) => ({
+          route3: { ...s.route3, parts: { ...s.route3.parts, [key]: value }, partFlags: s.route3.partFlags.filter((f) => f !== key) },
+        })),
       showL3Clue: (id) =>
         set((s) => ({ route3: { ...s.route3, clueShown: { ...s.route3.clueShown, [id]: true } } })),
       fileAllocation: () => set((s) => ({ route3: { ...s.route3, allocFiledAt: new Date().toISOString() } })),
@@ -484,7 +510,7 @@ export const useStore = create<Persisted & Session & Actions>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 3,
+      version: 4,
       skipHydration: true,
       storage: createJSONStorage(() => localStorage),
       // Session-only flags (mentor unlock, focus, reset counter) never persist.
@@ -496,7 +522,8 @@ export const useStore = create<Persisted & Session & Actions>()(
         route3: s.route3,
       }),
       // v1 -> v2: Route 3 (Level 3) state was added. v2 -> v3: the typed participant number was dropped
-      // (the file number now comes from the route). Old blobs are brought to the current shape here.
+      // (the file number now comes from the route). v3 -> v4: the formula builders' parts and part flags
+      // were added to l2 and route3. Old blobs are brought to the current shape here; merge fills the rest.
       migrate: (persisted) => {
         const p = (persisted ?? {}) as Partial<Persisted> & { participant?: { no?: string; name?: string } };
         return {
@@ -536,6 +563,8 @@ export const useStore = create<Persisted & Session & Actions>()(
             explorerLayers: { ...base.l2.explorerLayers, ...p.l2?.explorerLayers },
             fillins: { ...base.l2.fillins, ...p.l2?.fillins },
             motives: { ...base.l2.motives, ...p.l2?.motives },
+            parts: { ...base.l2.parts, ...p.l2?.parts },
+            partFlags: Array.isArray(p.l2?.partFlags) ? p.l2.partFlags : [],
           },
           route3: {
             ...base.route3,
@@ -543,6 +572,8 @@ export const useStore = create<Persisted & Session & Actions>()(
             levers: { ...base.route3.levers, ...p.route3?.levers },
             scenariosViewed: { ...base.route3.scenariosViewed, ...p.route3?.scenariosViewed },
             fillins: { ...base.route3.fillins, ...p.route3?.fillins },
+            parts: { ...base.route3.parts, ...p.route3?.parts },
+            partFlags: Array.isArray(p.route3?.partFlags) ? p.route3.partFlags : [],
             raci: mergeRaci(p.route3?.raci),
             governance: mergeGov(p.route3?.governance),
           },

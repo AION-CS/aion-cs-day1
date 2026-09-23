@@ -35,7 +35,39 @@ import { useStore } from "@/store/useStore";
 import { Gloss } from "@/lib/glossify";
 import { MentorGuide } from "@/components/ui/MentorGuide";
 import { RevealHint } from "@/components/ui/RevealHint";
+import type { GId } from "@/data/leverData";
+import { FormulaBuilder } from "@/components/ui/FormulaBuilder";
+import { allPartsRight, builderResult, gBuilders, partValues, wrongParts } from "@/lib/calcBuilder";
 import { TEXT_GUIDES, gGuides } from "@/lib/mentorGuide";
+
+/** After a check flags a G reading, say specifically what to look at, not just that it is wrong. */
+function GDiagnosis({ g }: { g: GId }) {
+  const r3 = useStore((s) => s.route3);
+  if (!r3.flagged.includes(g)) return null;
+  const b = gBuilders(r3.levers)[g];
+  let text: string;
+  if (!b) {
+    text = `This is a single reading: ${G_META[g].formula} Check which lever you read and which position is set.`;
+  } else if (allPartsRight(b, g, r3.parts)) {
+    const r = builderResult(b, g, r3.parts);
+    text = `Every part of your formula is right and gives ${r}, but your ${g} entry does not match it. Press “Use this result in ${g}” under Show the formula, or retype it.`;
+  } else {
+    const wrong = b.parts.filter((p) => r3.partFlags.includes(`${g}.${p.id}`));
+    const filled = Object.values(partValues(b, g, r3.parts)).filter((v) => v !== null).length;
+    text =
+      wrong.length > 0
+        ? `The outlined ${wrong.length === 1 ? "part" : "parts"} under Show the formula ${wrong.length === 1 ? "holds" : "hold"} the wrong number: ${wrong.map((p) => p.label).join(", ")}. Each names where to read it.`
+        : filled === 0
+          ? `To see exactly where it goes wrong, open Show the formula and fill its ${b.parts.length} ${b.parts.length === 1 ? "part" : "parts"}. The next check marks each wrong part and names where to read it.`
+          : `The parts you filled are right; fill the rest under Show the formula to see which step changes the result.`;
+  }
+  return (
+    <p role="status" className="rounded-md border border-gold bg-accentSoft px-3 py-2 text-caption text-ink">
+      <span className="smallcaps mr-1 text-accent">What to check</span>
+      {text}
+    </p>
+  );
+}
 
 function Chip({ lit, children }: { lit: boolean; children: React.ReactNode }) {
   return (
@@ -122,6 +154,7 @@ export function Task3() {
   const board = computeBoard(r3.levers);
 
   const setG = useStore((s) => s.setG);
+  const setL3Part = useStore((s) => s.setL3Part);
   const checkG = useStore((s) => s.checkG);
   const showClue = useStore((s) => s.showL3Clue);
   const fileAlloc = useStore((s) => s.fileAllocation);
@@ -131,7 +164,7 @@ export function Task3() {
   const setNotFunding = useStore((s) => s.setNotFunding);
   const setExec = useStore((s) => s.setExec);
 
-  const [gCheck, setGCheck] = useState<{ flagged: number; empty: number } | null>(null);
+  const [gCheck, setGCheck] = useState<{ flagged: number; parts: number; empty: number } | null>(null);
   const [allocTried, setAllocTried] = useState(false);
   const [raciTried, setRaciTried] = useState(false);
 
@@ -143,10 +176,12 @@ export function Task3() {
   const fname = exportName(snapshot.participant.name, "l3-memo");
   const required = govRequired(r3);
 
+  const builders = gBuilders(r3.levers);
   const doGCheck = () => {
     const flags = flagsForG(r3);
-    checkG(flags);
-    setGCheck({ flagged: flags.length, empty: G_IDS.filter((g) => !r3.fillins[g].trim()).length });
+    const partFlags = G_IDS.flatMap((g) => (builders[g] ? wrongParts(builders[g]!, g, r3.parts) : []));
+    checkG(flags, partFlags);
+    setGCheck({ flagged: flags.length, parts: partFlags.length, empty: G_IDS.filter((g) => !r3.fillins[g].trim()).length });
   };
   const doFileAlloc = () => {
     if (allocMissing.length > 0) {
@@ -229,9 +264,25 @@ export function Task3() {
                     placeholder="a whole number"
                     aria-describedby={`in-${g}-help`}
                   />
+                  <GDiagnosis g={g} />
                   <div className="flex flex-wrap items-start gap-2">
-                    <RevealHint id={`formula-${g}`} label="Show the formula" title="Formula · read from the board">
+                    <RevealHint
+                      id={`formula-${g}`}
+                      label="Show the formula"
+                      title="Formula · read from the board"
+                      forceOpen={r3.partFlags.some((k) => k.startsWith(`${g}.`))}
+                    >
                       <p className="text-caption text-ink">{G_META[g].formula}</p>
+                      {builders[g] && (
+                        <FormulaBuilder
+                          figure={g}
+                          builder={builders[g]!}
+                          parts={r3.parts}
+                          partFlags={r3.partFlags}
+                          onPart={setL3Part}
+                          onUse={(v) => setG(g, String(v))}
+                        />
+                      )}
                     </RevealHint>
                   </div>
                   <MentorGuide guide={gGuides(r3.levers)[g]} />
@@ -255,6 +306,7 @@ export function Task3() {
               {gCheck && (
                 <p role="status" className="text-caption text-ink">
                   {gCheck.flagged === 0 ? "No filled reading is outlined." : `${gCheck.flagged} filled ${gCheck.flagged === 1 ? "reading is" : "readings are"} outlined in amber.`}
+                  {gCheck.parts > 0 && ` ${gCheck.parts} ${gCheck.parts === 1 ? "part" : "parts"} in the formula calculators ${gCheck.parts === 1 ? "is" : "are"} outlined, each naming where to read it.`}
                   {gCheck.empty > 0 && ` ${gCheck.empty} empty, so not checked.`}
                 </p>
               )}
@@ -276,7 +328,20 @@ export function Task3() {
             <MaterialRefs refs={["C5"]} />
             <p className="text-caption text-ash">
               One rule is enforced: exactly one <strong>A</strong> (Accountable) in each row. Which role holds it is your judgement, and it carries into the governance table below.
+              Materi C5 teaches the four letter tests and what each of these four roles typically decides, with a worked example on another company.
             </p>
+            <div className="flex flex-wrap items-start gap-2">
+              <RevealHint id="raci-tests" label="Show the test questions" title="Test questions · from Materi C5">
+                <ul className="list-disc space-y-0.5 pl-5 text-caption text-ink">
+                  <li><strong>A</strong>: who answers for the result and has the authority to decide? Exactly one per row.</li>
+                  <li><strong>R</strong>: who does the work?</li>
+                  <li><strong>C</strong>: who must be asked before, because they know something important or could block it?</li>
+                  <li><strong>I</strong>: who only needs to be told the result afterwards?</li>
+                  <li><strong>Empty</strong>: a role with no part in the activity.</li>
+                  <li>Put A at the level that has the authority, and no higher: operational work with the team that runs it, customer and sales-organisation decisions with sales leadership, anything beyond one department&apos;s authority or an account at risk with the Geschäftsführer.</li>
+                </ul>
+              </RevealHint>
+            </div>
             <RaciGrid showProblems={raciTried} />
             <div className="flex flex-wrap items-center gap-3">
               <button type="button" id={IDS3.fileRaci} onClick={doFileRaci} className="btn-primary">

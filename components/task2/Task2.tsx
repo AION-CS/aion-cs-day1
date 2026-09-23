@@ -35,6 +35,8 @@ import type { Recommendation } from "@/store/useStore";
 import { AnswerKey } from "@/components/ui/AnswerKey";
 import { MentorGuide } from "@/components/ui/MentorGuide";
 import { RevealHint } from "@/components/ui/RevealHint";
+import { FormulaBuilder } from "@/components/ui/FormulaBuilder";
+import { FIGURE_BUILDERS, allPartsRight, builderResult, partValues, wrongParts } from "@/lib/calcBuilder";
 import { FIGURE_GUIDES, TEXT_GUIDES } from "@/lib/mentorGuide";
 import { motiveKey, recommendationKey } from "@/lib/answerKey";
 
@@ -132,16 +134,64 @@ function resolveSource(src: FigureSource): { target: string; where: string; labe
 }
 
 /**
+ * After a check flags a figure, say specifically what is wrong instead of a bare "wrong": whether the
+ * formula parts are right but the entered total is not, which parts are off, or that the parts are not
+ * filled yet (with where to fill them). Shown only for a flagged figure.
+ */
+function FigureDiagnosis({ figure }: { figure: Figure }) {
+  const flagged = useStore((s) => s.l2.flagged.includes(figure.id));
+  const parts = useStore((s) => s.l2.parts);
+  const partFlags = useStore((s) => s.l2.partFlags);
+  if (!flagged) return null;
+  const b = FIGURE_BUILDERS[figure.id];
+  const values = partValues(b, figure.id, parts);
+  const filledCount = Object.values(values).filter((v) => v !== null).length;
+  const wrong = b.parts.filter((p) => partFlags.includes(`${figure.id}.${p.id}`));
+  let text: string;
+  if (allPartsRight(b, figure.id, parts)) {
+    const r = builderResult(b, figure.id, parts);
+    text = `Every part of your formula is right and gives ${r?.toLocaleString("en-US", { maximumFractionDigits: 2 })}, but your ${figure.id} entry does not match it. Press “Use this result in ${figure.id}” under Show the formula, or retype the total.`;
+  } else if (wrong.length > 0) {
+    text = `The outlined ${wrong.length === 1 ? "part" : "parts"} under Show the formula ${wrong.length === 1 ? "holds" : "hold"} a number from the wrong place: ${wrong.map((p) => p.label).join(", ")}. Each names the row to read.`;
+  } else if (filledCount === 0) {
+    text = `To see exactly where it goes wrong, open Show the formula and fill its ${b.parts.length} parts. The next check marks each part that holds the wrong number and names the row to read.`;
+  } else {
+    text = `The parts you filled are right; ${b.parts.length - filledCount} ${b.parts.length - filledCount === 1 ? "part is" : "parts are"} still empty under Show the formula. Fill them to see which step changes the total.`;
+  }
+  return (
+    <p role="status" className="rounded-md border border-gold bg-accentSoft px-3 py-2 text-caption text-ink">
+      <span className="smallcaps mr-1 text-accent">What to check</span>
+      {text}
+    </p>
+  );
+}
+
+/**
  * The two on-demand helps under a figure field, hidden until asked for (like a clue): the formula in words
  * (no numbers) and "Numbers you need", the printed rows it is built from, each a button that scrolls to and
  * flashes its row in Block 2.1. Together they make the method and the inputs findable; the learner still
  * reads the values, types them into the calculator and gets the number.
  */
 function FigureHelp({ figure }: { figure: Figure }) {
+  const parts = useStore((s) => s.l2.parts);
+  const partFlags = useStore((s) => s.l2.partFlags);
+  const setPart = useStore((s) => s.setL2Part);
+  const setFillin = useStore((s) => s.setFillin);
+  const builder = FIGURE_BUILDERS[figure.id];
+  const anyFlag = partFlags.some((k) => k.startsWith(`${figure.id}.`));
   return (
     <div className="flex flex-wrap items-start gap-2">
-      <RevealHint id={`formula-${figure.id}`} label="Show the formula" title="Formula · from Materi B4">
+      <RevealHint id={`formula-${figure.id}`} label="Show the formula" title="Formula · from Materi B4" forceOpen={anyFlag}>
         <p className="text-caption text-ink">{figure.formula}</p>
+        <FormulaBuilder
+          figure={figure.id}
+          builder={builder}
+          parts={parts}
+          partFlags={partFlags}
+          onPart={setPart}
+          onUse={(v) => setFillin(figure.id, String(v))}
+          unit={figure.unit}
+        />
       </RevealHint>
       <RevealHint id={`src-${figure.id}`} label="Show where the numbers are" title="Numbers you need · click one to see it in its table">
         <ul className="space-y-1">
@@ -239,7 +289,7 @@ export function Task2() {
   const setQ6 = useStore((s) => s.setQ6);
   const submitQ6 = useStore((s) => s.submitQ6);
 
-  const [figCheck, setFigCheck] = useState<{ flagged: number; empty: number } | null>(null);
+  const [figCheck, setFigCheck] = useState<{ flagged: number; parts: number; empty: number } | null>(null);
 
   const filed = l1.verdict.filedAt !== null;
   const missing = l2Missing(snapshot);
@@ -249,8 +299,9 @@ export function Task2() {
 
   const doFigCheck = () => {
     const flags = flagsForFigures(l2);
-    checkFigures(flags);
-    setFigCheck({ flagged: flags.length, empty: FIGURES.filter((f) => !l2.fillins[f.id].trim()).length });
+    const partFlags = FIGURES.flatMap((f) => wrongParts(FIGURE_BUILDERS[f.id], f.id, l2.parts));
+    checkFigures(flags, partFlags);
+    setFigCheck({ flagged: flags.length, parts: partFlags.length, empty: FIGURES.filter((f) => !l2.fillins[f.id].trim()).length });
   };
 
   return (
@@ -412,6 +463,7 @@ export function Task2() {
                   <p aria-live="polite" className="min-h-[1rem] text-micro normal-case tracking-normal text-ash">
                     {raw ? (v === null ? "Cannot read this as a number yet." : `Read as ${f.unit}: ${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`) : "Accepts 159890, 159,890, 159.890, 159.890,00 or € 159 890."}
                   </p>
+                  <FigureDiagnosis figure={f} />
                   <FigureHelp figure={f} />
                   <MentorGuide guide={FIGURE_GUIDES[f.id]} />
                 </Field>
@@ -428,6 +480,7 @@ export function Task2() {
             {figCheck && (
               <p role="status" className="text-caption text-ink">
                 {figCheck.flagged === 0 ? "No entered figure is outlined." : `${figCheck.flagged} entered ${figCheck.flagged === 1 ? "figure is" : "figures are"} outlined in amber.`}
+                {figCheck.parts > 0 && ` ${figCheck.parts} ${figCheck.parts === 1 ? "part" : "parts"} in the formula calculators ${figCheck.parts === 1 ? "is" : "are"} outlined, each naming the row to read.`}
                 {figCheck.empty > 0 && ` ${figCheck.empty} empty, so not checked.`}
               </p>
             )}

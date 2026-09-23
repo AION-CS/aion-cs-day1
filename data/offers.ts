@@ -171,7 +171,7 @@ export const FIGURES: Figure[] = [
     tolerance: 50,
     clue: "Are both totals built from the same cash layers, over the same term?",
     material: ["B4"],
-    formula: "Offer A's three-year total (your F3) − Offer B's three-year total. Offer B's total = annual fee × years + incident hours above the hours included (here none).",
+    formula: "Offer A's three-year total (your F3) − Offer B's three-year total. Offer B's total = annual fee × years + (incident hours per year above the hours included × Offer B's hourly rate × years).",
     sources: [
       { figure: "F3" },
       { table: "offer", index: 0, col: "b" },

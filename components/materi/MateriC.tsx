@@ -315,34 +315,120 @@ export function CardC4() {
 
 /* ------------------------------------------------------------------ C5 */
 
-function RaciPreview() {
+type RaciLetter = "R" | "A" | "C" | "I" | "";
+const EX_ROLES = ["IT team lead", "Service desk", "Purchasing (Einkauf)", "Managing director"];
+const EX_ROWS: { activity: string; cells: { l: RaciLetter; why: string }[] }[] = [
+  {
+    activity: "Test three candidate tools",
+    cells: [
+      { l: "A", why: "Choosing a tool within the IT budget is an operational decision. The IT team lead has the authority and answers if the choice turns out poor." },
+      { l: "R", why: "The service desk uses the tool every day, so it runs the tests and does the work." },
+      { l: "", why: "No contract or price is decided yet. Purchasing has no part in testing, so the cell stays empty." },
+      { l: "", why: "A test inside one department's budget does not need the managing director. Empty." },
+    ],
+  },
+  {
+    activity: "Sign the 3-year licence contract (€90,000)",
+    cells: [
+      { l: "C", why: "The IT team lead knows what the tool must do and must be asked before signing. Asked before, two-way: Consulted." },
+      { l: "", why: "The service desk has no say in contract terms. Empty." },
+      { l: "R", why: "Purchasing runs the negotiation and prepares the paperwork: it does the work, so Responsible." },
+      { l: "A", why: "A three-year commitment of this size is beyond what one department may sign. The managing director decides and answers for it." },
+    ],
+  },
+  {
+    activity: "Migrate tickets and train staff",
+    cells: [
+      { l: "A", why: "The IT team lead owns the migration going well. Deciding and answering for it: Accountable." },
+      { l: "R", why: "The service desk moves the tickets and learns the tool: it does the work." },
+      { l: "", why: "Nothing to buy or sign here. Empty." },
+      { l: "I", why: "The managing director should hear when the tool is live, but nobody needs their opinion first. Told after, one-way: Informed." },
+    ],
+  },
+  {
+    activity: "Escalate when the vendor misses the go-live date",
+    cells: [
+      { l: "R", why: "The IT team lead spots the delay and raises it: doing the work of the escalation, not deciding the response." },
+      { l: "I", why: "The service desk needs to know the new date, nothing more. Informed." },
+      { l: "C", why: "Purchasing knows the contract's penalty and exit clauses and must be asked before any response. Consulted." },
+      { l: "A", why: "Whether to claim penalties, add money or leave the vendor is a decision beyond the IT department. The managing director is Accountable." },
+    ],
+  },
+];
+const LETTER_TEST: Record<RaciLetter, string> = {
+  A: "Accountable: who answers for the result and has the authority to decide? Exactly one per row.",
+  R: "Responsible: who does the work? There can be several.",
+  C: "Consulted: who must be asked before, because they know something important or could block it?",
+  I: "Informed: who only needs to be told the result afterwards?",
+  "": "Empty: this role has no part in this activity. That is allowed and common.",
+};
+
+/** A worked RACI on a different case (Alpenwerk), every cell clickable with the reason for its letter. */
+function RaciExample() {
   const uid = useId().replace(/:/g, "");
-  const rows = ["Approve the budget", "Run the pilot", "Report the results"];
-  const cols = ["Sponsor", "Project lead", "Team"];
-  const grid = [
-    ["A", "R", "C"],
-    ["I", "A", "R"],
-    ["C", "A", "R"],
-  ];
+  const [sel, setSel] = useState<[number, number]>([1, 3]);
+  const cell = EX_ROWS[sel[0]].cells[sel[1]];
   return (
-    <svg viewBox="0 0 640 200" className="h-auto w-full" role="img" aria-labelledby={`${uid}-t ${uid}-d`}>
-      <title id={`${uid}-t`}>RACI grid preview</title>
-      <desc id={`${uid}-d`}>A three by three example RACI grid. In every row exactly one cell is Accountable, and it is highlighted.</desc>
-      {cols.map((c, j) => (
-        <text key={c} x={250 + j * 130} y="24" textAnchor="middle" fontSize="13" fontWeight="700" fill="#1F2328">{c}</text>
-      ))}
-      {rows.map((r, i) => (
-        <g key={r}>
-          <text x="20" y={70 + i * 52} fontSize="13" fontWeight="700" fill="#1F2328">{r}</text>
-          {grid[i].map((v, j) => (
-            <g key={j}>
-              <rect x={210 + j * 130} y={44 + i * 52} width="80" height="40" rx="6" fill={v === "A" ? "#8A5A0B" : "#FFFEFA"} stroke={v === "A" ? "#6E4708" : "#59606A"} strokeWidth={v === "A" ? 2.4 : 1.3} />
-              <text x={250 + j * 130} y={70 + i * 52} textAnchor="middle" fontSize="16" fontWeight="700" fill={v === "A" ? "#FFFEFA" : "#1F2328"}>{v}</text>
-            </g>
-          ))}
-        </g>
-      ))}
-    </svg>
+    <div className="space-y-3">
+      <div className="overflow-x-auto rounded-lg border border-line bg-paper">
+        <table className="w-full min-w-[36rem] border-collapse text-caption" aria-describedby={`${uid}-why`}>
+          <caption className="sr-only">Worked RACI example, Alpenwerk replaces its IT ticketing tool</caption>
+          <thead>
+            <tr className="bg-mist text-left">
+              <th scope="col" className="px-3 py-2 text-micro font-semibold uppercase text-ash">Activity</th>
+              {EX_ROLES.map((r) => (
+                <th key={r} scope="col" className="px-2 py-2 text-micro font-semibold uppercase text-ash">{r}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {EX_ROWS.map((row, i) => (
+              <tr key={row.activity} className="border-t border-line align-middle">
+                <th scope="row" className="px-3 py-2 text-left font-semibold">{row.activity}</th>
+                {row.cells.map((c, j) => {
+                  const on = sel[0] === i && sel[1] === j;
+                  return (
+                    <td key={j} className="px-2 py-1.5">
+                      <button
+                        type="button"
+                        aria-pressed={on}
+                        aria-label={`${row.activity}, ${EX_ROLES[j]}: ${c.l || "empty"}`}
+                        onClick={() => setSel([i, j])}
+                        className={clsx(
+                          "h-10 w-10 rounded-md border text-body font-bold transition-colors",
+                          c.l === "A" ? "border-accentHi bg-accent text-paper" : c.l ? "border-ash bg-paper text-ink" : "border-dashed border-line bg-paper text-ash",
+                          on && "ring-2 ring-gold ring-offset-1",
+                        )}
+                      >
+                        {c.l || "·"}
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div id={`${uid}-why`} aria-live="polite" className="rounded-lg border border-line bg-paper p-3 text-caption">
+        <p className="smallcaps">
+          {EX_ROWS[sel[0]].activity} · {EX_ROLES[sel[1]]} · {cell.l || "empty"}
+        </p>
+        <p className="mt-1 text-ink">{cell.why}</p>
+      </div>
+      <Insight>
+        {`The test behind this cell. ${LETTER_TEST[cell.l]}`}{" "}
+        {cell.l === "A"
+          ? "Notice where the A sits: operational work stays with the team lead; a large, long commitment or a vendor crisis goes up to the managing director."
+          : cell.l === "R"
+            ? "The role doing the work is usually not the one answering for it: R and A sit in different columns of the same row."
+            : cell.l === "C"
+              ? "Consulted comes before the decision and could change it; that is what separates it from Informed."
+              : cell.l === "I"
+                ? "Informed comes after the decision and cannot change it; if skipping this role could make the decision wrong, it would be C instead."
+                : "Not every role needs a letter in every row. Filling every cell hides who actually matters."}
+      </Insight>
+    </div>
   );
 }
 
@@ -354,13 +440,44 @@ export function CardC5() {
       sources={["pmbok", "amram1999"]}
       reasoning={[
         "Give every activity exactly one Accountable owner. Any number of Responsible, Consulted or Informed parties is fine; two Accountable owners means nobody is.",
+        "Use one test per letter. A: who answers for the result and has the authority to decide? R: who does the work? C: who must be asked before, because they know something important or could block it? I: who only needs to know afterwards? A role with no part stays empty.",
+        "A is not the busiest role. The role doing the work is R; the role answering for it is A. One letter per cell: if the same role both decides and does the work, give it A.",
+        "C is before and two-way; I is after and one-way. If leaving a role out could make the decision wrong or invalid (contract terms, a legal check), it is C. If it would only surprise them, it is I.",
+        "Put A at the level that has the authority, and no higher. Operational work stays with the team that runs it; decisions about customers and the sales organisation sit with sales leadership; commitments beyond one department's authority, resource conflicts between departments and an account at risk go to the managing director.",
+        "Read each role by what it decides, does, is asked or is told in this company (the role profiles above), not by its seniority alone.",
         "Carry the grid into the governance table: every lever you fund needs a named owner and a date, and the next portfolio review needs one too.",
         "For a one-way-door lever, stage it: buy the option to expand with a smaller pilot first (real options thinking), then commit the full amount once early results are in.",
       ]}
     >
-      <Diagram label="RACI grid preview" caption="A generic example, not the graded grid. One highlighted A per row.">
-        <RaciPreview />
+      <Diagram label="Worked RACI · Alpenwerk replaces its IT ticketing tool" caption="A different case from Task 3 (Case assumption), so the task stays yours. Click any cell, including the empty ones.">
+        <RaciExample />
       </Diagram>
+      <div className="rounded-lg border border-accent/40 bg-accentSoft p-3">
+        <p className="smallcaps text-accent">Four test questions, one per letter</p>
+        <dl className="mt-2 grid gap-2 md:grid-cols-2">
+          {(["A", "R", "C", "I"] as const).map((l) => (
+            <div key={l} className="rounded-md bg-paper px-3 py-2 text-caption">
+              <dt className="font-bold">{l}</dt>
+              <dd className="text-ink">{LETTER_TEST[l]}</dd>
+            </div>
+          ))}
+          <div className="rounded-md bg-paper px-3 py-2 text-caption md:col-span-2">
+            <dt className="font-bold">Empty</dt>
+            <dd className="text-ink">{LETTER_TEST[""]}</dd>
+          </div>
+        </dl>
+      </div>
+      <DataTable
+        caption="The four roles in Task 3"
+        head={["Role (Task 3)", "Typically decides", "Typically does", "Typically asked before", "Typically told after"]}
+        rows={[
+          ["Head of Sales / CCO (you)", "Customer relationships, commercial deals, how the sales organisation is set up (who owns which account)", "Raises risks on accounts, leads customer negotiations", "On delivery changes that affect a customer", "About delivery routines that run as planned"],
+          ["Delivery PM", "How delivery and post-go-live work is carried out", "Runs projects, handovers and reviews with the customer", "On what a customer actually needs day to day", "About commercial decisions that change their work"],
+          ["Legal / Einkauf counterpart", "Rarely the commercial outcome itself", "Checks contract terms, compliance and the purchasing process", "Before anything contractual is agreed", "About outcomes that touch a contract"],
+          ["Geschäftsführer (managing director)", "Commitments beyond one department's authority, conflicts over resources, what to do when a key account is at risk", "Rarely the day-to-day work", "On large or hard-to-reverse commitments", "About commercial commitments the sales side negotiates within its authority"],
+        ]}
+      />
+      <p className="text-micro normal-case tracking-normal text-ash">Role profiles are a practitioner observation for a German Mittelstand firm, not a fixed law. A real company can distribute authority differently; say which profile you assume.</p>
       <Bul
         items={[
           <><strong>RACI matrix</strong> (Responsible, Accountable, Consulted, Informed), a standard project-governance tool (documented in the <strong>Project Management Institute&apos;s PMBOK Guide</strong>): every activity gets exactly one <strong>Accountable</strong> owner; any number of <strong>Responsible</strong>, <strong>Consulted</strong> or <strong>Informed</strong> parties.</>,
