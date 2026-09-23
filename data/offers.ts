@@ -52,6 +52,25 @@ const ARO_A = 0.05;
 const ARO_B = 0.03;
 const CARE_PER_YEAR = 4 * 12 * 100; // 4 quarterly reviews × 12 h × €100/h
 
+/** The raw inputs, for the mentor's worked answers (lib/mentorGuide.ts), so they compute from the same constants. */
+export const KESSLER_INPUTS = {
+  TERM,
+  FEE_A,
+  FEE_B,
+  CAP,
+  RATE_INTERNAL,
+  ONBOARD_DAYS,
+  ONBOARD_DAY_RATE,
+  DOC_REVIEW_DAYS: 3,
+  DOC_REVIEW_HOURS_PER_DAY: 8,
+  INCIDENT_HOURS,
+  INCIDENT_INCLUDED_B: 40,
+  TM_RATE_A,
+  SLE,
+  ARO_A,
+  ARO_B,
+} as const;
+
 export const CAP_PER_YEAR = CAP;
 export const CAP_TERM = CAP * TERM;
 export const CARE_ADDON_PER_YEAR = CARE_PER_YEAR;
@@ -66,6 +85,17 @@ const aleB = ARO_B * SLE * TERM;
 export type FigureId = "F1" | "F2" | "F3" | "F4" | "F5";
 export const FIGURE_IDS: FigureId[] = ["F1", "F2", "F3", "F4", "F5"];
 
+/**
+ * Where a figure's inputs are printed: a row of one of the three Block 2.1
+ * tables (index into OFFER_SHEET / COST_LINES / RISK_TABLE; `col` picks the
+ * offer column of the offer sheet), or another figure the learner already
+ * entered. It says where to look, never which operation to apply.
+ */
+export type FigureSource =
+  | { table: "offer"; index: number; col: "a" | "b" }
+  | { table: "cost" | "risk"; index: number }
+  | { figure: FigureId };
+
 export type Figure = {
   id: FigureId;
   short: string;
@@ -76,6 +106,10 @@ export type Figure = {
   clue: string;
   /** Material section ids the question draws on. */
   material: string[];
+  /** The printed rows this figure is built from, shown under the field as "Numbers you need". */
+  sources: FigureSource[];
+  /** The formula in words, no numbers, revealed on demand under the field ("Show the formula"). */
+  formula: string;
 };
 
 const totalA = TERM * FEE_A + onboarding + docReview + incidentA;
@@ -91,6 +125,8 @@ export const FIGURES: Figure[] = [
     tolerance: 0,
     clue: "Which two numbers sit on the same budget line, and are they per year or per term?",
     material: ["B4"],
+    formula: "Offer B's annual fee − the fee-line cap. Both are per year, so no × years.",
+    sources: [{ table: "offer", index: 0, col: "b" }, { table: "cost", index: 4 }],
   },
   {
     id: "F2",
@@ -101,6 +137,8 @@ export const FIGURES: Figure[] = [
     tolerance: 0,
     clue: "Which unit does the rate use, and which unit is the quantity in?",
     material: ["B4"],
+    formula: "Number of person-days × the day rate. The rate is per day, so no hours step.",
+    sources: [{ table: "cost", index: 1 }],
   },
   {
     id: "F3",
@@ -112,6 +150,16 @@ export const FIGURES: Figure[] = [
     tolerance: 50,
     clue: "Which lines are per year and which are one-off — and did the internal hours go through hours before euros?",
     material: ["B4"],
+    formula: "(Annual fee × years) + onboarding (person-days × day rate) + documentation review (days × hours per day × internal hourly rate) + incident hours (hours per year × T&M hourly rate × years). One-off lines are counted once.",
+    sources: [
+      { table: "offer", index: 0, col: "a" },
+      { table: "offer", index: 1, col: "a" },
+      { table: "cost", index: 1 },
+      { table: "cost", index: 2 },
+      { table: "cost", index: 0 },
+      { table: "cost", index: 3 },
+      { table: "offer", index: 3, col: "a" },
+    ],
   },
   {
     id: "F4",
@@ -123,6 +171,13 @@ export const FIGURES: Figure[] = [
     tolerance: 50,
     clue: "Are both totals built from the same cash layers, over the same term?",
     material: ["B4"],
+    formula: "Offer A's three-year total (your F3) − Offer B's three-year total. Offer B's total = annual fee × years + incident hours above the hours included (here none).",
+    sources: [
+      { figure: "F3" },
+      { table: "offer", index: 0, col: "b" },
+      { table: "offer", index: 1, col: "b" },
+      { table: "offer", index: 3, col: "b" },
+    ],
   },
   {
     id: "F5",
@@ -134,6 +189,8 @@ export const FIGURES: Figure[] = [
     tolerance: 50,
     clue: "Is the formula's rate per year or per term, and which single-loss figure does it multiply?",
     material: ["B4"],
+    formula: "(ARO with Offer A − ARO with Offer B) × SLE × years. The same as (ALE of A − ALE of B) × years.",
+    sources: [{ table: "risk", index: 0 }, { table: "risk", index: 1 }, { table: "risk", index: 2 }, { table: "offer", index: 1, col: "a" }],
   },
 ];
 

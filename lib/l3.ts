@@ -21,36 +21,42 @@ export const IDS3 = {
   exportL3: "export-l3",
 } as const;
 
-export const G_META: Record<GId, { label: string; help: string; clue: string }> = {
+export const G_META: Record<GId, { label: string; help: string; clue: string; formula: string }> = {
   G1: {
     label: "Total 6-month commitment (€)",
     help: "Read the total-cost readout on the board.",
     clue: "Which switch position is set on each lever, and what cost sits beside it? What do the three add up to?",
+    formula: "Cost beside L1's position + cost beside L2's position + cost beside L3's position.",
   },
   G2: {
     label: "Accounts with a named owner",
     help: "Read the L1 output at your chosen position.",
     clue: "Which lever produces named owners, and what number sits beside the position you set?",
+    formula: "The number of named owners printed beside L1's position.",
   },
   G3: {
     label: "Accounts receiving a review",
     help: "Read the L2 output at your chosen position.",
     clue: "Which lever produces reviews, and what number sits beside the position you set?",
+    formula: "The number of reviewed accounts printed beside L2's position.",
   },
   G4: {
     label: "Framework conversions, Status Quo",
     help: "Open the Status Quo tab and read the L3 meter.",
     clue: "Which tab is this, and does the sequence note on the meter apply to your levers?",
+    formula: "The conversions printed beside L3's position. If L1 is None: ÷ 2, rounded down.",
   },
   G5: {
     label: "Framework conversions, Price War",
     help: "Open the Price War tab and read the L3 meter.",
     clue: "Which tab is this, and what did the scenario change on top of any sequence adjustment?",
+    formula: "Your G4 ÷ 2, rounded down (the Price War halves it again).",
   },
   G6: {
     label: "Uncovered pool (accounts with no review at all)",
     help: "42 minus G3 — the board prints this directly, no arithmetic needed.",
     clue: "How many accounts are in the pool, and how many does the review lever reach?",
+    formula: "42 one-off accounts − your G3.",
   },
 };
 

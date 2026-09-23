@@ -11,6 +11,8 @@ import { scrollToAndFlash } from "@/lib/flash";
 import { useStore } from "@/store/useStore";
 import { usePersisted } from "@/store/usePersisted";
 import { AnswerKey } from "@/components/ui/AnswerKey";
+import { MentorGuide } from "@/components/ui/MentorGuide";
+import { TEXT_GUIDES } from "@/lib/mentorGuide";
 import { verdictKey } from "@/lib/answerKey";
 
 const CATEGORIES: { id: VerdictCategory; label: string }[] = [
@@ -142,6 +144,7 @@ export function VerdictBlock() {
         />
       </Field>
       <AnswerKey block={verdictKey()} />
+      <MentorGuide guide={TEXT_GUIDES.verdict} />
 
       <div id={IDS.fileNote} className="space-y-3 rounded-lg border border-line bg-mist/50 p-3">
         <div className="flex flex-wrap items-center gap-3">

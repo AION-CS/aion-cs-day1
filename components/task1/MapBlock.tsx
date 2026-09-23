@@ -12,6 +12,8 @@ import { IDS } from "@/lib/missing";
 import { useStore } from "@/store/useStore";
 import { glossify } from "@/lib/glossify";
 import { AnswerKey } from "@/components/ui/AnswerKey";
+import { MentorGuide } from "@/components/ui/MentorGuide";
+import { TEXT_GUIDES } from "@/lib/mentorGuide";
 import { mapKey } from "@/lib/answerKey";
 
 const CITES: CiteChoice[] = [...RECORDS.map((r) => r.id as CiteChoice), "case"];
@@ -210,6 +212,7 @@ export function MapBlock() {
           aria-describedby="map-sentence-text-help"
         />
       </Field>
+      <MentorGuide guide={TEXT_GUIDES.mapSentence} />
     </div>
   );
 }

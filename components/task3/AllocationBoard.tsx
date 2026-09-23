@@ -196,6 +196,18 @@ export function AllocationBoard() {
           />
           <Meter label="Uncovered pool" value={board.uncovered} unit={`of ${POOL} accounts`} />
         </div>
+        <div className="rounded-md border border-line bg-mist/60 px-3 py-2 text-caption text-ink">
+          <p className="smallcaps text-ash">How the board counts</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5">
+            <li>Total commitment = the cost beside each lever&apos;s position, added up.</li>
+            <li>Named owners and reviewed accounts = the number beside L1&apos;s and L2&apos;s position.</li>
+            <li>
+              Framework conversions start from the number beside L3&apos;s position. If L1 is None, that number is halved and rounded down, because no
+              named account owner is assigned. The Price War tab halves the Status Quo figure again, rounded down.
+            </li>
+            <li>Uncovered pool = the {POOL} one-off accounts minus the reviewed accounts.</li>
+          </ul>
+        </div>
       </div>
       <AnswerKey block={allocationKey()} />
     </div>

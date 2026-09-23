@@ -11,6 +11,7 @@ import {
   RISK_TABLE,
   kesslerTco,
 } from "@/data/offers";
+import type { Figure, FigureSource } from "@/data/offers";
 import { KESSLER_ROLES, MOTIVE_IDS, MOTIVE_LABEL } from "@/data/motives";
 import { AnswerBlock, Pill } from "@/components/ui/AnswerBlock";
 import { Calculator } from "@/components/ui/Calculator";
@@ -32,6 +33,9 @@ import { useStore } from "@/store/useStore";
 import { Gloss } from "@/lib/glossify";
 import type { Recommendation } from "@/store/useStore";
 import { AnswerKey } from "@/components/ui/AnswerKey";
+import { MentorGuide } from "@/components/ui/MentorGuide";
+import { RevealHint } from "@/components/ui/RevealHint";
+import { FIGURE_GUIDES, TEXT_GUIDES } from "@/lib/mentorGuide";
 import { motiveKey, recommendationKey } from "@/lib/answerKey";
 
 const categoryLabel = (c: string | null) => (c ? BIN_LABEL[c as keyof typeof BIN_LABEL] : "—");
@@ -68,7 +72,18 @@ function Premise() {
   );
 }
 
-function MiniTable({ head, rows, note }: { head: [string, string] | [string, string, string]; rows: string[][]; note?: string }) {
+function MiniTable({
+  head,
+  rows,
+  note,
+  rowIdPrefix,
+}: {
+  head: [string, string] | [string, string, string];
+  rows: string[][];
+  note?: string;
+  /** Gives each row the id `${rowIdPrefix}-${index}` so "Numbers you need" can scroll to it. */
+  rowIdPrefix?: string;
+}) {
   return (
     <div className="overflow-x-auto rounded-lg border border-line bg-paper">
       <table className="w-full border-collapse text-caption">
@@ -83,7 +98,7 @@ function MiniTable({ head, rows, note }: { head: [string, string] | [string, str
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} className="border-t border-line align-top">
+            <tr key={i} id={rowIdPrefix ? `${rowIdPrefix}-${i}` : undefined} className="border-t border-line align-top">
               {r.map((c, j) => (
                 <td key={j} className={clsx("px-3 py-2", j === 0 && "font-semibold")}>
                   {c}
@@ -94,6 +109,60 @@ function MiniTable({ head, rows, note }: { head: [string, string] | [string, str
         </tbody>
       </table>
       {note && <p className="border-t border-line px-3 py-2 text-micro normal-case tracking-normal text-ash">{note}</p>}
+    </div>
+  );
+}
+
+/** Resolves a FigureSource to the table it sits in, the row text and the printed value. */
+function resolveSource(src: FigureSource): { target: string; where: string; label: string; value: string } {
+  if ("figure" in src) {
+    return { target: IDS.figure(src.figure), where: "Your answer", label: src.figure, value: "the figure you entered above" };
+  }
+  if (src.table === "offer") {
+    const r = OFFER_SHEET[src.index];
+    return {
+      target: `t2-offer-${src.index}`,
+      where: `Offer sheet · ${src.col === "a" ? "Offer A" : "Offer B"}`,
+      label: r.label,
+      value: src.col === "a" ? r.a : r.b,
+    };
+  }
+  const r = (src.table === "cost" ? COST_LINES : RISK_TABLE)[src.index];
+  return { target: `t2-${src.table}-${src.index}`, where: src.table === "cost" ? "Cost lines" : "Risk table", label: r.label, value: r.value };
+}
+
+/**
+ * The two on-demand helps under a figure field, hidden until asked for (like a clue): the formula in words
+ * (no numbers) and "Numbers you need", the printed rows it is built from, each a button that scrolls to and
+ * flashes its row in Block 2.1. Together they make the method and the inputs findable; the learner still
+ * reads the values, types them into the calculator and gets the number.
+ */
+function FigureHelp({ figure }: { figure: Figure }) {
+  return (
+    <div className="flex flex-wrap items-start gap-2">
+      <RevealHint id={`formula-${figure.id}`} label="Show the formula" title="Formula · from Materi B4">
+        <p className="text-caption text-ink">{figure.formula}</p>
+      </RevealHint>
+      <RevealHint id={`src-${figure.id}`} label="Show where the numbers are" title="Numbers you need · click one to see it in its table">
+        <ul className="space-y-1">
+          {figure.sources.map((src, i) => {
+            const r = resolveSource(src);
+            return (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => scrollToAndFlash(r.target, "ref")}
+                  className="flex w-full min-h-[36px] flex-wrap items-baseline gap-x-2 rounded px-2 py-1 text-left text-caption hover:bg-accentSoft"
+                >
+                  <span className="text-micro font-semibold uppercase text-ash">{r.where}</span>
+                  <span className="text-ink">{r.label}:</span>
+                  <span className="tnum font-semibold text-ink">{r.value}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </RevealHint>
     </div>
   );
 }
@@ -222,17 +291,19 @@ export function Task2() {
             <MiniTable
               head={["", "Offer A · NordByte IT", "Offer B · TechSolutions"]}
               rows={OFFER_SHEET.map((r) => [r.label, r.a, r.b])}
+              rowIdPrefix="t2-offer"
             />
           </div>
           <div className="space-y-1">
             <p className="smallcaps">Cost lines (Kessler&apos;s own costs, Case assumption)</p>
-            <MiniTable head={["Line", "Value"]} rows={COST_LINES.map((r) => [r.label, r.value])} />
+            <MiniTable head={["Line", "Value"]} rows={COST_LINES.map((r) => [r.label, r.value])} rowIdPrefix="t2-cost" />
           </div>
           <div className="space-y-1">
             <p className="smallcaps">Risk table (Case assumption · assumed)</p>
             <MiniTable
               head={["", "Value · assumed"]}
               rows={RISK_TABLE.map((r) => [r.label, `${r.value} · assumed`])}
+              rowIdPrefix="t2-risk"
               note="Not an IBM figure; stated scale: 320-employee manufacturer. Averages such as IBM's are context. This single-loss figure is scaled to Kessler."
             />
           </div>
@@ -303,6 +374,13 @@ export function Task2() {
         findIt="Route 2 → Task 2 → “Offer sheet” and “Cost lines”. Answer in the fields below."
       >
         <MaterialRefs refs={["B4"]} />
+        <p className="text-caption text-ink">
+          Every number you need is printed in the three tables of{" "}
+          <button type="button" onClick={() => scrollToAndFlash("block-2-1", "ref")} className="font-semibold underline decoration-dotted underline-offset-2 hover:text-accentHi">
+            Block 2.1
+          </button>
+          . The method is taught in Materi B4, with a worked example on Alpenwerk&apos;s numbers. Try each question yourself first. If you get stuck, two helps sit under every question: “Show the formula” gives the formula in words, and “Show where the numbers are” lists the exact rows it uses (click a row to jump to it). Then type the numbers into the calculator.
+        </p>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
           <div className="space-y-4">
             {FIGURES.map((f) => {
@@ -334,6 +412,8 @@ export function Task2() {
                   <p aria-live="polite" className="min-h-[1rem] text-micro normal-case tracking-normal text-ash">
                     {raw ? (v === null ? "Cannot read this as a number yet." : `Read as ${f.unit}: ${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`) : "Accepts 159890, 159,890, 159.890, 159.890,00 or € 159 890."}
                   </p>
+                  <FigureHelp figure={f} />
+                  <MentorGuide guide={FIGURE_GUIDES[f.id]} />
                 </Field>
               );
             })}
@@ -505,6 +585,8 @@ export function Task2() {
           />
         </Field>
         <AnswerKey block={recommendationKey()} />
+        <MentorGuide guide={TEXT_GUIDES.justification} />
+        <MentorGuide guide={TEXT_GUIDES.limits} />
       </AnswerBlock>
 
       {/* Block 2.6 */}
@@ -542,6 +624,7 @@ export function Task2() {
             )}
           </div>
         </Field>
+        <MentorGuide guide={TEXT_GUIDES.q6} />
       </AnswerBlock>
 
       <div className="space-y-3">

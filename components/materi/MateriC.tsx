@@ -295,6 +295,8 @@ export function CardC4() {
         "Every lever you fund is a lever you do not fund at that level: state the opportunity cost of what you left at None or Partial, and put a number on it.",
         "Under capital rationing the cap, not the merit of any one lever, is the binding constraint. Positive-value options are left unfunded, and that is not a mistake, provided you say so.",
         "A portfolio problem is sized on the pool (42 one-off customers), not on one account: the retention rate r moves across the segment, not just for Kessler.",
+        "Levers can depend on each other, and a harsher scenario lowers what a lever delivers. A lever that needs another in place first delivers less without it; a price war takes away part of what it would win. Read each output for each scenario before you compare options, and say which scenario a number belongs to.",
+        "What stays uncovered is a subtraction you can state: the pool minus the accounts a lever reaches.",
       ]}
     >
       <Diagram label="Portfolio cliff vs Kessler cliff" caption="The single-project cliff from Materi A1, redrawn 42 times, next to the one Kessler bar.">

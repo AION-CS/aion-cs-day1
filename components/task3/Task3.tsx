@@ -33,6 +33,9 @@ import { RECOMMENDATION_LABEL } from "@/store/selectors";
 import { usePersisted } from "@/store/usePersisted";
 import { useStore } from "@/store/useStore";
 import { Gloss } from "@/lib/glossify";
+import { MentorGuide } from "@/components/ui/MentorGuide";
+import { RevealHint } from "@/components/ui/RevealHint";
+import { TEXT_GUIDES, gGuides } from "@/lib/mentorGuide";
 
 function Chip({ lit, children }: { lit: boolean; children: React.ReactNode }) {
   return (
@@ -226,6 +229,12 @@ export function Task3() {
                     placeholder="a whole number"
                     aria-describedby={`in-${g}-help`}
                   />
+                  <div className="flex flex-wrap items-start gap-2">
+                    <RevealHint id={`formula-${g}`} label="Show the formula" title="Formula · read from the board">
+                      <p className="text-caption text-ink">{G_META[g].formula}</p>
+                    </RevealHint>
+                  </div>
+                  <MentorGuide guide={gGuides(r3.levers)[g]} />
                 </Field>
               ))}
             </div>
@@ -310,6 +319,7 @@ export function Task3() {
                 aria-describedby="risk-help"
               />
             </Field>
+            <MentorGuide guide={TEXT_GUIDES.risk} />
           </AnswerBlock>
 
           {/* Block 3.4 */}
@@ -358,6 +368,7 @@ export function Task3() {
                 </table>
               </div>
             </div>
+            <MentorGuide guide={TEXT_GUIDES.governance} />
           </AnswerBlock>
 
           {/* Block 3.5 */}
@@ -395,6 +406,7 @@ export function Task3() {
                 <Chip lit={nfCites}>your G6 figure or a lever you left unfunded</Chip>
               </p>
             </Field>
+            <MentorGuide guide={TEXT_GUIDES.notFunding} />
           </AnswerBlock>
 
           {/* Block 3.6 */}
@@ -429,6 +441,7 @@ export function Task3() {
                 <Chip lit={chips.owner}>Owner</Chip>
               </div>
             </Field>
+            <MentorGuide guide={TEXT_GUIDES.exec} />
           </AnswerBlock>
 
           <div className="space-y-3">

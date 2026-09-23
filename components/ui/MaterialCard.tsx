@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import clsx from "clsx";
 import { MATERIAL_BY_ID, materialAnchorId } from "@/data/materialIndex";
 import type { MaterialId } from "@/data/materialIndex";
+import { MATERIAL_PLAIN } from "@/data/materialPlain";
 import { REFERENCES } from "@/data/references";
 import type { RefKey } from "@/data/references";
 import { scrollToAndFlash } from "@/lib/flash";
@@ -30,7 +31,7 @@ export function SourceChip({ refKey, block }: { refKey: RefKey; block: "A" | "B"
 }
 
 /**
- * One study card. Order is fixed: title → scan line → body (the SVG is the
+ * One study card. Order is fixed: title → scan line → "In plain words" box (data/materialPlain.ts) → body (the SVG is the
  * instrument) → decision rules → sources → Mark as read. Cards are short blocks
  * that carry a named framework, a real figure or a real case.
  */
@@ -56,6 +57,12 @@ export function MaterialCard({
   // Technical terms become clickable once per card: the scan line first, then the body, then the rules.
   const seen = new Set<string>();
   const scanG = glossify(scan, seen);
+  const plain = MATERIAL_PLAIN[id];
+  const plainRows = [
+    { label: "In plain words", text: plain.idea },
+    { label: "Why it matters", text: plain.why },
+    ...(plain.picture ? [{ label: "How to read the picture below", text: plain.picture }] : []),
+  ].map((r) => ({ ...r, g: glossify(r.text, seen) }));
   const bodyG = glossify(children, seen);
   const rulesG = reasoning?.map((r) => glossify(r, seen));
 
@@ -67,6 +74,14 @@ export function MaterialCard({
         <span className="smallcaps whitespace-nowrap">{meta.minutes} min</span>
       </header>
       <p className="mt-2 font-semibold text-ink">{scanG}</p>
+      <div className="mt-3 space-y-2.5 rounded-lg border border-line bg-mist/50 p-3.5">
+        {plainRows.map((r) => (
+          <div key={r.label}>
+            <p className="smallcaps text-ash">{r.label}</p>
+            <p className="mt-0.5 text-body text-ink">{r.g}</p>
+          </div>
+        ))}
+      </div>
       <div className="mt-4 space-y-4">{bodyG}</div>
 
       {reasoning && reasoning.length > 0 && (
