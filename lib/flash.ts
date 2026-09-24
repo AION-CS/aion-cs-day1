@@ -26,12 +26,15 @@ export function focusFirstIn(el: HTMLElement) {
   target?.focus({ preventScroll: true });
 }
 
-/** Smooth-scroll to `#id`, flash it, and focus the first focusable control inside. */
-export function scrollToAndFlash(id: string, variant: FlashVariant = "warn") {
+/**
+ * Smooth-scroll to `#id`, flash it, and focus the first focusable control inside. `block: "start"` puts
+ * the top of a tall section under the sticky bars (its `scroll-margin-top`) instead of centring its middle.
+ */
+export function scrollToAndFlash(id: string, variant: FlashVariant = "warn", block: ScrollLogicalPosition = "center") {
   const el = document.getElementById(id);
   if (!el) return;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block });
   flash(el, variant);
   if (variant === "warn") focusFirstIn(el);
 }

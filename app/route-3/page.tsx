@@ -1,4 +1,5 @@
 import { SectionRail } from "@/components/chrome/SectionRail";
+import { PageNav } from "@/components/chrome/PageNav";
 import { HashFlash } from "@/components/chrome/HashFlash";
 import { SuggestedOrderBanner } from "@/components/ui/Banner";
 import { MateriC } from "@/components/materi/Materi";
@@ -29,6 +30,7 @@ export default function Route3() {
         text="Materi C → Task 3. Every section stays open. Task 3 quotes your Route 1 and Route 2 work, but never needs it to be finished."
       />
       <SectionRail route={3} />
+      <PageNav route={3} />
       <MateriC />
       <Task3 />
       <ResetRoute route={3} />

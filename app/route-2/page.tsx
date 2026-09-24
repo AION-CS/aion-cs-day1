@@ -1,4 +1,5 @@
 import { SectionRail } from "@/components/chrome/SectionRail";
+import { PageNav } from "@/components/chrome/PageNav";
 import { HashFlash } from "@/components/chrome/HashFlash";
 import { SuggestedOrderBanner } from "@/components/ui/Banner";
 import { MateriB } from "@/components/materi/Materi";
@@ -20,6 +21,7 @@ export default function Route2() {
         text="Route 1 first is recommended, because Task 2 quotes your Task 1 verdict. Inside this route: Materi B → Task 2. Every section stays open, so you can work through it regardless."
       />
       <SectionRail route={2} />
+      <PageNav route={2} />
       <MateriB />
       <Task2 />
       <ResetRoute route={2} />

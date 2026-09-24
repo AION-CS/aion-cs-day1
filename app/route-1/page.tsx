@@ -1,4 +1,5 @@
 import { SectionRail } from "@/components/chrome/SectionRail";
+import { PageNav } from "@/components/chrome/PageNav";
 import { HashFlash } from "@/components/chrome/HashFlash";
 import { SuggestedOrderBanner } from "@/components/ui/Banner";
 import { MateriA } from "@/components/materi/Materi";
@@ -20,6 +21,7 @@ export default function Route1() {
         text="Materi A → Task 1. Every section stays open, so you can start anywhere."
       />
       <SectionRail route={1} />
+      <PageNav route={1} />
       <MateriA />
       <Task1 />
       <ResetRoute route={1} />
